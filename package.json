@@ -8,11 +8,14 @@
   },
   "main": "lib/api.js",
   "dependencies": {
-    "isomorphic-fetch": "2.2.1",
-    "lodash": "4.17.11"
+    "isomorphic-fetch": "2.2.1"
   },
-  "scripts": {},
   "devDependencies": {
-    "jest": "23.6.0"
+    "jest": "23.6.0",
+    "jest-fetch-mock": "2.1.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
   }
 }

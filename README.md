@@ -15,7 +15,7 @@ import swell from 'swell-storefront';
 
 swell.auth('my-store', 'pk_...');
 
-swell.get('/products', {
+swell.products.get({
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -29,26 +29,16 @@ swell.get('/products', {
 #### List products
 
 ```javascript
-swell.get('/products', {
+swell.products.get({
   limit: 25,
   page: 1,
-});
-```
-
-#### List products with variants
-
-```javascript
-swell.get('/products', {
-  limit: 25,
-  page: 1,
-  expand: ['variants'],
 });
 ```
 
 #### List products by category
 
 ```javascript
-swell.get('/products', {
+swell.products.get({
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -58,26 +48,30 @@ swell.get('/products', {
 #### Search products
 
 ```javascript
-swell.get('/products', {
+swell.products.get({
   search: 'blue jeans',
   limit: 25,
   page: 1,
 });
 ```
 
-#### Get a product by slug
-
-```javascript
-swell.get('/products/{slug}', {
-  slug: 'pink-shoes',
-});
-```
-
 #### Get a product by ID
 
 ```javascript
-swell.get('/products/{id}', {
-  id: '5c15505200c7d14d851e510f',
+swell.products.get('5c15505200c7d14d851e510f');
+```
+
+#### Get a product by slug
+
+```javascript
+swell.products.get('pink-shoes');
+```
+
+#### Get a product by slug with variants
+
+```javascript
+swell.products.get('pink-shoes', {
+  expand: ['variants'],
 });
 ```
 
@@ -86,7 +80,22 @@ swell.get('/products/{id}', {
 #### List categories
 
 ```javascript
-swell.get('/categories');
+swell.categories.get({
+  limit: 25,
+  page: 1,
+});
+```
+
+#### Get a category by slug
+
+```javascript
+swell.categories.get('mens-shoes');
+```
+
+#### Get a category by ID
+
+```javascript
+swell.categories.get('5c15505200c7d14d851e510f');
 ```
 
 ## Shopping carts
