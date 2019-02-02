@@ -15,7 +15,7 @@ import swell from 'swell-storefront';
 
 swell.auth('my-store', 'pk_...');
 
-swell.products.get({
+swell.get('/products', {
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -29,16 +29,26 @@ swell.products.get({
 #### List products
 
 ```javascript
-swell.products.get({
+swell.get('/products', {
   limit: 25,
   page: 1,
+});
+```
+
+#### List products with variants
+
+```javascript
+swell.get('/products', {
+  limit: 25,
+  page: 1,
+  expand: ['variants'],
 });
 ```
 
 #### List products by category
 
 ```javascript
-swell.products.get({
+swell.get('/products', {
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -48,30 +58,26 @@ swell.products.get({
 #### Search products
 
 ```javascript
-swell.products.get({
+swell.get('/products', {
   search: 'blue jeans',
   limit: 25,
   page: 1,
 });
 ```
 
-#### Get a product by ID
-
-```javascript
-swell.products.get('5c15505200c7d14d851e510f');
-```
-
 #### Get a product by slug
 
 ```javascript
-swell.products.get('pink-shoes');
+swell.get('/products/{slug}', {
+  slug: 'pink-shoes',
+});
 ```
 
-#### Get a product by slug with variants
+#### Get a product by ID
 
 ```javascript
-swell.products.get('pink-shoes', {
-  expand: ['variants'],
+swell.get('/products/{id}', {
+  id: '5c15505200c7d14d851e510f',
 });
 ```
 
@@ -80,22 +86,7 @@ swell.products.get('pink-shoes', {
 #### List categories
 
 ```javascript
-swell.categories.get({
-  limit: 25,
-  page: 1,
-});
-```
-
-#### Get a category by slug
-
-```javascript
-swell.categories.get('mens-shoes');
-```
-
-#### Get a category by ID
-
-```javascript
-swell.categories.get('5c15505200c7d14d851e510f');
+swell.get('/categories');
 ```
 
 ## Shopping carts
@@ -134,12 +125,27 @@ swell.cart.updateItem('5c15505200c7d14d851e510f', {
 #### Update all items
 
 ```javascript
-swell.cart.updateItems([{
+swell.cart.setItems([{
+  id: '5c15505200c7d14d851e510f',
   quantity: 2,
+  options: [{
+    id: 'color',
+    value: 'Blue',
+  }],
 }, {
+  id: '5c15505200c7d14d851e510g',
   quantity: 3,
+  options: [{
+    id: 'color',
+    value: 'Red',
+  }],
 }, {
+  id: '5c15505200c7d14d851e510h',
   quantity: 4,
+  options: [{
+    id: 'color',
+    value: 'White',
+  }],
 }]);
 ```
 
@@ -152,7 +158,7 @@ swell.cart.removeItem('5c15505200c7d14d851e510f');
 #### Remove all items
 
 ```javascript
-swell.cart.removeItems();
+swell.cart.setItems([]);
 ```
 
 #### Recover a shopping cart
@@ -273,4 +279,128 @@ swell.account.createCard({
 
 ```javascript
 swell.account.deleteCard('5c15505200c7d14d851e510f');
+```
+
+## Subscriptions
+
+Fetch and manage subscriptions associated with the logged in customer's account.
+
+#### Get all subscriptions
+
+```javascript
+swell.subscriptions.get();
+```
+
+#### Get a subscription by ID
+
+```javascript
+swell.subscriptions.get(id);
+```
+
+#### Create a subscription
+
+```javascript
+swell.subscriptions.create({
+  product_id: '5c15505200c7d14d851e510f',
+  // the following parameters are optional
+  variant_id: '5c15505200c7d14d851e510g',
+  quantity: 1,
+  coupon_code: '10PERCENTOFF',
+  items: [{
+    product_id: '5c15505200c7d14d851e510h',
+    quantity: 1,
+  }],
+});
+```
+
+#### Update a subscription
+
+```javascript
+swell.subscriptions.update('5c15505200c7d14d851e510f', {
+  // the following parameters are optional
+  quantity: 2,
+  coupon_code: '10PERCENTOFF',
+  items: [{
+    product_id: '5c15505200c7d14d851e510h',
+    quantity: 1,
+  }],
+});
+```
+
+#### Change a subscription plan
+
+```javascript
+swell.subscriptions.update('5c15505200c7d14d851e510f', {
+  product_id: '5c15505200c7d14d851e510g',
+  variant_id: '5c15505200c7d14d851e510h', // optional
+  quantity: 2,
+});
+```
+
+#### Cancel a subscription
+
+```javascript
+swell.subscriptions.update('5c15505200c7d14d851e510f', {
+  canceled: true,
+});
+```
+
+#### Add an invoice item
+
+```javascript
+swell.subscriptions.addItem('5c15505200c7d14d851e510f', {
+  product_id: '5c15505200c7d14d851e510f',
+  quantity: 1,
+  options: [{
+    id: 'color',
+    value: 'Blue',
+  }],
+});
+```
+
+#### Update an invoice item
+
+```javascript
+swell.subscriptions.updateItem('5c15505200c7d14d851e510f', '<item_id>', {
+  quantity: 2,
+});
+```
+
+#### Update all invoice items
+
+```javascript
+swell.subscriptions.setItems('5c15505200c7d14d851e510e', [{
+  id: '5c15505200c7d14d851e510f',
+  quantity: 2,
+  options: [{
+    id: 'color',
+    value: 'Blue',
+  }],
+}, {
+  id: '5c15505200c7d14d851e510g',
+  quantity: 3,
+  options: [{
+    id: 'color',
+    value: 'Red',
+  }],
+}, {
+  id: '5c15505200c7d14d851e510h',
+  quantity: 4,
+  options: [{
+    id: 'color',
+    value: 'White',
+  }],
+}]);
+```
+
+#### Remove an item
+
+```javascript
+swell.subscriptions.removeItem('5c15505200c7d14d851e510f', '<item_id>');
+```
+
+#### Remove all items
+
+```javascript
+swell.subscriptions.setItems([]);
 ```
