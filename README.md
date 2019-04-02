@@ -1,8 +1,8 @@
-# Storefront API Client
+# Storefront API Library
 
 The storefront library is a wrapper around the Swell Storefront API, which provides restricted access to store data for client-side applications.
 
-_You should never use your Swell Admin API keys in public contexts._
+> **Important:** The Storefront and Checkout APIs restrict what operations are available and use public keys, making them safe to use anywhere. As secret keys provide full access to your store's data, you should only use them server-side and access them via environment variables/secrets to prevent them from being exposed in your source code.```
 
 **Use cases**
 
