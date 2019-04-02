@@ -1,27 +1,69 @@
-# Storefront API
+# Storefront API Client
 
-Client-side applications can use the Swell Storefront API to retrieve public data including products, shopping carts, and account information.
+The storefront library is a wrapper around the Swell Storefront API, which provides restricted access to store data for client-side applications.
 
-## Getting started
+_You should never use your Swell Admin API keys in public contexts._
+
+**Use cases**
+
+- List product data
+- Create, recover, and update shopping carts
+- Authenticate customers and allow them to edit account information and subscriptions
+
+For creating custom checkout flows, you can use the Swell Checkout API.
+
+## Installation
+
+With npm
 
 ```bash
 npm install swell-storefront --save
 ```
 
-Basic example:
+With Yarn
+
+```bash
+yarn add swell-storefront
+```
+
+## Configuration
+
+The client is authenticated using your API Client ID (same as your Store ID) and a public key. You can find these details in your dashboard under _Settings > API_.
+
+If your application uses camelCase, you can set an flag to transform the API's snake_case responses. This works on request data you provide as well.
+
+**Basic**
+
+```javascript
+swell.auth('<store-id>', '<public_key>');
+```
+
+**With options**
+
+```javascript
+const options = {
+  useCamelCase: // true | false (default is false)
+}
+
+swell.auth('<store-id>', '<public_key>', options)
+```
+
+## Example usage
 
 ```javascript
 import swell from 'swell-storefront';
 
 swell.auth('my-store', 'pk_...');
 
-swell.get('/products', {
-  category: 't-shirts',
-  limit: 25,
-  page: 1,
-}).then((products) => {
-  console.log(products);
-});
+swell
+  .get('/products', {
+    category: 't-shirts',
+    limit: 25,
+    page: 1,
+  })
+  .then((products) => {
+    console.log(products);
+  });
 ```
 
 ## Products
@@ -107,10 +149,12 @@ This request will return `null` if nothing has been added to the cart yet.
 swell.cart.addItem({
   product_id: '5c15505200c7d14d851e510f',
   quantity: 1,
-  options: [{
-    id: 'color',
-    value: 'Blue',
-  }],
+  options: [
+    {
+      id: 'color',
+      value: 'Blue',
+    },
+  ],
 });
 ```
 
@@ -125,28 +169,38 @@ swell.cart.updateItem('5c15505200c7d14d851e510f', {
 #### Update all items
 
 ```javascript
-swell.cart.setItems([{
-  id: '5c15505200c7d14d851e510f',
-  quantity: 2,
-  options: [{
-    id: 'color',
-    value: 'Blue',
-  }],
-}, {
-  id: '5c15505200c7d14d851e510g',
-  quantity: 3,
-  options: [{
-    id: 'color',
-    value: 'Red',
-  }],
-}, {
-  id: '5c15505200c7d14d851e510h',
-  quantity: 4,
-  options: [{
-    id: 'color',
-    value: 'White',
-  }],
-}]);
+swell.cart.setItems([
+  {
+    id: '5c15505200c7d14d851e510f',
+    quantity: 2,
+    options: [
+      {
+        id: 'color',
+        value: 'Blue',
+      },
+    ],
+  },
+  {
+    id: '5c15505200c7d14d851e510g',
+    quantity: 3,
+    options: [
+      {
+        id: 'color',
+        value: 'Red',
+      },
+    ],
+  },
+  {
+    id: '5c15505200c7d14d851e510h',
+    quantity: 4,
+    options: [
+      {
+        id: 'color',
+        value: 'White',
+      },
+    ],
+  },
+]);
 ```
 
 #### Remove an item
@@ -306,10 +360,12 @@ swell.subscriptions.create({
   variant_id: '5c15505200c7d14d851e510g',
   quantity: 1,
   coupon_code: '10PERCENTOFF',
-  items: [{
-    product_id: '5c15505200c7d14d851e510h',
-    quantity: 1,
-  }],
+  items: [
+    {
+      product_id: '5c15505200c7d14d851e510h',
+      quantity: 1,
+    },
+  ],
 });
 ```
 
@@ -320,10 +376,12 @@ swell.subscriptions.update('5c15505200c7d14d851e510f', {
   // the following parameters are optional
   quantity: 2,
   coupon_code: '10PERCENTOFF',
-  items: [{
-    product_id: '5c15505200c7d14d851e510h',
-    quantity: 1,
-  }],
+  items: [
+    {
+      product_id: '5c15505200c7d14d851e510h',
+      quantity: 1,
+    },
+  ],
 });
 ```
 
@@ -351,10 +409,12 @@ swell.subscriptions.update('5c15505200c7d14d851e510f', {
 swell.subscriptions.addItem('5c15505200c7d14d851e510f', {
   product_id: '5c15505200c7d14d851e510f',
   quantity: 1,
-  options: [{
-    id: 'color',
-    value: 'Blue',
-  }],
+  options: [
+    {
+      id: 'color',
+      value: 'Blue',
+    },
+  ],
 });
 ```
 
@@ -369,28 +429,38 @@ swell.subscriptions.updateItem('5c15505200c7d14d851e510f', '<item_id>', {
 #### Update all invoice items
 
 ```javascript
-swell.subscriptions.setItems('5c15505200c7d14d851e510e', [{
-  id: '5c15505200c7d14d851e510f',
-  quantity: 2,
-  options: [{
-    id: 'color',
-    value: 'Blue',
-  }],
-}, {
-  id: '5c15505200c7d14d851e510g',
-  quantity: 3,
-  options: [{
-    id: 'color',
-    value: 'Red',
-  }],
-}, {
-  id: '5c15505200c7d14d851e510h',
-  quantity: 4,
-  options: [{
-    id: 'color',
-    value: 'White',
-  }],
-}]);
+swell.subscriptions.setItems('5c15505200c7d14d851e510e', [
+  {
+    id: '5c15505200c7d14d851e510f',
+    quantity: 2,
+    options: [
+      {
+        id: 'color',
+        value: 'Blue',
+      },
+    ],
+  },
+  {
+    id: '5c15505200c7d14d851e510g',
+    quantity: 3,
+    options: [
+      {
+        id: 'color',
+        value: 'Red',
+      },
+    ],
+  },
+  {
+    id: '5c15505200c7d14d851e510h',
+    quantity: 4,
+    options: [
+      {
+        id: 'color',
+        value: 'White',
+      },
+    ],
+  },
+]);
 ```
 
 #### Remove an item
