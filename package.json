@@ -8,7 +8,8 @@
   },
   "main": "lib/api.js",
   "dependencies": {
-    "isomorphic-fetch": "2.2.1"
+    "isomorphic-fetch": "2.2.1",
+    "object-keys-normalizer": "1.0.1"
   },
   "devDependencies": {
     "jest": "23.6.0",
