@@ -28,7 +28,7 @@ yarn add swell-storefront
 
 ## Configuration
 
-The client is authenticated using your API Client ID (same as your Store ID) and a public key. You can find these details in your dashboard under _Settings > API_.
+The client is authenticated using your Store ID and a public key. You can find these details in your dashboard under _Settings > API_.
 
 If your application uses camelCase, you can set an flag to transform the API's snake_case responses. This works on request data you provide as well.
 
