@@ -1,6 +1,6 @@
 {
   "name": "swell-storefront",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Swell storefront API for client-side JavaScript",
   "repository": {
     "type": "git",
