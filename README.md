@@ -2,7 +2,7 @@
 
 The Swell JS library is a wrapper around the Swell Storefront API, which provides restricted access to store data for client-side applications.
 
-> **Important:** This library implements a subset of the operations available using the <a href="https://www.npmjs.com/package/swell-node">backend API</a> and uses a public key, making it safe to use anywhere. As secret keys provide full access to your store's data, you should only use them server-side via environment variables to prevent them from being exposed in your source code.```
+> **Important:** This library implements a subset of the operations available using the <a href="https://www.npmjs.com/package/swell-node">backend API</a> and uses a public key, making it safe to use anywhere. As secret keys provide full access to your store's data, you should only use them server-side via environment variables to prevent them from being exposed in your source code.
 
 **Use cases**
 
