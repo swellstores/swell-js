@@ -1,10 +1,10 @@
 {
-  "name": "swell-storefront",
-  "version": "1.2.1",
-  "description": "Swell storefront API for client-side JavaScript",
+  "name": "swell-js",
+  "version": "2.0.0",
+  "description": "Swell JS library for client-side stores",
   "repository": {
     "type": "git",
-    "url": "https://github.com/swellstores/swell-storefront"
+    "url": "https://github.com/swellstores/swell-js"
   },
   "main": "lib/api.js",
   "dependencies": {
