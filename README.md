@@ -4,6 +4,8 @@ The Swell JS library is a wrapper around the Storefront API, which provides rest
 
 > **Important:** This library implements a subset of the operations available using the <a href="https://swell.store/docs/api">Swell API</a> and uses a public key, making it safe to use anywhere. As secret keys provide full access to your store's data, you should only use them server-side via environment variables to prevent them from being exposed in your source code.
 
+To better understand how this library works, read the <a href="https://swell.store/docs/api">Swell API docs</a>.
+
 **Use cases**
 
 - List product and category data
@@ -28,9 +30,7 @@ yarn add swell-js
 
 ## Configuration
 
-The client is authenticated using your Store ID and a public key. You can find these details in your dashboard under _Settings > API_.
-
-If your application uses camelCase, you can set an flag to transform the API's snake_case responses. This works on request data you provide as well.
+The client is authenticated using your Store ID and public key. You can find these details in your dashboard under _Settings > API_.
 
 **Basic**
 
@@ -42,30 +42,30 @@ Note: `swell.auth()` was renamed to `swell.init()` in v1.3.0.
 
 **With options**
 
+If your application uses camelCase, you can set an flag to transform the API's snake_case responses. This works on request data you provide as well.
+
 ```javascript
 const options = {
   useCamelCase: // true | false (default is false)
-}
+};
 
 swell.init('<store-id>', '<public_key>', options)
 ```
 
 ## Example usage
 
+The examples here use ES6 async/await syntax. For ES5, all methods return a promise.
+
 ```javascript
 import swell from 'swell-js';
 
 swell.init('my-store', 'pk_...');
 
-swell
-  .get('/products', {
-    category: 't-shirts',
-    limit: 25,
-    page: 1,
-  })
-  .then((products) => {
-    console.log(products);
-  });
+await swell.get('/products', {
+  category: 't-shirts',
+  limit: 25,
+  page: 1,
+});
 ```
 
 ## Products
@@ -107,7 +107,7 @@ await swell.get('/products', {
 
 #### Search products
 
-Return a list of products by search, up to `limit` results. Max 100 per page.
+Return a list of products by search, up to `limit` results. Max 100 per page. Search is performed using "and" syntax, where all words must be present in one or more fields of the product.
 
 ```javascript
 await swell.get('/products', {
@@ -452,7 +452,7 @@ await swell.account.recover({
 
 #### List addresses
 
-Get a list of addresses on file for an account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
+Return a list of addresses on file for an account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
 
 ```javascript
 await swell.account.getAddresses();
@@ -485,7 +485,7 @@ await swell.account.deleteAddress('5c15505200c7d14d851e510f');
 
 #### List saved credit cards
 
-Get a list of saved credit cards an account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
+Return a list of saved credit cards an account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
 
 ```javascript
 await swell.account.getCards();
@@ -511,7 +511,7 @@ await swell.account.deleteCard('5c15505200c7d14d851e510f');
 
 #### List account orders
 
-Get a list of orders placed by a customer.
+Return a list of orders placed by a customer.
 
 ```javascript
 await swell.account.getOrders({ limit: 10, page: 2 });
@@ -523,7 +523,7 @@ Fetch and manage subscriptions associated with the logged in customer's account.
 
 #### Retrieve all subscriptions
 
-Get a list of active and canceled subscriptions for an account.
+Return a list of active and canceled subscriptions for an account.
 
 ```javascript
 await swell.subscriptions.get();
@@ -531,7 +531,7 @@ await swell.subscriptions.get();
 
 #### Retrieve a subscription by ID
 
-Get a single subscription by ID.
+Return a single subscription by ID.
 
 ```javascript
 await swell.subscriptions.get(id);
