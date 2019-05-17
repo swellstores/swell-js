@@ -247,6 +247,22 @@ Normally used with an abandoned cart recovery email. Your email may have a link 
 await swell.cart.recover('878663b2fb4175b128e40de428cd7b0c');
 ```
 
+#### Update cart account info
+
+Update the cart with customer account information. Returns the updated cart object.
+
+An account is assigned to a cart by its email address. If the account has no password saved, then it's considered a guest checkout and the cart will have the property `guest=true`. On the other hand, if the account has a password saved, the cart will have the property `account_logged_in=false` which you can use to prompt the user to <a href="#login">log in</a> to continue. Once the account is logged in, then `account_logged_in` will be updated to `true`.
+
+```javascript
+await swell.cart.update({
+  account: {
+    email: 'customer@example.com',
+    email_optin: true, // optional, indicates the customer wants to receive marketing emails
+    password: 'example', // optional, will save the customer's password if one doesn't exist yet
+  },
+});
+```
+
 #### Update cart shipping info
 
 Update the cart with customer shipping information. Returns the updated cart object.
@@ -405,33 +421,43 @@ await swell.account.logout();
 
 #### Retrieve logged in account
 
+Returns the logged in account object, or `null` if the customer is not logged in.
+
 ```javascript
 await swell.account.get();
 ```
 
 #### Create a new account
 
+Create a new customer account and log into the current session. Returns the newly created account object.
+
 ```javascript
 await swell.account.create({
   email: 'customer@example.com',
-  first_name: 'John',
-  last_name: 'Doe',
-  email_optin: true,
+  first_name: 'John', // optional
+  last_name: 'Doe', // optional
+  email_optin: true, // optional
+  password: 'example',  // optional
 });
 ```
 
 #### Update a logged in account
 
+Update the current logged in account, if possible. If successful, returns the updated account object. Otherwise, returns a validation error.
+
 ```javascript
 await swell.account.update({
   email: 'updated@example.com',
-  first_name: 'Jane',
-  last_name: 'Doe',
-  email_optin: false,
+  first_name: 'Jane', // optional
+  last_name: 'Doe', // optional
+  email_optin: false, // optional
+  password: 'example',  // optional
 });
 ```
 
-#### Send a password recovery email
+#### Send a password reset email
+
+Send a email to an existing customer account with a link to reset their password. If the email is not found, then no email will be sent. The call returns a value indicating success in either case.
 
 ```javascript
 await swell.account.recover({
@@ -460,7 +486,7 @@ await swell.account.getAddresses();
 
 #### Create a new address
 
-Create a new address entry for an account.
+Create a new address entry for an account. Returns the newly created address object.
 
 ```javascript
 await swell.account.createAddress({
@@ -477,7 +503,7 @@ await swell.account.createAddress({
 
 #### Delete an address
 
-Remove an existing address entry from an account.
+Remove an existing address entry from an account. Returns the deleted address object.
 
 ```javascript
 await swell.account.deleteAddress('5c15505200c7d14d851e510f');
