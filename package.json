@@ -6,16 +6,21 @@
     "type": "git",
     "url": "https://github.com/swellstores/swell-js"
   },
-  "main": "lib/api.js",
+  "main": "./dist/index.js",
   "dependencies": {
     "isomorphic-fetch": "2.2.1",
-    "object-keys-normalizer": "1.0.1"
+    "object-keys-normalizer": "1.0.1",
+    "qs": "6.7.0"
   },
   "devDependencies": {
+    "@babel/core": "7.4.5",
+    "babelify": "10.0.0",
+    "browserify": "16.2.3",
     "jest": "23.6.0",
     "jest-fetch-mock": "2.1.0"
   },
   "scripts": {
+    "build": "browserify ./src/api.js -t babelify --outfile dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch"
   }
