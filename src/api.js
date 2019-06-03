@@ -149,7 +149,7 @@ const api = {
     async getSettings() {
       this.settings = await request('get', '/cart/settings');
       return this.settings;
-    }
+    },
   },
 
   subscriptions: {
@@ -190,7 +190,7 @@ const api = {
       if (result && result.errors) {
         return result;
       }
-      return this.state = result;
+      return (this.state = result);
     },
 
     get() {
