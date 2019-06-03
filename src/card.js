@@ -1,7 +1,5 @@
 const { trimStart, trimEnd, toCamel } = require('./utils');
 
-require('isomorphic-fetch');
-
 let options = {
   vaultUrl: 'https://vault.schema.io',
   timeout: 20000,

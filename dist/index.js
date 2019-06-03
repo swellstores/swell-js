@@ -4759,8 +4759,6 @@ const {
   toCamel
 } = require('./utils');
 
-require('isomorphic-fetch');
-
 let options = {
   vaultUrl: 'https://vault.schema.io',
   timeout: 20000
@@ -5001,7 +4999,7 @@ function buildParams(key, obj, add) {
 
 module.exports = api;
 
-},{"./utils":16,"isomorphic-fetch":4}],16:[function(require,module,exports){
+},{"./utils":16}],16:[function(require,module,exports){
 const qs = require('qs');
 
 const {
