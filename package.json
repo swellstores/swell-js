@@ -6,6 +6,7 @@
     "type": "git",
     "url": "https://github.com/swellstores/swell-js"
   },
+  "main": "./src/api.js",
   "browser": "./dist/index.js",
   "dependencies": {
     "isomorphic-fetch": "2.2.1",
