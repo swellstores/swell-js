@@ -1,20 +1,14 @@
 "use strict";
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var card = require('./card');
 
@@ -77,11 +71,11 @@ var api = {
     order: null,
     settings: null,
     requestStateChange: function () {
-      var _requestStateChange = _asyncToGenerator(
+      var _requestStateChange = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(method, url, id, data) {
+      _regenerator["default"].mark(function _callee(method, url, id, data) {
         var result;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -160,10 +154,10 @@ var api = {
       return this.requestStateChange('delete', "/cart/giftcards/".concat(id));
     },
     getShippingRates: function () {
-      var _getShippingRates = _asyncToGenerator(
+      var _getShippingRates = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2() {
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      _regenerator["default"].mark(function _callee2() {
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -188,11 +182,11 @@ var api = {
       return getShippingRates;
     }(),
     submitOrder: function () {
-      var _submitOrder = _asyncToGenerator(
+      var _submitOrder = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee3() {
+      _regenerator["default"].mark(function _callee3() {
         var result;
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
@@ -229,13 +223,13 @@ var api = {
       return submitOrder;
     }(),
     getOrder: function () {
-      var _getOrder = _asyncToGenerator(
+      var _getOrder = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee4() {
+      _regenerator["default"].mark(function _callee4() {
         var checkoutId,
             result,
             _args4 = arguments;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -282,10 +276,10 @@ var api = {
       return getOrder;
     }(),
     getSettings: function () {
-      var _getSettings = _asyncToGenerator(
+      var _getSettings = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee5() {
-        return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      _regenerator["default"].mark(function _callee5() {
+        return _regenerator["default"].wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
@@ -337,11 +331,11 @@ var api = {
   account: {
     state: null,
     requestStateChange: function () {
-      var _requestStateChange2 = _asyncToGenerator(
+      var _requestStateChange2 = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee6(method, url, id, data) {
+      _regenerator["default"].mark(function _callee6(method, url, id, data) {
         var result;
-        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regenerator["default"].wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
@@ -427,9 +421,9 @@ function request(_x9, _x10) {
 }
 
 function _request() {
-  _request = _asyncToGenerator(
+  _request = (0, _asyncToGenerator2["default"])(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee7(method, url) {
+  _regenerator["default"].mark(function _callee7(method, url) {
     var id,
         data,
         opt,
@@ -450,7 +444,7 @@ function _request() {
         _err,
         _args7 = arguments;
 
-    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+    return _regenerator["default"].wrap(function _callee7$(_context7) {
       while (1) {
         switch (_context7.prev = _context7.next) {
           case 0:
@@ -466,14 +460,14 @@ function _request() {
               reqData = data;
             }
 
-            allOptions = _objectSpread({}, options, opt);
+            allOptions = (0, _objectSpread2["default"])({}, options, opt);
             baseUrl = "".concat(allOptions.url).concat(allOptions.base || '', "/api");
             reqUrl = allOptions.fullUrl || "".concat(baseUrl, "/").concat(trimBoth(reqUrl));
             reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;
 
             if (reqMethod === 'get') {
               _reqUrl$split = reqUrl.split('?');
-              _reqUrl$split2 = _slicedToArray(_reqUrl$split, 2);
+              _reqUrl$split2 = (0, _slicedToArray2["default"])(_reqUrl$split, 2);
               reqUrl = _reqUrl$split2[0];
               exQuery = _reqUrl$split2[1];
               fullQuery = [exQuery, stringifyQuery(reqData)].join('&').replace(/^&/, '');

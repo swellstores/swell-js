@@ -1,12 +1,14 @@
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-function _readOnlyError(name) { throw new Error("\"" + name + "\" is read-only"); }
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
 
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _require = require('./utils'),
     trimStart = _require.trimStart,
@@ -29,12 +31,12 @@ var api = {
     request = req;
   },
   createToken: function () {
-    var _createToken = _asyncToGenerator(
+    var _createToken = (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
-    regeneratorRuntime.mark(function _callee(card) {
+    _regenerator["default"].mark(function _callee(card) {
       var error, code, param, exp, err, result, _param, _err;
 
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -129,7 +131,7 @@ var api = {
 
     if (year && year.length === 2 && /^\d+$/.test(year)) {
       var prefix = new Date().getFullYear().toString().substring(0, 2);
-      year = (_readOnlyError("year"), prefix + year);
+      year = ((0, _readOnlyError2["default"])("year"), prefix + year);
     }
 
     return {
@@ -183,14 +185,14 @@ function vaultRequest(_x2, _x3, _x4) {
 }
 
 function _vaultRequest() {
-  _vaultRequest = _asyncToGenerator(
+  _vaultRequest = (0, _asyncToGenerator2["default"])(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(method, url, data) {
+  _regenerator["default"].mark(function _callee2(method, url, data) {
     var opt,
         requestId,
         callback,
         _args2 = arguments;
-    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
@@ -291,10 +293,10 @@ function buildParams(key, obj, add) {
         add(key, v);
       } else {
         // Item is non-scalar (array or object), encode its numeric index.
-        buildParams(key + '[' + ((typeof v === "undefined" ? "undefined" : _typeof(v)) === 'object' && v != null ? i : '') + ']', v, add);
+        buildParams(key + '[' + ((typeof v === "undefined" ? "undefined" : (0, _typeof2["default"])(v)) === 'object' && v != null ? i : '') + ']', v, add);
       }
     }
-  } else if (obj && _typeof(obj) === 'object') {
+  } else if (obj && (0, _typeof2["default"])(obj) === 'object') {
     // Serialize object item.
     for (name in obj) {
       buildParams(key + '[' + name + ']', obj[name], add);
