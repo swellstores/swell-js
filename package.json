@@ -18,7 +18,7 @@
     "@babel/core": "7.4.5",
     "@babel/plugin-transform-runtime": "7.4.4",
     "@babel/preset-env": "7.4.5",
-    "jest": "23.6.0",
+    "jest": "24.8.0",
     "jest-fetch-mock": "2.1.0"
   },
   "scripts": {
