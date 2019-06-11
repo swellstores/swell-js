@@ -1,4 +1,5 @@
 const card = require('./card');
+const { getCookie, setCookie } = require('./cookie');
 const { toCamel, toSnake, trimBoth, trimStart, trimEnd, stringifyQuery } = require('./utils');
 
 require('isomorphic-fetch');
@@ -281,9 +282,11 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     reqBody = JSON.stringify(reqData);
   }
 
+  const session = getCookie('swell-session');
   const reqHeaders = new Headers({
     'Content-Type': 'application/json',
     Authorization: `Basic ${Buffer.from(allOptions.key).toString('base64')}`,
+    ...(session ? { 'X-Session': session } : {}),
   });
 
   const response = await fetch(reqUrl, {
@@ -293,6 +296,11 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     credentials: 'include',
     mode: 'cors',
   });
+  const responseSession = response.headers.get('X-Session');
+
+  if (session !== responseSession) {
+    setCookie('swell-session', responseSession);
+  }
 
   const result = await response.json();
 
