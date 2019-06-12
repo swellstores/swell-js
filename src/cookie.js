@@ -1,4 +1,10 @@
+const { iSserver } = require('./utils');
+
 function getCookie(name) {
+  if (iSserver()) {
+    return undefined;
+  }
+
   let matches = document.cookie.match(
     new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'),
   );
@@ -6,6 +12,10 @@ function getCookie(name) {
 }
 
 function setCookie(name, value, options = {}) {
+  if (iSserver()) {
+    return;
+  }
+
   const date = new Date();
 
   date.setDate(date.getDate() + 7); // 1 week
