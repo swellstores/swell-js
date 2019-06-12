@@ -298,7 +298,7 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   });
   const responseSession = response.headers.get('X-Session');
 
-  if (session !== responseSession) {
+  if (typeof responseSession === 'string' && session !== responseSession) {
     setCookie('swell-session', responseSession);
   }
 
