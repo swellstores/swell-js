@@ -31,6 +31,10 @@ function stringifyQuery(str) {
   });
 }
 
+function iSserver() {
+  return !(typeof window != 'undefined' && window.document);
+}
+
 module.exports = {
   toCamel,
   toSnake,
@@ -38,4 +42,5 @@ module.exports = {
   trimStart,
   trimEnd,
   stringifyQuery,
+  iSserver,
 };

@@ -35,11 +35,16 @@ function stringifyQuery(str) {
   });
 }
 
+function iSserver() {
+  return !(typeof window != 'undefined' && window.document);
+}
+
 module.exports = {
   toCamel: toCamel,
   toSnake: toSnake,
   trimBoth: trimBoth,
   trimStart: trimStart,
   trimEnd: trimEnd,
-  stringifyQuery: stringifyQuery
+  stringifyQuery: stringifyQuery,
+  iSserver: iSserver
 };

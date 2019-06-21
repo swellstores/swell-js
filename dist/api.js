@@ -12,13 +12,17 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var card = require('./card');
 
-var _require = require('./utils'),
-    toCamel = _require.toCamel,
-    toSnake = _require.toSnake,
-    trimBoth = _require.trimBoth,
-    trimStart = _require.trimStart,
-    trimEnd = _require.trimEnd,
-    stringifyQuery = _require.stringifyQuery;
+var _require = require('./cookie'),
+    getCookie = _require.getCookie,
+    setCookie = _require.setCookie;
+
+var _require2 = require('./utils'),
+    toCamel = _require2.toCamel,
+    toSnake = _require2.toSnake,
+    trimBoth = _require2.trimBoth,
+    trimStart = _require2.trimStart,
+    trimEnd = _require2.trimEnd,
+    stringifyQuery = _require2.stringifyQuery;
 
 require('isomorphic-fetch');
 
@@ -437,8 +441,10 @@ function _request() {
         _reqUrl$split,
         _reqUrl$split2,
         fullQuery,
+        session,
         reqHeaders,
         response,
+        responseSession,
         result,
         err,
         _err,
@@ -476,11 +482,14 @@ function _request() {
               reqBody = JSON.stringify(reqData);
             }
 
-            reqHeaders = new Headers({
+            session = getCookie('swell-session');
+            reqHeaders = new Headers((0, _objectSpread2["default"])({
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(Buffer.from(allOptions.key).toString('base64'))
-            });
-            _context7.next = 15;
+            }, session ? {
+              'X-Session': session
+            } : {}));
+            _context7.next = 16;
             return fetch(reqUrl, {
               method: reqMethod,
               headers: reqHeaders,
@@ -489,16 +498,22 @@ function _request() {
               mode: 'cors'
             });
 
-          case 15:
+          case 16:
             response = _context7.sent;
-            _context7.next = 18;
+            responseSession = response.headers.get('X-Session');
+
+            if (typeof responseSession === 'string' && session !== responseSession) {
+              setCookie('swell-session', responseSession);
+            }
+
+            _context7.next = 21;
             return response.json();
 
-          case 18:
+          case 21:
             result = _context7.sent;
 
             if (!(result && result.error)) {
-              _context7.next = 27;
+              _context7.next = 30;
               break;
             }
 
@@ -508,9 +523,9 @@ function _request() {
             err.param = result.error.param;
             throw err;
 
-          case 27:
+          case 30:
             if (response.ok) {
-              _context7.next = 31;
+              _context7.next = 34;
               break;
             }
 
@@ -518,10 +533,10 @@ function _request() {
             _err.code = 'connection_error';
             throw _err;
 
-          case 31:
+          case 34:
             return _context7.abrupt("return", options.useCamelCase ? toCamel(result) : result);
 
-          case 32:
+          case 35:
           case "end":
             return _context7.stop();
         }
