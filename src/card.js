@@ -1,6 +1,6 @@
 const { trimStart, trimEnd, toCamel } = require('./utils');
 
-let options = {
+const options = {
   vaultUrl: 'https://vault.schema.io',
   timeout: 20000,
 };
@@ -74,7 +74,7 @@ const api = {
 
     const parts = new String(value).split(/[\s\/\-]+/, 2);
     const month = parts[0];
-    const year = parts[1];
+    let year = parts[1];
 
     // Convert 2 digit year
     if (year && year.length === 2 && /^\d+$/.test(year)) {
@@ -92,7 +92,7 @@ const api = {
   },
 
   types() {
-    var e, t, n, r;
+    let e, t, n, r;
     t = {};
     for (e = n = 40; n <= 49; e = ++n) t[e] = 'Visa';
     for (e = r = 50; r <= 59; e = ++r) t[e] = 'MasterCard';
@@ -110,7 +110,7 @@ const api = {
   },
 
   luhnCheck(num) {
-    var t, n, r, i, s, o;
+    let t, n, r, i, s, o;
     (r = !0), (i = 0), (n = (num + '').split('').reverse());
     for (s = 0, o = n.length; s < o; s++) {
       (t = n[s]), (t = parseInt(t, 10));
@@ -128,7 +128,7 @@ const api = {
   },
 
   validateExpiry(month, year) {
-    var r, i;
+    let r, i;
     return (
       (month = String(month).trim()),
       (year = String(year).trim()),
@@ -222,7 +222,7 @@ function serializeData(data) {
   }
   return s.join('&').replace(' ', '+');
 }
-var rbracket = /\[\]$/;
+const rbracket = /\[\]$/;
 function buildParams(key, obj, add) {
   let name;
   if (obj instanceof Array) {

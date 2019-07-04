@@ -31,8 +31,8 @@ function stringifyQuery(str) {
   });
 }
 
-function iSserver() {
-  return !(typeof window != 'undefined' && window.document);
+function isServer() {
+  return !(typeof window !== 'undefined' && window.document);
 }
 
 module.exports = {
@@ -42,5 +42,5 @@ module.exports = {
   trimStart,
   trimEnd,
   stringifyQuery,
-  iSserver,
+  isServer,
 };
