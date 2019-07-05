@@ -1,18 +1,18 @@
-const { iSserver } = require('./utils');
+const { isServer } = require('./utils');
 
 function getCookie(name) {
-  if (iSserver()) {
+  if (isServer()) {
     return undefined;
   }
 
-  let matches = document.cookie.match(
-    new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'),
+  const matches = document.cookie.match(
+    new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[]\\\/\+^])/g, '\\$1') + '=([^;]*)'),
   );
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
 function setCookie(name, value, options = {}) {
-  if (iSserver()) {
+  if (isServer()) {
     return;
   }
 
@@ -31,9 +31,9 @@ function setCookie(name, value, options = {}) {
 
   let updatedCookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
 
-  for (let optionKey in options) {
+  for (const optionKey in options) {
     updatedCookie += '; ' + optionKey;
-    let optionValue = options[optionKey];
+    const optionValue = options[optionKey];
 
     if (optionValue !== true) {
       updatedCookie += '=' + optionValue;

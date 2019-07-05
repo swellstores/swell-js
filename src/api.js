@@ -283,11 +283,11 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   }
 
   const session = getCookie('swell-session');
-  const reqHeaders = new Headers({
+  const reqHeaders = {
     'Content-Type': 'application/json',
     Authorization: `Basic ${Buffer.from(allOptions.key).toString('base64')}`,
     ...(session ? { 'X-Session': session } : {}),
-  });
+  };
 
   const response = await fetch(reqUrl, {
     method: reqMethod,
