@@ -5,21 +5,21 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _require = require('./utils'),
-    iSserver = _require.iSserver;
+    isServer = _require.isServer;
 
 function getCookie(name) {
-  if (iSserver()) {
+  if (isServer()) {
     return undefined;
   }
 
-  var matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+  var matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
 function setCookie(name, value) {
   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-  if (iSserver()) {
+  if (isServer()) {
     return;
   }
 

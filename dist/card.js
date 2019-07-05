@@ -4,8 +4,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
@@ -131,7 +129,7 @@ var api = {
 
     if (year && year.length === 2 && /^\d+$/.test(year)) {
       var prefix = new Date().getFullYear().toString().substring(0, 2);
-      year = ((0, _readOnlyError2["default"])("year"), prefix + year);
+      year = prefix + year;
     }
 
     return {

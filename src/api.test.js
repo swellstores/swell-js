@@ -55,10 +55,10 @@ describe('api', () => {
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'headers',
-        new Headers({
+        {
           'Content-Type': `application/json`,
           Authorization: `Basic ${Buffer.from('pk_test').toString('base64')}`,
-        }),
+        },
       );
     });
 

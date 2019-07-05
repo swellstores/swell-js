@@ -483,12 +483,12 @@ function _request() {
             }
 
             session = getCookie('swell-session');
-            reqHeaders = new Headers((0, _objectSpread2["default"])({
+            reqHeaders = (0, _objectSpread2["default"])({
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(Buffer.from(allOptions.key).toString('base64'))
             }, session ? {
               'X-Session': session
-            } : {}));
+            } : {});
             _context7.next = 16;
             return fetch(reqUrl, {
               method: reqMethod,
