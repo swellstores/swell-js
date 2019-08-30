@@ -1,12 +1,8 @@
-global.fetch = require('jest-fetch-mock');
-
 const api = require('./api');
 
 describe('api', () => {
   beforeEach(() => {
     api.init('test', 'pk_test');
-    fetch.resetMocks();
-    fetch.mockResponse(JSON.stringify({}));
   });
 
   describe('auth', () => {

@@ -33,20 +33,23 @@ describe('card', () => {
       expect(api.card.options).toEqual({
         vaultUrl: 'https://vault.schema.io',
         key: 'pk_test1',
-        timeout: 20000,
         useCamelCase: false,
+        store: 'test1',
+        url: 'https://test1.swell.store',
       });
     });
 
     it('should set vault url from options', () => {
       api.init('test2', 'pk_test2', {
         vaultUrl: 'https://examplevault.com',
+        timeout: 20000,
       });
       expect(api.card.options).toEqual({
         vaultUrl: 'https://examplevault.com',
         key: 'pk_test2',
-        timeout: 20000,
         useCamelCase: false,
+        store: 'test2',
+        url: 'https://test2.swell.store',
       });
     });
 

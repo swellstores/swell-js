@@ -61,7 +61,7 @@ import swell from 'swell-js';
 
 swell.init('my-store', 'pk_...');
 
-await swell.get('/products', {
+await swell.products.list({
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -75,7 +75,7 @@ await swell.get('/products', {
 Return a list of products, up to `limit` results. Max 100 per page.
 
 ```javascript
-await swell.get('/products', {
+await swell.products.list({
   limit: 25,
   page: 1,
 });
@@ -83,10 +83,10 @@ await swell.get('/products', {
 
 #### List products with variants
 
-Return a list of products with variants expanded, up to `limit` results. Max 100 per page.
+Return a list of products with active variants expanded, up to `limit` results. Max 100 per page.
 
 ```javascript
-await swell.get('/products', {
+await swell.products.list({
   limit: 25,
   page: 1,
   expand: ['variants'],
@@ -98,7 +98,7 @@ await swell.get('/products', {
 Return a list of products category slug, up to `limit` results. Max 100 per page.
 
 ```javascript
-await swell.get('/products', {
+await swell.products.list({
   category: 't-shirts',
   limit: 25,
   page: 1,
@@ -110,7 +110,7 @@ await swell.get('/products', {
 Return a list of products by search, up to `limit` results. Max 100 per page. Search is performed using "and" syntax, where all words must be present in one or more fields of the product.
 
 ```javascript
-await swell.get('/products', {
+await swell.products.list({
   search: 'blue jeans',
   limit: 25,
   page: 1,
@@ -122,9 +122,7 @@ await swell.get('/products', {
 Return a single product by slug.
 
 ```javascript
-await swell.get('/products/{slug}', {
-  slug: 'pink-shoes',
-});
+await swell.products.get('blue-shoes');
 ```
 
 #### Retrieve a product by ID
@@ -132,9 +130,62 @@ await swell.get('/products/{slug}', {
 Return a single product by ID.
 
 ```javascript
-await swell.get('/products/{id}', {
-  id: '5c15505200c7d14d851e510f',
-});
+await swell.products.get('5c15505200c7d14d851e510f');
+```
+
+#### Get a product variant with selected options
+
+Return a variant record from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
+
+```javascript
+await swell.products.variantWithOptions(product, [
+  {
+    name: 'Size',
+    value: 'Medium',
+  },
+  {
+    name: 'Color',
+    value: 'Turquoise',
+  },
+]);
+```
+
+#### Get a product price with selected options
+
+Return the price of a product and the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
+
+The returned value is a float. In order to display the product's price correctly, you should use a currency formatter with `product.currency`.
+
+```javascript
+await swell.products.priceWithOptions(product, [
+  {
+    name: 'Size',
+    value: 'Medium',
+  },
+  {
+    name: 'Color',
+    value: 'Turquoise',
+  },
+]);
+```
+
+#### Get product stock status with selected options
+
+Return product stock status from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
+
+Possible return values are `in_stock`, `out_of_stock`, `available`, `discontinued`. When a product has stock tracking enabled from the admin dashboard, then `in_stock` or `out_of_stock` can be returned, otherwise it can only return `available` or `discontinued`.
+
+```javascript
+await swell.products.stockWithOptions(product, [
+  {
+    name: 'Size',
+    value: 'Medium',
+  },
+  {
+    name: 'Color',
+    value: 'Turquoise',
+  },
+]);
 ```
 
 ## Categories
@@ -144,7 +195,26 @@ await swell.get('/products/{id}', {
 Return a list of product categories, up to `limit` results. Max 100 per page.
 
 ```javascript
-await swell.get('/categories', { limit: 25, page: 1 });
+await swell.categories.list({
+  limit: 25,
+  page: 1,
+});
+```
+
+#### Retrieve a category by slug
+
+Return a single category by slug.
+
+```javascript
+await swell.categories.get('mens-shirts');
+```
+
+#### Retrieve a category by ID
+
+Return a single category by ID.
+
+```javascript
+await swell.categories.get('5c15505200c7d14d851e510g');
 ```
 
 ## Shopping carts
@@ -540,7 +610,20 @@ await swell.account.deleteCard('5c15505200c7d14d851e510f');
 Return a list of orders placed by a customer.
 
 ```javascript
-await swell.account.getOrders({ limit: 10, page: 2 });
+await swell.account.getOrders({
+  limit: 10,
+  page: 2,
+});
+```
+
+#### List account orders with shipments
+
+Return a list of orders placed by a customer including shipments with tracking information.
+
+```javascript
+await swell.account.getOrders({
+  expand: 'shipments',
+});
 ```
 
 ## Subscriptions

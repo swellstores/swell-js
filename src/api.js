@@ -1,6 +1,8 @@
 const card = require('./card');
 const { getCookie, setCookie } = require('./cookie');
 const { toCamel, toSnake, trimBoth, trimStart, trimEnd, stringifyQuery } = require('./utils');
+const products = require('./products');
+const categories = require('./categories');
 
 require('isomorphic-fetch');
 
@@ -21,8 +23,7 @@ const api = {
     options.url = opt.url ? trimEnd(opt.url) : `https://${store}.swell.store`;
     options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : `https://vault.schema.io`;
     options.useCamelCase = opt.useCamelCase || false;
-
-    card.init(options, request);
+    card.options = options;
   },
 
   // Backward compatibility
@@ -46,17 +47,11 @@ const api = {
     return request('delete', url, data);
   },
 
-  products: {
-    get(id, query) {
-      return request('get', '/products', id, query);
-    },
-  },
+  card,
 
-  categories: {
-    get(id, query) {
-      return request('get', '/categories', id, query);
-    },
-  },
+  products: products.methods(request),
+
+  categories: categories.methods(request),
 
   cart: {
     state: null,
@@ -247,8 +242,6 @@ const api = {
       return request('get', `/account/orders`, query);
     },
   },
-
-  card,
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {

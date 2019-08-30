@@ -22,8 +22,8 @@
     "jest-fetch-mock": "2.1.0"
   },
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "jest --config=jest.config.json",
+    "test:watch": "jest --config=jest.config.json --watch",
     "build": "babel src --out-dir dist --ignore src/**/*.test.js"
   }
 }

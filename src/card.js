@@ -1,22 +1,10 @@
 const { trimStart, trimEnd, toCamel } = require('./utils');
 
-const options = {
-  vaultUrl: 'https://vault.schema.io',
-  timeout: 20000,
-};
-let request;
+const VAULT_URL = 'https://vault.schema.io';
+const VAULT_TIMEOUT = 20000;
 
-const api = {
-  options,
-  request,
-  vaultRequest,
-
-  init(opt, req) {
-    options.key = opt.key;
-    options.vaultUrl = opt.vaultUrl;
-    options.useCamelCase = opt.useCamelCase;
-    request = req;
-  },
+const cardApi = {
+  options: {},
 
   async createToken(card) {
     let error = null;
@@ -55,7 +43,7 @@ const api = {
     }
 
     // Get a token from the vault
-    const result = await vaultRequest('post', '/tokens', card);
+    const result = await this.vaultRequest('post', '/tokens', card);
     if (result.errors) {
       const param = Object.keys(result.errors)[0];
       const err = new Error(result.errors[param]);
@@ -149,55 +137,58 @@ const api = {
   validateCVC(val) {
     return (val = String(val).trim()), /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
   },
-};
 
-async function vaultRequest(method, url, data, opt = undefined) {
-  const requestId = vaultRequestId();
-  const callback = `swell_vault_response_${requestId}`;
+  async vaultRequest(method, url, data, opt = undefined) {
+    const options = this.options;
+    const vaultUrl = options.vaultUrl || VAULT_URL;
+    const timeout = options.timeout || VAULT_TIMEOUT;
+    const requestId = vaultRequestId();
+    const callback = `swell_vault_response_${requestId}`;
 
-  data = {
-    $jsonp: {
-      method,
-      callback,
-    },
-    $data: data,
-    $key: options.key,
-  };
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = `${trimEnd(options.vaultUrl)}/${trimStart(url)}?${serializeData(data)}`;
-
-    const errorTimeout = setTimeout(() => {
-      window[callback]({
-        $error: `Request timed out after ${options.timeout / 1000} seconds`,
-        $status: 500,
-      });
-    }, options.timeout);
-
-    window[callback] = (result) => {
-      clearTimeout(errorTimeout);
-      if (result && result.$error) {
-        const err = new Error(result.$error);
-        err.code = 'request_error';
-        err.status = result.$status;
-        reject(err);
-      } else if (!result || result.$status >= 300) {
-        const err = new Error('A connection error occurred while making the request');
-        err.code = 'connection_error';
-        err.status = result.$status;
-        reject(err);
-      } else {
-        resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
-      }
-      delete window[callback];
-      script.parentNode.removeChild(script);
+    data = {
+      $jsonp: {
+        method,
+        callback,
+      },
+      $data: data,
+      $key: options.key,
     };
 
-    document.getElementsByTagName('head')[0].appendChild(script);
-  });
-}
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = `${trimEnd(vaultUrl)}/${trimStart(url)}?${serializeData(data)}`;
+
+      const errorTimeout = setTimeout(() => {
+        window[callback]({
+          $error: `Request timed out after ${timeout / 1000} seconds`,
+          $status: 500,
+        });
+      }, timeout);
+
+      window[callback] = (result) => {
+        clearTimeout(errorTimeout);
+        if (result && result.$error) {
+          const err = new Error(result.$error);
+          err.code = 'request_error';
+          err.status = result.$status;
+          reject(err);
+        } else if (!result || result.$status >= 300) {
+          const err = new Error('A connection error occurred while making the request');
+          err.code = 'connection_error';
+          err.status = result.$status;
+          reject(err);
+        } else {
+          resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
+        }
+        delete window[callback];
+        script.parentNode.removeChild(script);
+      };
+
+      document.getElementsByTagName('head')[0].appendChild(script);
+    });
+  }
+};
 
 function vaultRequestId() {
   window.__swell_vault_request_id = window.__swell_vault_request_id || 0;
@@ -246,4 +237,4 @@ function buildParams(key, obj, add) {
   }
 }
 
-module.exports = api;
+module.exports = cardApi;
