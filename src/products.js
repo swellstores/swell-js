@@ -4,19 +4,7 @@ function methods(request) {
   return {
     ...defaultMethods(request, '/products', ['list', 'get']),
 
-    variantWithOptions: findVariantWithOptions,
-
-    priceWithOptions: calculatePriceWithOptions,
-
-    stockWithOptions(product, options) {
-      if (options) {
-        const stockVariant = findVariantWithOptions(product, options);
-        if (stockVariant) {
-          return stockVariant.stock_status;
-        }
-      }
-      return product.stock_status;
-    },
+    variation: calculateVariation,
   };
 }
 
@@ -47,7 +35,7 @@ function getProductOptionIndex(product, filter = undefined) {
   );
 }
 
-function cleanProductOptions(product, options) {
+function cleanProductOptions(options) {
   let result = options || [];
   if (options && typeof options === 'object' && !(options instanceof Array)) {
     result = [];
@@ -68,7 +56,7 @@ function cleanProductOptions(product, options) {
 }
 
 function getVariantOptionValueIds(product, options) {
-  const cleanOptions = cleanProductOptions(product, options);
+  const cleanOptions = cleanProductOptions(options);
   const index = getProductOptionIndex(product, (op) => op.variant);
   const optionValueIds = [];
   for (const option of cleanOptions) {
@@ -108,12 +96,18 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculatePriceWithOptions(product, options) {
-  const cleanOptions = cleanProductOptions(product, options);
-  const index = getProductOptionIndex(product);
-  let basePrice = product.price || 0;
+function calculateVariation(product, options) {
+  const variation = {
+    ...product,
+    price: product.price || 0,
+    sale_price: product.sale_price,
+    orig_price: product.orig_price,
+    stock_status: product.stock_status,
+  };
   let optionPrice = 0;
   const variantOptionValueIds = [];
+  const cleanOptions = cleanProductOptions(options);
+  const index = getProductOptionIndex(product);
   for (const option of cleanOptions) {
     if (index[option.id] && index[option.id].values[option.value]) {
       if (index[option.id].variant) {
@@ -126,10 +120,28 @@ function calculatePriceWithOptions(product, options) {
   if (variantOptionValueIds.length > 0) {
     const variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
     if (variant) {
-      basePrice = variant.price || 0;
+      variation.price = variant.price || 0;
+      variation.sale_price = variant.sale_price || product.sale_price;
+      variation.orig_price = variant.orig_price || product.orig_price;
+      variation.stock_status = variant.stock_status || product.stock_status;
     }
   }
-  return basePrice + optionPrice;
+  if (optionPrice > 0) {
+    variation.price += optionPrice;
+    if (variation.sale_price) {
+      variation.sale_price += optionPrice;
+    }
+    if (variation.orig_price) {
+      variation.orig_price += optionPrice;
+    }
+  }
+  if (variation.sale_price === undefined) {
+    delete variation.sale_price;
+  }
+  if (variation.orig_price === undefined) {
+    delete variation.orig_price;
+  }
+  return variation;
 }
 
 module.exports = {
@@ -138,5 +150,5 @@ module.exports = {
   getProductOptionIndex,
   getVariantOptionValueIds,
   findVariantWithOptions,
-  calculatePriceWithOptions,
+  calculateVariation,
 };

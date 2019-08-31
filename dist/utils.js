@@ -35,8 +35,27 @@ function stringifyQuery(str) {
   });
 }
 
+function map(arr, cb) {
+  return arr instanceof Array ? arr.map(cb) : [];
+}
+
+function reduce(arr, cb, init) {
+  return arr instanceof Array ? arr.reduce(cb, init) : init;
+}
+
 function isServer() {
   return !(typeof window !== 'undefined' && window.document);
+}
+
+function defaultMethods(request, uri, methods) {
+  return {
+    list: methods.indexOf('list') >= 0 ? function (query) {
+      return request('get', uri, undefined, query);
+    } : undefined,
+    get: methods.indexOf('get') >= 0 ? function (id, query) {
+      return request('get', uri, id, query);
+    } : undefined
+  };
 }
 
 module.exports = {
@@ -46,5 +65,8 @@ module.exports = {
   trimStart: trimStart,
   trimEnd: trimEnd,
   stringifyQuery: stringifyQuery,
-  isServer: isServer
+  isServer: isServer,
+  map: map,
+  reduce: reduce,
+  defaultMethods: defaultMethods
 };

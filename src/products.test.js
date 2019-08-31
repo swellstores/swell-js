@@ -2,8 +2,8 @@ const products = require('./products');
 
 const mockRequest = jest.fn();
 const mockProductWithOptions = {
-  stock_status: 'in_stock',
   price: 10,
+  stock_status: 'in_stock',
   options: [
     {
       id: 'x',
@@ -26,9 +26,9 @@ const mockProductWithOptions = {
   variants: {
     results: [
       {
+        price: 15,
         option_value_ids: ['1', '2'],
         stock_status: 'out_of_stock',
-        price: 15,
       },
     ],
   },
@@ -42,74 +42,123 @@ describe('products', () => {
   });
 
   describe('methods', () => {
-    it('should return methods list, get, stockWithOptions', () => {
+    it('should return methods list, get, variation', () => {
       expect(methods.list).toBeDefined();
       expect(methods.get).toBeDefined();
-      expect(methods.stockWithOptions).toBeDefined();
+      expect(methods.variation).toBeDefined();
     });
   });
 
-  describe('stockWithOptions', () => {
-    it('should return product stock status by default', () => {
-      const product = { stock_status: 'out_of_stock' };
+  describe('variation', () => {
+    it('should return product with default values', () => {
+      const variation = methods.variation(mockProductWithOptions);
 
-      expect(methods.stockWithOptions(product)).toEqual('out_of_stock');
+      expect(variation).toEqual(mockProductWithOptions);
     });
 
-    it('should return product stock status with empty options', () => {
-      const product = { stock_status: 'out_of_stock' };
-
-      expect(methods.stockWithOptions(product, [])).toEqual('out_of_stock');
-    });
-
-    it('should return variant stock status with variant options', () => {
+    it('should return product with variant values', () => {
       const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
+      const variation = methods.variation(mockProductWithOptions, options);
 
-      expect(methods.stockWithOptions(mockProductWithOptions, options)).toEqual('out_of_stock');
-    });
-
-    it('should return variant stock status with variant options using names', () => {
-      const options = [{ id: 'size', value: 'large' }, { id: 'color', value: 'red' }];
-
-      expect(methods.stockWithOptions(mockProductWithOptions, options)).toEqual('out_of_stock');
-    });
-  });
-
-  describe('variantWithOptions', () => {
-    it('should return null by default', () => {
-      expect(methods.variantWithOptions(mockProductWithOptions)).toEqual(null);
-    });
-
-    it('should return variant with some options', () => {
-      const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
-
-      expect(methods.variantWithOptions(mockProductWithOptions, options)).toEqual(
-        mockProductWithOptions.variants.results[0],
-      );
-    });
-  });
-
-  describe('priceWithOptions', () => {
-    it('should return product price by default', () => {
-      expect(methods.priceWithOptions(mockProductWithOptions)).toEqual(10);
-    });
-
-    it('should return variant price with some options', () => {
-      const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
-
-      expect(methods.priceWithOptions(mockProductWithOptions, options)).toEqual(15);
+      expect(variation).toEqual({
+        ...mockProductWithOptions,
+        price: 15,
+        stock_status: 'out_of_stock',
+      });
     });
 
     it('should return product + option price with addon option', () => {
       const options = [{ id: 'z', value: 'stuff' }];
+      const variation = methods.variation(mockProductWithOptions, options);
 
-      expect(methods.priceWithOptions(mockProductWithOptions, options)).toEqual(13);
+      expect(variation).toEqual({
+        ...mockProductWithOptions,
+        price: 13,
+        stock_status: 'in_stock',
+      });
     });
 
     it('should return variant + option price with addon option', () => {
-      const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }, { id: 'z', value: 'stuff' }];
+      const options = [
+        { id: 'x', value: '1' },
+        { id: 'y', value: '2' },
+        { id: 'z', value: 'stuff' },
+      ];
+      const variation = methods.variation(mockProductWithOptions, options);
 
-      expect(methods.priceWithOptions(mockProductWithOptions, options)).toEqual(18);
+      expect(variation).toEqual({
+        ...mockProductWithOptions,
+        price: 18,
+        stock_status: 'out_of_stock',
+      });
+    });
+
+    describe('with pricing', () => {
+      const mockProductWithPricing = {
+        ...mockProductWithOptions,
+        price: 5,
+        sale_price: 5,
+        orig_price: 10,
+        variants: {
+          results: [
+            {
+              ...mockProductWithOptions.variants.results[0],
+              price: 9,
+              sale_price: 9,
+              orig_price: 15,
+            },
+          ],
+        },
+      };
+
+      it('should return product with default values', () => {
+        const variation = methods.variation(mockProductWithPricing);
+
+        expect(variation).toEqual(mockProductWithPricing);
+      });
+
+      it('should return product with variant values', () => {
+        const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
+        const variation = methods.variation(mockProductWithPricing, options);
+
+        expect(variation).toEqual({
+          ...mockProductWithPricing,
+          price: 9,
+          sale_price: 9,
+          orig_price: 15,
+          stock_status: 'out_of_stock',
+        });
+      });
+
+      it('should return product + option price with addon option', () => {
+        const options = [{ id: 'z', value: 'stuff' }];
+        const variation = methods.variation(mockProductWithPricing, options);
+
+        expect(variation).toEqual({
+          ...mockProductWithPricing,
+          price: 8,
+          sale_price: 8,
+          orig_price: 13,
+          stock_status: 'in_stock',
+        });
+      });
+
+      it('should return variant + option price with addon option', () => {
+        const options = [
+          { id: 'x', value: '1' },
+          { id: 'y', value: '2' },
+          { id: 'z', value: 'stuff' },
+        ];
+        const variation = methods.variation(mockProductWithPricing, options);
+
+        expect(variation).toEqual({
+          ...mockProductWithPricing,
+          price: 12,
+          sale_price: 12,
+          orig_price: 18,
+          stock_status: 'out_of_stock',
+        });
+      });
     });
   });
 });

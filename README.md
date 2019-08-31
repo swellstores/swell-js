@@ -138,7 +138,7 @@ await swell.products.get('5c15505200c7d14d851e510f');
 Return a variant record from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
 
 ```javascript
-await swell.products.variantWithOptions(product, [
+await swell.products.getVariant(product, [
   {
     name: 'Size',
     value: 'Medium',
@@ -157,7 +157,7 @@ Return the price of a product and the options selected by a user. Typically you 
 The returned value is a float. In order to display the product's price correctly, you should use a currency formatter with `product.currency`.
 
 ```javascript
-await swell.products.priceWithOptions(product, [
+await swell.products.getPrice(product, [
   {
     name: 'Size',
     value: 'Medium',
@@ -173,10 +173,10 @@ await swell.products.priceWithOptions(product, [
 
 Return product stock status from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
 
-Possible return values are `in_stock`, `out_of_stock`, `available`, `discontinued`. When a product has stock tracking enabled from the admin dashboard, then `in_stock` or `out_of_stock` can be returned, otherwise it can only return `available` or `discontinued`.
+Possible return values are `'in_stock'`, `'out_of_stock'`, or `null` indicating stock tracking is not enabled on the product.
 
 ```javascript
-await swell.products.stockWithOptions(product, [
+await swell.products.getStockStatus(product, [
   {
     name: 'Size',
     value: 'Medium',
@@ -229,7 +229,7 @@ await swell.cart.get();
 
 #### Add an item
 
-Add a single item to the cart. Returns the updated cart object.
+Add a single item to the cart. Returns the updated cart object. Item options can be either an array of an object with option name/value pairs.
 
 ```javascript
 await swell.cart.addItem({
@@ -237,7 +237,7 @@ await swell.cart.addItem({
   quantity: 1,
   options: [
     {
-      id: 'color',
+      name: 'Color',
       value: 'Blue',
     },
   ],

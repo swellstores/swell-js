@@ -13,21 +13,10 @@ var _require = require('./utils'),
     trimEnd = _require.trimEnd,
     toCamel = _require.toCamel;
 
-var options = {
-  vaultUrl: 'https://vault.schema.io',
-  timeout: 20000
-};
-var request;
-var api = {
-  options: options,
-  request: request,
-  vaultRequest: vaultRequest,
-  init: function init(opt, req) {
-    options.key = opt.key;
-    options.vaultUrl = opt.vaultUrl;
-    options.useCamelCase = opt.useCamelCase;
-    request = req;
-  },
+var VAULT_URL = 'https://vault.schema.io';
+var VAULT_TIMEOUT = 20000;
+var cardApi = {
+  options: {},
   createToken: function () {
     var _createToken = (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
@@ -84,7 +73,7 @@ var api = {
 
             case 14:
               _context.next = 16;
-              return vaultRequest('post', '/tokens', card);
+              return this.vaultRequest('post', '/tokens', card);
 
             case 16:
               result = _context.sent;
@@ -175,81 +164,87 @@ var api = {
   },
   validateCVC: function validateCVC(val) {
     return val = String(val).trim(), /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
-  }
-};
-
-function vaultRequest(_x2, _x3, _x4) {
-  return _vaultRequest.apply(this, arguments);
-}
-
-function _vaultRequest() {
-  _vaultRequest = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee2(method, url, data) {
-    var opt,
-        requestId,
-        callback,
-        _args2 = arguments;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            opt = _args2.length > 3 && _args2[3] !== undefined ? _args2[3] : undefined;
-            requestId = vaultRequestId();
-            callback = "swell_vault_response_".concat(requestId);
-            data = {
-              $jsonp: {
-                method: method,
-                callback: callback
-              },
-              $data: data,
-              $key: options.key
-            };
-            return _context2.abrupt("return", new Promise(function (resolve, reject) {
-              var script = document.createElement('script');
-              script.type = 'text/javascript';
-              script.src = "".concat(trimEnd(options.vaultUrl), "/").concat(trimStart(url), "?").concat(serializeData(data));
-              var errorTimeout = setTimeout(function () {
-                window[callback]({
-                  $error: "Request timed out after ".concat(options.timeout / 1000, " seconds"),
-                  $status: 500
-                });
-              }, options.timeout);
-
-              window[callback] = function (result) {
-                clearTimeout(errorTimeout);
-
-                if (result && result.$error) {
-                  var err = new Error(result.$error);
-                  err.code = 'request_error';
-                  err.status = result.$status;
-                  reject(err);
-                } else if (!result || result.$status >= 300) {
-                  var _err2 = new Error('A connection error occurred while making the request');
-
-                  _err2.code = 'connection_error';
-                  _err2.status = result.$status;
-                  reject(_err2);
-                } else {
-                  resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
-                }
-
-                delete window[callback];
-                script.parentNode.removeChild(script);
+  },
+  vaultRequest: function () {
+    var _vaultRequest = (0, _asyncToGenerator2["default"])(
+    /*#__PURE__*/
+    _regenerator["default"].mark(function _callee2(method, url, data) {
+      var opt,
+          options,
+          vaultUrl,
+          timeout,
+          requestId,
+          callback,
+          _args2 = arguments;
+      return _regenerator["default"].wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              opt = _args2.length > 3 && _args2[3] !== undefined ? _args2[3] : undefined;
+              options = this.options;
+              vaultUrl = options.vaultUrl || VAULT_URL;
+              timeout = options.timeout || VAULT_TIMEOUT;
+              requestId = vaultRequestId();
+              callback = "swell_vault_response_".concat(requestId);
+              data = {
+                $jsonp: {
+                  method: method,
+                  callback: callback
+                },
+                $data: data,
+                $key: options.key
               };
+              return _context2.abrupt("return", new Promise(function (resolve, reject) {
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = "".concat(trimEnd(vaultUrl), "/").concat(trimStart(url), "?").concat(serializeData(data));
+                var errorTimeout = setTimeout(function () {
+                  window[callback]({
+                    $error: "Request timed out after ".concat(timeout / 1000, " seconds"),
+                    $status: 500
+                  });
+                }, timeout);
 
-              document.getElementsByTagName('head')[0].appendChild(script);
-            }));
+                window[callback] = function (result) {
+                  clearTimeout(errorTimeout);
 
-          case 5:
-          case "end":
-            return _context2.stop();
+                  if (result && result.$error) {
+                    var err = new Error(result.$error);
+                    err.code = 'request_error';
+                    err.status = result.$status;
+                    reject(err);
+                  } else if (!result || result.$status >= 300) {
+                    var _err2 = new Error('A connection error occurred while making the request');
+
+                    _err2.code = 'connection_error';
+                    _err2.status = result.$status;
+                    reject(_err2);
+                  } else {
+                    resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
+                  }
+
+                  delete window[callback];
+                  script.parentNode.removeChild(script);
+                };
+
+                document.getElementsByTagName('head')[0].appendChild(script);
+              }));
+
+            case 8:
+            case "end":
+              return _context2.stop();
+          }
         }
-      }
-    }, _callee2);
-  }));
-  return _vaultRequest.apply(this, arguments);
-}
+      }, _callee2, this);
+    }));
+
+    function vaultRequest(_x2, _x3, _x4) {
+      return _vaultRequest.apply(this, arguments);
+    }
+
+    return vaultRequest;
+  }()
+};
 
 function vaultRequestId() {
   window.__swell_vault_request_id = window.__swell_vault_request_id || 0;
@@ -305,4 +300,4 @@ function buildParams(key, obj, add) {
   }
 }
 
-module.exports = api;
+module.exports = cardApi;
