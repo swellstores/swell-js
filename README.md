@@ -117,7 +117,7 @@ await swell.products.list({
 });
 ```
 
-#### Retrieve a product by slug
+#### Retrieve a product
 
 Return a single product by slug.
 
@@ -125,67 +125,23 @@ Return a single product by slug.
 await swell.products.get('blue-shoes');
 ```
 
-#### Retrieve a product by ID
-
-Return a single product by ID.
+Or by ID.
 
 ```javascript
 await swell.products.get('5c15505200c7d14d851e510f');
 ```
 
-#### Get a product variant with selected options
+#### Get a product variation with selected options
 
-Return a variant record from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
+Apply options to a product to resolve `price`, `sale_price`, `orig_price` and `stock_status` values related to the selected options. Typically you would <a href="#retrieve-a-product">retrieve a product</a> earlier in the page's lifecycle and pass it along with selected options to this method. Options can be either an array or an object with option name/value pairs.
 
-```javascript
-await swell.products.getVariant(product, [
-  {
-    name: 'Size',
-    value: 'Medium',
-  },
-  {
-    name: 'Color',
-    value: 'Turquoise',
-  },
-]);
-```
-
-#### Get a product price with selected options
-
-Return the price of a product and the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
-
-The returned value is a float. In order to display the product's price correctly, you should use a currency formatter with `product.currency`.
+Returns a new object with product and option values merged together.
 
 ```javascript
-await swell.products.getPrice(product, [
-  {
-    name: 'Size',
-    value: 'Medium',
-  },
-  {
-    name: 'Color',
-    value: 'Turquoise',
-  },
-]);
-```
-
-#### Get product stock status with selected options
-
-Return product stock status from the options selected by a user. Typically you would have retrieved a product record earlier in the page's lifecycle, and would pass it along with an array of selected options to this method.
-
-Possible return values are `'in_stock'`, `'out_of_stock'`, or `null` indicating stock tracking is not enabled on the product.
-
-```javascript
-await swell.products.getStockStatus(product, [
-  {
-    name: 'Size',
-    value: 'Medium',
-  },
-  {
-    name: 'Color',
-    value: 'Turquoise',
-  },
-]);
+await swell.products.variation(product, {
+  Size: 'Medium',
+  Color: 'Turquoise',
+});
 ```
 
 ## Categories
@@ -201,7 +157,7 @@ await swell.categories.list({
 });
 ```
 
-#### Retrieve a category by slug
+#### Retrieve a category
 
 Return a single category by slug.
 
@@ -209,9 +165,7 @@ Return a single category by slug.
 await swell.categories.get('mens-shirts');
 ```
 
-#### Retrieve a category by ID
-
-Return a single category by ID.
+Or by ID.
 
 ```javascript
 await swell.categories.get('5c15505200c7d14d851e510g');
@@ -229,7 +183,7 @@ await swell.cart.get();
 
 #### Add an item
 
-Add a single item to the cart. Returns the updated cart object. Item options can be either an array of an object with option name/value pairs.
+Add a single item to the cart. Returns the updated cart object. Item options can be either an array or an object with option name/value pairs.
 
 ```javascript
 await swell.cart.addItem({
@@ -638,7 +592,7 @@ Return a list of active and canceled subscriptions for an account.
 await swell.subscriptions.get();
 ```
 
-#### Retrieve a subscription by ID
+#### Retrieve a subscription
 
 Return a single subscription by ID.
 
