@@ -336,9 +336,15 @@ await swell.cart.update({
       access_token: '...',
       order_reference_id: '...',
     },
+    // Using Affirm
+    affirm: {
+      checkout_token: '...',
+    },
   },
 });
 ```
+
+Important note: At of February 2019, PayPal introduced Smart Payment Buttons while Swell's integration uses a previous version named checkout.js. This version continues to be supported by PayPal and Swell. For more details and examples, <a href="https://www.notion.so/swellstores/Swell-PayPal-integration-examples-e693bcb3cdeb435f91488bb9ed671a3e">see this document</a>.
 
 #### Apply a coupon or gift card code
 
@@ -741,6 +747,8 @@ await swell.card.createToken({
   exp_month: 1,
   exp_year: 2099,
   cvc: 321,
+  // Note: some payment gateways require a Swell `account_id` (i.e. Braintree) for card verification
+  account_id: '5c15505200c7d14d851e510f',
 });
 ```
 
