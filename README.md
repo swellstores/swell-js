@@ -742,14 +742,52 @@ In order to avoid PCI requirements.
 Returns an object representing the card token. Pass the token ID to a cart's `billing.card.token` field to designate this card as the payment method.
 
 ```javascript
-await swell.card.createToken({
+const response = await swell.card.createToken({
   number: '4242 4242 4242 4242',
   exp_month: 1,
   exp_year: 2099,
   cvc: 321,
-  // Note: some payment gateways require a Swell `account_id` (i.e. Braintree) for card verification
+  // Note: some payment gateways may require a Swell `account_id` and `billing` for card verification (Braintree)
   account_id: '5c15505200c7d14d851e510f',
+  billing: {
+    address1: '1 Main Dr.',
+    zip: 90210,
+    // Other standard billing fields optional
+  },
 });
+```
+
+##### Successful token response
+
+```javascript
+{
+  token: 't_z71b3g34fc3',
+  brand: 'Visa',
+  last4: '4242',
+  exp_month: 1,
+  exp_year: 2029,
+  cvc_check: 'pass', // fail, checked
+  zip_check: 'pass', // fail, checked
+  address_check: 'pass', // fail, checked
+}
+```
+
+##### Error token response
+
+```javascript
+{
+  errors: {
+    gateway: {
+      code: 'TOKEN_ERROR',
+      message: 'Declined',
+      params: {
+        cvc_check: 'fail',
+        zip_check: 'pass',
+        address_check: 'unchecked',
+      },
+    },
+  },
+}
 ```
 
 #### Validate card number
