@@ -56,6 +56,12 @@ describe('cart', () => {
             new Promise((resolve) =>
               resolve({ body: JSON.stringify({ ...(api.cart.state || {}), waited: true }) }),
             ),
+        )
+        .mockResponseOnce(
+          () =>
+            new Promise((resolve) =>
+              resolve({ body: JSON.stringify({ ...(api.cart.state || {}), again: true }) }),
+            ),
         );
 
       api.cart.state = null;
@@ -65,9 +71,12 @@ describe('cart', () => {
         api.cart.addItem({ product_id: '124', options: { color: 'blue' } }),
       ]);
 
+      await api.cart.update({ again: true })
+
       expect(api.cart.state).toEqual({
         grand_total: 1000,
         waited: true,
+        again: true,
       });
     });
   });
