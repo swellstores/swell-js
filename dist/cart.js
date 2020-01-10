@@ -16,38 +16,59 @@ function methods(request, options) {
     state: null,
     order: null,
     settings: null,
+    requested: false,
+    pendingRequests: [],
     requestStateChange: function () {
       var _requestStateChange = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      _regenerator["default"].mark(function _callee(method, url, id, data) {
-        var result;
-        return _regenerator["default"].wrap(function _callee$(_context) {
+      _regenerator["default"].mark(function _callee2(method, url, id, data) {
+        var _this = this;
+
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
-                _context.next = 2;
-                return request(method, url, id, data);
+                return _context2.abrupt("return", this.requestStateSync(
+                /*#__PURE__*/
+                (0, _asyncToGenerator2["default"])(
+                /*#__PURE__*/
+                _regenerator["default"].mark(function _callee() {
+                  var result;
+                  return _regenerator["default"].wrap(function _callee$(_context) {
+                    while (1) {
+                      switch (_context.prev = _context.next) {
+                        case 0:
+                          _context.next = 2;
+                          return request(method, url, id, data);
 
-              case 2:
-                result = _context.sent;
+                        case 2:
+                          result = _context.sent;
 
-                if (!(result && result.errors)) {
-                  _context.next = 5;
-                  break;
-                }
+                          if (!(result && result.errors)) {
+                            _context.next = 5;
+                            break;
+                          }
 
-                return _context.abrupt("return", result);
+                          return _context.abrupt("return", result);
 
-              case 5:
-                this.state = result;
-                return _context.abrupt("return", result);
+                        case 5:
+                          _this.state = result;
+                          return _context.abrupt("return", result);
 
-              case 7:
+                        case 7:
+                        case "end":
+                          return _context.stop();
+                      }
+                    }
+                  }, _callee);
+                }))));
+
+              case 1:
               case "end":
-                return _context.stop();
+                return _context2.stop();
             }
           }
-        }, _callee, this);
+        }, _callee2, this);
       }));
 
       function requestStateChange(_x, _x2, _x3, _x4) {
@@ -55,6 +76,72 @@ function methods(request, options) {
       }
 
       return requestStateChange;
+    }(),
+    requestStateSync: function () {
+      var _requestStateSync = (0, _asyncToGenerator2["default"])(
+      /*#__PURE__*/
+      _regenerator["default"].mark(function _callee3(handler) {
+        var _this2 = this;
+
+        var result, _this$pendingRequests, _handler, resolve;
+
+        return _regenerator["default"].wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                if (!this.state) {
+                  _context3.next = 6;
+                  break;
+                }
+
+                _context3.next = 3;
+                return handler();
+
+              case 3:
+                return _context3.abrupt("return", _context3.sent);
+
+              case 6:
+                if (!this.requested) {
+                  _context3.next = 8;
+                  break;
+                }
+
+                return _context3.abrupt("return", new Promise(function (resolve) {
+                  _this2.pendingRequests.push({
+                    handler: handler,
+                    resolve: resolve
+                  });
+                }));
+
+              case 8:
+                this.requested = true;
+                _context3.next = 11;
+                return handler();
+
+              case 11:
+                result = _context3.sent;
+                this.requested = false;
+
+                while (this.pendingRequests.length > 0) {
+                  _this$pendingRequests = this.pendingRequests.shift(), _handler = _this$pendingRequests.handler, resolve = _this$pendingRequests.resolve;
+                  resolve(_handler());
+                }
+
+                return _context3.abrupt("return", result);
+
+              case 15:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function requestStateSync(_x5) {
+        return _requestStateSync.apply(this, arguments);
+      }
+
+      return requestStateSync;
     }(),
     get: function get() {
       return this.requestStateChange('get', '/cart');
@@ -120,23 +207,23 @@ function methods(request, options) {
     getShippingRates: function () {
       var _getShippingRates = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      _regenerator["default"].mark(function _callee2() {
-        return _regenerator["default"].wrap(function _callee2$(_context2) {
+      _regenerator["default"].mark(function _callee4() {
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context4.prev = _context4.next) {
               case 0:
-                _context2.next = 2;
+                _context4.next = 2;
                 return this.requestStateChange('get', '/cart/shipment-rating');
 
               case 2:
-                return _context2.abrupt("return", this.state[options.useCamelCase ? 'shipmentRating' : 'shipment_rating']);
+                return _context4.abrupt("return", this.state[options.useCamelCase ? 'shipmentRating' : 'shipment_rating']);
 
               case 3:
               case "end":
-                return _context2.stop();
+                return _context4.stop();
             }
           }
-        }, _callee2, this);
+        }, _callee4, this);
       }));
 
       function getShippingRates() {
@@ -148,36 +235,36 @@ function methods(request, options) {
     submitOrder: function () {
       var _submitOrder = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      _regenerator["default"].mark(function _callee3() {
+      _regenerator["default"].mark(function _callee5() {
         var result;
-        return _regenerator["default"].wrap(function _callee3$(_context3) {
+        return _regenerator["default"].wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
-                _context3.next = 2;
+                _context5.next = 2;
                 return request('post', '/cart/order');
 
               case 2:
-                result = _context3.sent;
+                result = _context5.sent;
 
                 if (!result.errors) {
-                  _context3.next = 5;
+                  _context5.next = 5;
                   break;
                 }
 
-                return _context3.abrupt("return", result);
+                return _context5.abrupt("return", result);
 
               case 5:
                 this.state = null;
                 this.order = result;
-                return _context3.abrupt("return", result);
+                return _context5.abrupt("return", result);
 
               case 8:
               case "end":
-                return _context3.stop();
+                return _context5.stop();
             }
           }
-        }, _callee3, this);
+        }, _callee5, this);
       }));
 
       function submitOrder() {
@@ -189,48 +276,48 @@ function methods(request, options) {
     getOrder: function () {
       var _getOrder = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      _regenerator["default"].mark(function _callee4() {
+      _regenerator["default"].mark(function _callee6() {
         var checkoutId,
             result,
-            _args4 = arguments;
-        return _regenerator["default"].wrap(function _callee4$(_context4) {
+            _args6 = arguments;
+        return _regenerator["default"].wrap(function _callee6$(_context6) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context6.prev = _context6.next) {
               case 0:
-                checkoutId = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : undefined;
+                checkoutId = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : undefined;
 
                 if (!checkoutId) {
-                  _context4.next = 7;
+                  _context6.next = 7;
                   break;
                 }
 
-                _context4.next = 4;
+                _context6.next = 4;
                 return request('get', "/cart/order", {
                   checkout_id: checkoutId
                 });
 
               case 4:
-                result = _context4.sent;
-                _context4.next = 10;
+                result = _context6.sent;
+                _context6.next = 10;
                 break;
 
               case 7:
-                _context4.next = 9;
+                _context6.next = 9;
                 return request('get', "/cart/order");
 
               case 9:
-                result = _context4.sent;
+                result = _context6.sent;
 
               case 10:
                 this.order = result;
-                return _context4.abrupt("return", result);
+                return _context6.abrupt("return", result);
 
               case 12:
               case "end":
-                return _context4.stop();
+                return _context6.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee6, this);
       }));
 
       function getOrder() {
@@ -242,24 +329,24 @@ function methods(request, options) {
     getSettings: function () {
       var _getSettings = (0, _asyncToGenerator2["default"])(
       /*#__PURE__*/
-      _regenerator["default"].mark(function _callee5() {
-        return _regenerator["default"].wrap(function _callee5$(_context5) {
+      _regenerator["default"].mark(function _callee7() {
+        return _regenerator["default"].wrap(function _callee7$(_context7) {
           while (1) {
-            switch (_context5.prev = _context5.next) {
+            switch (_context7.prev = _context7.next) {
               case 0:
-                _context5.next = 2;
+                _context7.next = 2;
                 return request('get', '/cart/settings');
 
               case 2:
-                this.settings = _context5.sent;
-                return _context5.abrupt("return", this.settings);
+                this.settings = _context7.sent;
+                return _context7.abrupt("return", this.settings);
 
               case 4:
               case "end":
-                return _context5.stop();
+                return _context7.stop();
             }
           }
-        }, _callee5, this);
+        }, _callee7, this);
       }));
 
       function getSettings() {
