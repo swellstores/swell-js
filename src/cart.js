@@ -5,13 +5,36 @@ function methods(request, options) {
     state: null,
     order: null,
     settings: null,
+    requested: false,
+    pendingRequests: [],
 
     async requestStateChange(method, url, id, data) {
-      const result = await request(method, url, id, data);
-      if (result && result.errors) {
+      return this.requestStateSync(async () => {
+        const result = await request(method, url, id, data);
+        if (result && result.errors) {
+          return result;
+        }
+        this.state = result;
         return result;
+      });
+    },
+
+    async requestStateSync(handler) {
+      if (this.state) {
+        return await handler();
+      } else if (this.requested) {
+        return new Promise((resolve) => {
+          this.pendingRequests.push({ handler, resolve });
+        });
       }
-      this.state = result;
+
+      this.requested = true;
+      const result = await handler();
+      this.requested = false;
+      while (this.pendingRequests.length > 0) {
+        const { handler, resolve } = this.pendingRequests.shift();
+        resolve(handler());
+      }
       return result;
     },
 

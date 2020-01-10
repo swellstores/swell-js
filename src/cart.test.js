@@ -42,6 +42,34 @@ describe('cart', () => {
         JSON.stringify({ product_id: '123', options: [{ id: 'color', value: 'red' }] }),
       );
     });
+
+    it('should wait until the first request/response before making subsequent calls', async () => {
+      fetch
+        .mockResponseOnce(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ body: JSON.stringify({ grand_total: 1000 }) }), 100),
+            ),
+        )
+        .mockResponseOnce(
+          () =>
+            new Promise((resolve) =>
+              resolve({ body: JSON.stringify({ ...(api.cart.state || {}), waited: true }) }),
+            ),
+        );
+
+      api.cart.state = null;
+
+      const [result1, result2] = await Promise.all([
+        api.cart.addItem({ product_id: '123', options: { color: 'red' } }),
+        api.cart.addItem({ product_id: '124', options: { color: 'blue' } }),
+      ]);
+
+      expect(api.cart.state).toEqual({
+        grand_total: 1000,
+        waited: true,
+      });
+    });
   });
 
   describe('setItems', () => {
