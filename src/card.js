@@ -1,11 +1,6 @@
-const { trimStart, trimEnd, toCamel } = require('./utils');
-
-const VAULT_URL = 'https://vault.schema.io';
-const VAULT_TIMEOUT = 20000;
+const { vaultRequest } = require('./utils');
 
 const cardApi = {
-  options: {},
-
   async createToken(card) {
     let error = null;
     let code = null;
@@ -43,7 +38,7 @@ const cardApi = {
     }
 
     // Get a token from the vault
-    const result = await this.vaultRequest('post', '/tokens', card);
+    const result = await vaultRequest('post', '/tokens', card);
     if (result.errors) {
       const param = Object.keys(result.errors)[0];
       const err = new Error(result.errors[param]);
@@ -137,104 +132,6 @@ const cardApi = {
   validateCVC(val) {
     return (val = String(val).trim()), /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
   },
-
-  async vaultRequest(method, url, data, opt = undefined) {
-    const options = this.options;
-    const vaultUrl = options.vaultUrl || VAULT_URL;
-    const timeout = options.timeout || VAULT_TIMEOUT;
-    const requestId = vaultRequestId();
-    const callback = `swell_vault_response_${requestId}`;
-
-    data = {
-      $jsonp: {
-        method,
-        callback,
-      },
-      $data: data,
-      $key: options.key,
-    };
-
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = `${trimEnd(vaultUrl)}/${trimStart(url)}?${serializeData(data)}`;
-
-      const errorTimeout = setTimeout(() => {
-        window[callback]({
-          $error: `Request timed out after ${timeout / 1000} seconds`,
-          $status: 500,
-        });
-      }, timeout);
-
-      window[callback] = (result) => {
-        clearTimeout(errorTimeout);
-        if (result && result.$error) {
-          const err = new Error(result.$error);
-          err.code = 'request_error';
-          err.status = result.$status;
-          reject(err);
-        } else if (!result || result.$status >= 300) {
-          const err = new Error('A connection error occurred while making the request');
-          err.code = 'connection_error';
-          err.status = result.$status;
-          reject(err);
-        } else {
-          resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
-        }
-        delete window[callback];
-        script.parentNode.removeChild(script);
-      };
-
-      document.getElementsByTagName('head')[0].appendChild(script);
-    });
-  }
 };
-
-function vaultRequestId() {
-  window.__swell_vault_request_id = window.__swell_vault_request_id || 0;
-  window.__swell_vault_request_id++;
-  return window.__swell_vault_request_id;
-}
-
-function serializeData(data) {
-  let key;
-  const s = [];
-  const add = function(key, value) {
-    // If value is a function, invoke it and return its value
-    if (typeof value === 'function') {
-      value = value();
-    } else if (value == null) {
-      value = '';
-    }
-    s[s.length] = encodeURIComponent(key) + '=' + encodeURIComponent(value);
-  };
-  for (const key in data) {
-    buildParams(key, data[key], add);
-  }
-  return s.join('&').replace(' ', '+');
-}
-const rbracket = /\[\]$/;
-function buildParams(key, obj, add) {
-  let name;
-  if (obj instanceof Array) {
-    for (let i = 0; i < obj.length; i++) {
-      if (rbracket.test(key)) {
-        // Treat each array item as a scalar.
-        add(key, v);
-      } else {
-        // Item is non-scalar (array or object), encode its numeric index.
-        buildParams(key + '[' + (typeof v === 'object' && v != null ? i : '') + ']', v, add);
-      }
-    }
-  } else if (obj && typeof obj === 'object') {
-    // Serialize object item.
-    for (name in obj) {
-      buildParams(key + '[' + name + ']', obj[name], add);
-    }
-  } else {
-    // Serialize scalar item.
-    add(key, obj);
-  }
-}
 
 module.exports = cardApi;

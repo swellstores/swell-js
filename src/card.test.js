@@ -28,41 +28,6 @@ describe('card', () => {
   });
 
   describe('init', () => {
-    it('should set options', () => {
-      api.init('test1', 'pk_test1');
-      expect(api.card.options).toEqual({
-        vaultUrl: 'https://vault.schema.io',
-        key: 'pk_test1',
-        useCamelCase: false,
-        store: 'test1',
-        url: 'https://test1.swell.store',
-      });
-    });
-
-    it('should set vault url from options', () => {
-      api.init('test2', 'pk_test2', {
-        vaultUrl: 'https://examplevault.com',
-        timeout: 20000,
-      });
-      expect(api.card.options).toEqual({
-        vaultUrl: 'https://examplevault.com',
-        key: 'pk_test2',
-        useCamelCase: false,
-        store: 'test2',
-        url: 'https://test2.swell.store',
-      });
-    });
-
-    describe('vaultRequest', () => {
-      it('should make a fetch request with vaultUrl', async () => {
-        await api.card.vaultRequest('post', '/tokens');
-
-        expect(script.src).toEqual(
-          'https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=swell_vault_response_1&%24data=&%24key=pk_test',
-        );
-      });
-    });
-
     describe('createToken', () => {
       it('should make request to POST /tokens', async () => {
         await api.card.createToken({
@@ -73,7 +38,7 @@ describe('card', () => {
         });
 
         expect(script.src).toEqual(
-          'https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=swell_vault_response_2&%24data%5Bnumber%5D=4242%204242%204242%204242&%24data%5Bexp_month%5D=1&%24data%5Bexp_year%5D=2099&%24data%5Bcvc%5D=123&%24key=pk_test',
+          'https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=swell_vault_response_1&%24data%5Bnumber%5D=4242%204242%204242%204242&%24data%5Bexp_month%5D=1&%24data%5Bexp_year%5D=2099&%24data%5Bcvc%5D=123&%24key=pk_test',
         );
       });
 
