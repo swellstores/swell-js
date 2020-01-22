@@ -49,6 +49,10 @@ function isServer() {
   return !(typeof window !== 'undefined' && window.document);
 }
 
+function isFunction(func) {
+  return typeof func === 'function';
+}
+
 function defaultMethods(request, uri, methods) {
   return {
     list:
@@ -173,6 +177,7 @@ module.exports = {
   trimEnd,
   stringifyQuery,
   isServer,
+  isFunction,
   map,
   reduce,
   defaultMethods,
