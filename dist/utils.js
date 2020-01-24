@@ -21,11 +21,11 @@ function trimBoth(str) {
 }
 
 function trimStart(str) {
-  return str.replace(/^[/]+/, '');
+  return typeof str === 'string' ? str.replace(/^[/]+/, '') : '';
 }
 
 function trimEnd(str) {
-  return str.replace(/[/]+$/, '');
+  return typeof str === 'string' ? str.replace(/[/]+$/, '') : '';
 }
 
 function stringifyQuery(str) {

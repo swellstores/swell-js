@@ -60,10 +60,7 @@ function getVariantOptionValueIds(product, options) {
   const index = getProductOptionIndex(product, (op) => op.variant);
   const optionValueIds = [];
   for (const option of cleanOptions) {
-    if (
-      index[option.id] &&
-      index[option.id].values[option.value]
-    ) {
+    if (index[option.id] && index[option.id].values[option.value]) {
       optionValueIds.push(index[option.id].values[option.value].id);
     }
   }
