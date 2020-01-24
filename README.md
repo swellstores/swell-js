@@ -430,7 +430,6 @@ Returns an object with settings that can affect checkout behavior.
 await swell.cart.getSettings();
 ```
 
-
 ## Customer account
 
 #### Login
@@ -467,7 +466,7 @@ await swell.account.create({
   first_name: 'John', // optional
   last_name: 'Doe', // optional
   email_optin: true, // optional
-  password: 'example',  // optional
+  password: 'example', // optional
 });
 ```
 
@@ -481,7 +480,7 @@ await swell.account.update({
   first_name: 'Jane', // optional
   last_name: 'Doe', // optional
   email_optin: false, // optional
-  password: 'example',  // optional
+  password: 'example', // optional
 });
 ```
 
@@ -732,7 +731,6 @@ await swell.subscriptions.removeItem('5c15505200c7d14d851e510f', '<item_id>');
 await swell.subscriptions.setItems([]);
 ```
 
-
 ## Credit card tokenization
 
 In order to avoid PCI requirements.
@@ -817,3 +815,46 @@ Returns `true` if the card CVC code is valid, otherwise `false`.
 swell.card.validateCVC('321'); // => true
 swell.card.validateCVC('1'); // => false
 ```
+
+## Payments
+
+#### Smart payment elements
+
+Render a payment elements depending on the `swell` settings.
+
+##### Braintree/PayPal button
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements(
+  {
+    elementId: 'element-id', // default: #paypal-button
+    style: {
+      layout: 'horizontal', // Look note
+      color: 'blue',
+      shape: 'rect',
+      label: 'buynow',
+      tagline: false,
+    },
+    payment: {
+      currency: 'EUR', // default: USD
+      amount: 100, // default: order.grand_total
+    },
+    onDone: (result) => {
+      // Called after payment
+    },
+    onCancel: () => {
+      // Called on payment cancel
+    },
+    onError: (error) => {
+      // Called on payment error
+    },
+  },
+  'checkout_id',
+);
+```
+
+Note: For styling look [Customize the PayPal Buttons](https://developer.paypal.com/docs/checkout/integration-features/customize-button/) page.
