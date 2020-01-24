@@ -19,11 +19,13 @@
     "@babel/plugin-transform-runtime": "7.4.4",
     "@babel/preset-env": "7.4.5",
     "jest": "24.8.0",
-    "jest-fetch-mock": "2.1.0"
+    "jest-fetch-mock": "2.1.0",
+    "nodemon": "2.0.2"
   },
   "scripts": {
     "test": "jest --config=jest.config.json",
     "test:watch": "jest --config=jest.config.json --watch",
-    "build": "babel src --out-dir dist --ignore src/**/*.test.js"
+    "build": "babel src --out-dir dist --ignore src/**/*.test.js",
+    "watch": "nodemon --watch src --exec 'npm run build'"
   }
 }
