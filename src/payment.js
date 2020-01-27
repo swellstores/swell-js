@@ -1,4 +1,5 @@
 const cart = require('./cart');
+const cardApi = require('./card');
 const { isFunction, vaultRequest } = require('./utils');
 
 function methods(request) {
@@ -47,6 +48,11 @@ async function render(request, params, checkoutId, gateways = {}) {
       );
     }
     return await braintreePayPalButton(request, order, params, gateways);
+  } else if (gateways.stripe) {
+    if (!window.Stripe) {
+      await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+    }
+    return await stripeElements(request, params, gateways);
   }
 
   throw new Error('Gateway elements are not implemented');
@@ -105,6 +111,62 @@ async function braintreePayPalButton(request, order, params, gateways) {
     .catch(
       isFunction(params.onError) ? params.onError : (err) => console.error('PayPal error', err),
     );
+}
+
+async function stripeElements(request, params, gateways) {
+  const submitButton = document.getElementById(params.submitButtonId || 'stripe-submit-button');
+  if (!submitButton) {
+    throw new Error('Submit button not found');
+  }
+  const { public_key: publicKey } = gateways.stripe;
+  const stripe = window.Stripe(publicKey);
+  const elements = stripe.elements();
+  let card = null;
+  const createElement = (type) => {
+    const elementParams = params[type] || {};
+    const elementOptions = elementParams.options || {};
+    const element = elements.create(type, elementOptions);
+    element.mount(elementParams.elementId || `#${type}-element`);
+    if (type === 'card' || type === 'cardNumber') {
+      card = element;
+    }
+  };
+
+  if (params.separateElements) {
+    createElement('cardNumber');
+    createElement('cardExpiry');
+    createElement('cardCvc');
+  } else {
+    createElement('card');
+  }
+
+  const onSubmit = async () => {
+    const onError = (error) => {
+      if (isFunction(params.onError)) {
+        return params.onError(error);
+      }
+      throw new Error(error.message);
+    };
+
+    const token = await stripe
+      .createToken(card)
+      .then(({ token, error }) => (error ? onError(error) : token));
+
+    await cardApi
+      .createToken({
+        nonce: token.id,
+        last4: token.card.last4,
+        exp_month: token.card.exp_month,
+        exp_year: token.card.exp_year,
+        brand: token.card.brand,
+        address_check: token.card.address_line1_check,
+        cvc_check: token.card.cvc_check,
+        zip_check: token.card.address_zip_check,
+      })
+      .then((result) => (isFunction(params.onDone) ? params.onDone(result) : result));
+  };
+
+  submitButton.addEventListener('click', onSubmit);
 }
 
 module.exports = {

@@ -9,26 +9,29 @@ const cardApi = {
       error = 'Card details are missing in `swell.card.createToken(card)`';
       param = '';
     }
-    if (!this.validateNumber(card.number)) {
-      error = 'Card number appears to be invalid';
-      code = 'invalid_card_number';
-      param = 'number';
+    if (!card.nonce) {
+      if (!this.validateNumber(card.number)) {
+        error = 'Card number appears to be invalid';
+        code = 'invalid_card_number';
+        param = 'number';
+      }
+      if (card.exp) {
+        const exp = this.expiry(card.exp);
+        card.exp_month = exp.month;
+        card.exp_year = exp.year;
+      }
+      if (!this.validateExpiry(card.exp_month, card.exp_year)) {
+        error = 'Card expiry appears to be invalid';
+        code = 'invalid_card_expiry';
+        param = 'exp_month';
+      }
+      if (!this.validateCVC(card.cvc)) {
+        error = 'Card CVC code appears to be invalid';
+        code = 'invalid_card_cvc';
+        param = 'exp_cvc';
+      }
     }
-    if (card.exp) {
-      const exp = this.expiry(card.exp);
-      card.exp_month = exp.month;
-      card.exp_year = exp.year;
-    }
-    if (!this.validateExpiry(card.exp_month, card.exp_year)) {
-      error = 'Card expiry appears to be invalid';
-      code = 'invalid_card_expiry';
-      param = 'exp_month';
-    }
-    if (!this.validateCVC(card.cvc)) {
-      error = 'Card CVC code appears to be invalid';
-      code = 'invalid_card_cvc';
-      param = 'exp_cvc';
-    }
+
     if (error) {
       const err = new Error(error);
       err.code = code || 'invalid_card';
