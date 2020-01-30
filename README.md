@@ -858,3 +858,73 @@ swell.payment.createElements(
 ```
 
 Note: For styling look [Customize the PayPal Buttons](https://developer.paypal.com/docs/checkout/integration-features/customize-button/) page.
+
+##### Stripe
+
+It is possible to use [card element](https://stripe.com/docs/js/elements_object/create_element?type=card 'card element') or separate elements ([cardNumber](https://stripe.com/docs/js/elements_object/create_element?type=cardNumber 'cardNumber'), [cardExpiry](https://stripe.com/docs/js/elements_object/create_element?type=cardExpiry 'cardExpiry'), [cardCvc](https://stripe.com/docs/js/elements_object/create_element?type=cardCvc 'cardCvc')).
+
+###### Card element
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  card: {
+    elementId: 'card-element-id', // default: card-element
+    options: {
+      // Options are passed as an argument when creating an element. Look note
+      style: {
+        base: {
+          fontWeight: 500,
+          fontSize: '16px',
+        },
+      },
+    },
+  },
+  onDone: (result) => {
+    console.log(result);
+  },
+  onError: (error) => {
+    console.log(error);
+  },
+});
+```
+
+###### Separate elements
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  separateElements: true, // Required for separate elements
+  cardNumber: {
+    elementId: 'card-number-id', // default: cardNumber-element
+    options: {
+      style: {
+        base: {
+          fontWeight: 500,
+          fontSize: '16px',
+        },
+      },
+    },
+  },
+  cardExpiry: {
+    elementId: 'card-expiry-id', // default: cardExpiry-element
+  },
+  cardCvc: {
+    elementId: 'card-expiry-id', // default: cardCvc-element
+  },
+  onDone: (result) => {
+    console.log(result);
+  },
+  onError: (error) => {
+    console.log(error);
+  },
+});
+```
+
+Note: All elements support [options](https://stripe.com/docs/js/elements_object/create_element?type=card#elements_create-options 'options') for [customization](https://stripe.com/docs/js/appendix/style?type=card 'customization').
