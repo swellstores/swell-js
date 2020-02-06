@@ -6,9 +6,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+var _objectSpread4 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _require = require('./utils'),
     map = _require.map,
@@ -16,7 +14,7 @@ var _require = require('./utils'),
     defaultMethods = _require.defaultMethods;
 
 function methods(request) {
-  return _objectSpread({}, defaultMethods(request, '/products', ['list', 'get']), {
+  return (0, _objectSpread4["default"])({}, defaultMethods(request, '/products', ['list', 'get']), {
     variation: calculateVariation
   });
 }
@@ -35,15 +33,15 @@ function getProductOptionIndex(product) {
     var values = reduce(op.values, function (acc, val) {
       var _objectSpread2;
 
-      return _objectSpread({}, acc, (_objectSpread2 = {}, (0, _defineProperty2["default"])(_objectSpread2, val.id, _objectSpread({}, val, {
+      return (0, _objectSpread4["default"])({}, acc, (_objectSpread2 = {}, (0, _defineProperty2["default"])(_objectSpread2, val.id, (0, _objectSpread4["default"])({}, val, {
         id: val.id
-      })), (0, _defineProperty2["default"])(_objectSpread2, val.name, _objectSpread({}, val, {
+      })), (0, _defineProperty2["default"])(_objectSpread2, val.name, (0, _objectSpread4["default"])({}, val, {
         id: val.id
       })), _objectSpread2));
     }, {});
-    return _objectSpread({}, acc, (_objectSpread3 = {}, (0, _defineProperty2["default"])(_objectSpread3, op.id, _objectSpread({}, op, {
+    return (0, _objectSpread4["default"])({}, acc, (_objectSpread3 = {}, (0, _defineProperty2["default"])(_objectSpread3, op.id, (0, _objectSpread4["default"])({}, op, {
       values: values
-    })), (0, _defineProperty2["default"])(_objectSpread3, op.name, _objectSpread({}, op, {
+    })), (0, _defineProperty2["default"])(_objectSpread3, op.name, (0, _objectSpread4["default"])({}, op, {
       values: values
     })), _objectSpread3));
   }, {});
@@ -182,13 +180,12 @@ function findVariantWithOptions(product, options) {
 }
 
 function calculateVariation(product, options) {
-  var variation = _objectSpread({}, product, {
+  var variation = (0, _objectSpread4["default"])({}, product, {
     price: product.price || 0,
     sale_price: product.sale_price,
     orig_price: product.orig_price,
     stock_status: product.stock_status
   });
-
   var optionPrice = 0;
   var variantOptionValueIds = [];
   var cleanOptions = cleanProductOptions(options);
