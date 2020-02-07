@@ -34,6 +34,8 @@ var categories = require('./categories');
 
 var subscriptions = require('./subscriptions');
 
+var settings = require('./settings');
+
 require('isomorphic-fetch');
 
 var options = {
@@ -75,7 +77,8 @@ var api = {
   account: account.methods(request),
   products: products.methods(request),
   categories: categories.methods(request),
-  subscriptions: subscriptions.methods(request)
+  subscriptions: subscriptions.methods(request),
+  settings: settings.methods(request)
 };
 
 function request(_x, _x2) {
