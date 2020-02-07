@@ -6,6 +6,7 @@ const account = require('./account');
 const products = require('./products');
 const categories = require('./categories');
 const subscriptions = require('./subscriptions');
+const settings = require('./settings');
 
 require('isomorphic-fetch');
 
@@ -61,6 +62,8 @@ const api = {
   categories: categories.methods(request),
 
   subscriptions: subscriptions.methods(request),
+
+  settings: settings.methods(request),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
