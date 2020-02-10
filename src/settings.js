@@ -1,6 +1,13 @@
+import { find } from 'lodash';
+
 function methods(request) {
   return {
     state: null,
+
+    async refresh() {
+      const result = await request('get', '/settings');
+      return (this.state = result);
+    },
 
     get() {
       if (this.state) {
@@ -9,13 +16,11 @@ function methods(request) {
       return this.refresh();
     },
 
-    async refresh() {
-      const result = await request('get', '/settings');
-      return (this.state = result);
+    async getMenu(id) {
+      return find(await this.get(), id);
     },
   };
 }
-
 
 module.exports = {
   methods,
