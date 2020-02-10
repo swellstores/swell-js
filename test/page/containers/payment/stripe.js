@@ -63,7 +63,7 @@ class Stripe extends React.Component {
           },
         },
       },
-      onDone: (card) => {
+      onSuccess: (card) => {
         this.setState({ card, payment: null });
       },
     });

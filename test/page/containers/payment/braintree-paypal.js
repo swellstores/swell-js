@@ -40,7 +40,7 @@ class BraintreePayPal extends React.Component {
           label: 'buynow',
           tagline: false,
         },
-        onDone: (payment) => {
+        onSuccess: (payment) => {
           this.setState({ payment });
         },
       },

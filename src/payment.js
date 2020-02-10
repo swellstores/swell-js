@@ -98,7 +98,7 @@ async function braintreePayPalButton(request, order, params, gateways) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then((card) => methods(request).create(order.id, payment.amount, 'paypal', card))
-              .then((result) => (isFunction(params.onDone) ? params.onDone(result) : result)),
+              .then((result) => (isFunction(params.onSuccess) ? params.onSuccess(result) : result)),
           onCancel: isFunction(params.onCancel)
             ? () => params.onCancel()
             : () => console.log('PayPal payment cancelled'),
@@ -163,7 +163,7 @@ async function stripeElements(request, params, gateways) {
         cvc_check: token.card.cvc_check,
         zip_check: token.card.address_zip_check,
       })
-      .then((result) => (isFunction(params.onDone) ? params.onDone(result) : result));
+      .then((result) => (isFunction(params.onSuccess) ? params.onSuccess(result) : result));
   };
 
   submitButton.addEventListener('click', onSubmit);
