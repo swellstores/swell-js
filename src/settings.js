@@ -1,4 +1,4 @@
-import { find } from 'lodash';
+const { find } = require('lodash');
 
 function methods(request) {
   return {
