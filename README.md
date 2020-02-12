@@ -815,36 +815,28 @@ import swell from 'swell-js';
 
 swell.init('my-store', 'pk_...');
 
-swell.payment.createElements(
-  {
-    elementId: '#element-id', // default: #paypal-button
-    style: {
-      layout: 'horizontal', // optional
-      color: 'blue',
-      shape: 'rect',
-      label: 'buynow',
-      tagline: false,
-    },
-    payment: {
-      currency: 'EUR', // default: USD
-      amount: 100, // default: order.grand_total
-    },
-    onSuccess: (result) => {
-      // optional, called on payment success
-    },
-    onCancel: () => {
-      // optional, called on payment cancel
-    },
-    onError: (error) => {
-      // optional, called on payment error
-    },
+swell.payment.createElements({
+  elementId: '#element-id', // default: #paypal-button
+  style: {
+    layout: 'horizontal', // optional
+    color: 'blue',
+    shape: 'rect',
+    label: 'buynow',
+    tagline: false,
   },
-  'checkout_id',
-);
+  onSuccess: (result) => {
+    // optional, called on payment success
+  },
+  onCancel: () => {
+    // optional, called on payment cancel
+  },
+  onError: (error) => {
+    // optional, called on payment error
+  },
+});
 ```
 
 Note: see [PayPal documentation](https://developer.paypal.com/docs/checkout/integration-features/customize-button/) for details on available style parameters.
-
 
 ## Credit card tokenization
 
