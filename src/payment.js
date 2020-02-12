@@ -1,34 +1,25 @@
-const cart = require('./cart');
+const cartApi = require('./cart');
 const cardApi = require('./card');
 const { isFunction, vaultRequest } = require('./utils');
 
 function methods(request) {
   return {
-    async createElements(params = {}, checkoutId) {
+    async createElements(params = {}) {
+      const cart = await cartApi.methods(request).get();
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
       const gateways = await vaultRequest('get', '/gateways');
       if (gateways.error) {
         throw new Error(gateways.error);
       }
-      await render(request, params, checkoutId, gateways);
-    },
-
-    async create(orderId, amount, method, source) {
-      return request('post', `/payments`, {
-        order_id: orderId,
-        amount,
-        method,
-        source,
-      });
+      await render(request, cart, gateways, params);
     },
   };
 }
 
-async function render(request, params, checkoutId, gateways = {}) {
+async function render(request, cart, gateways, params) {
   if (gateways.braintree && gateways.paypal) {
-    const order = await cart.methods(request).getOrder(checkoutId);
-    if (!order) {
-      throw new Error('Order not found');
-    }
     if (!(window.braintree && window.braintree.client)) {
       await loadScript(
         'braintree-web',
@@ -47,7 +38,7 @@ async function render(request, params, checkoutId, gateways = {}) {
         `https://www.paypal.com/sdk/js?client-id=${gateways.paypal.client_id}&merchant-id=${gateways.paypal.merchant_id}&vault=true`,
       );
     }
-    return await braintreePayPalButton(request, order, params, gateways);
+    return await braintreePayPalButton(request, cart, gateways, params);
   } else if (gateways.stripe) {
     if (!window.Stripe) {
       await loadScript('stripe-js', 'https://js.stripe.com/v3/');
@@ -71,12 +62,16 @@ const loadScript = async (id, src) =>
     document.head.appendChild(script);
   });
 
-async function braintreePayPalButton(request, order, params, gateways) {
+async function braintreePayPalButton(request, cart, gateways, params) {
+  const authorization = await vaultRequest('post', '/authorization', { gateway: 'braintree' });
+  if (authorization.error) {
+    throw new Error(authorization.error);
+  }
   const braintree = window.braintree;
   const paypal = window.paypal;
   braintree.client
     .create({
-      authorization: gateways.braintree.authorization,
+      authorization,
     })
     .then((client) =>
       braintree.paypalCheckout.create({
@@ -84,21 +79,27 @@ async function braintreePayPalButton(request, order, params, gateways) {
       }),
     )
     .then((paypalCheckoutInstance) => {
-      const paramsPayment = params.payment || {};
-      const payment = {
-        flow: 'vault',
-        currency: paramsPayment.currency || 'USD',
-        amount: paramsPayment.amount || order.grand_total,
-      };
       return paypal
         .Buttons({
           style: params.style || {},
-          createBillingAgreement: () => paypalCheckoutInstance.createPayment(payment),
+          createBillingAgreement: () =>
+            paypalCheckoutInstance.createPayment({
+              flow: 'vault',
+              currency: cart.currency,
+              amount: cart.grand_total,
+            }),
           onApprove: (data, actions) =>
             paypalCheckoutInstance
               .tokenizePayment(data)
-              .then((card) => methods(request).create(order.id, payment.amount, 'paypal', card))
-              .then((result) => (isFunction(params.onSuccess) ? params.onSuccess(result) : result)),
+              .then(({ nonce }) =>
+                cartApi.methods(request).update({ billing: { paypal: { nonce } } }),
+              )
+              .then(() => isFunction(params.onSuccess) && params.onSuccess())
+              .catch(
+                isFunction(params.onError)
+                  ? params.onError
+                  : (err) => console.error('PayPal error', err),
+              ),
           onCancel: isFunction(params.onCancel)
             ? () => params.onCancel()
             : () => console.log('PayPal payment cancelled'),
