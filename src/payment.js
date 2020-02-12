@@ -49,18 +49,31 @@ async function render(request, cart, gateways, params) {
   throw new Error('Gateway elements are not implemented');
 }
 
-const loadScript = async (id, src) =>
-  new Promise((resolve) => {
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
-    script.async = true;
-    script.type = 'text/javascript';
-    script.addEventListener('load', () => resolve(), {
-      once: true,
+const loading = {};
+
+const loadScript = async (id, src) => {
+  loading[id] =
+    loading[id] ||
+    new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      script.type = 'text/javascript';
+      script.addEventListener(
+        'load',
+        () => {
+          resolve();
+          loading[id] = null;
+        },
+        {
+          once: true,
+        },
+      );
+      document.head.appendChild(script);
     });
-    document.head.appendChild(script);
-  });
+  return loading[id];
+};
 
 async function braintreePayPalButton(request, cart, gateways, params) {
   const authorization = await vaultRequest('post', '/authorization', { gateway: 'braintree' });
