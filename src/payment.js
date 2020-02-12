@@ -43,7 +43,7 @@ async function render(request, cart, gateways, params) {
     if (!window.Stripe) {
       await loadScript('stripe-js', 'https://js.stripe.com/v3/');
     }
-    return await stripeElements(request, params, gateways);
+    return await stripeElements(request, gateways, params);
   }
 
   throw new Error('Gateway elements are not implemented');
@@ -114,10 +114,17 @@ async function braintreePayPalButton(request, cart, gateways, params) {
     );
 }
 
-async function stripeElements(request, params, gateways) {
+async function stripeElements(request, gateways, params) {
+  const onError = (error) => {
+    if (isFunction(params.onError)) {
+      return params.onError(error);
+    }
+    throw new Error(error.message);
+  };
+
   const submitButton = document.getElementById(params.submitButtonId || 'stripe-submit-button');
   if (!submitButton) {
-    throw new Error('Submit button not found');
+    return onError({ message: 'Submit button not found' });
   }
   const { public_key: publicKey } = gateways.stripe;
   const stripe = window.Stripe(publicKey);
@@ -142,13 +149,6 @@ async function stripeElements(request, params, gateways) {
   }
 
   const onSubmit = async () => {
-    const onError = (error) => {
-      if (isFunction(params.onError)) {
-        return params.onError(error);
-      }
-      throw new Error(error.message);
-    };
-
     const token = await stripe
       .createToken(card)
       .then(({ token, error }) => (error ? onError(error) : token));
@@ -164,7 +164,9 @@ async function stripeElements(request, params, gateways) {
         cvc_check: token.card.cvc_check,
         zip_check: token.card.address_zip_check,
       })
-      .then((result) => (isFunction(params.onSuccess) ? params.onSuccess(result) : result));
+      .then(({ token }) => cartApi.methods(request).update({ billing: { card: { token } } }))
+      .then(() => isFunction(params.onSuccess) && params.onSuccess())
+      .catch((err) => onError(err));
   };
 
   submitButton.addEventListener('click', onSubmit);
