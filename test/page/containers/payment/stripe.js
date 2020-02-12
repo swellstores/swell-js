@@ -2,10 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
-import { isEqual } from 'lodash';
 import { withStyles } from '@material-ui/core/styles';
-import { Card, CardContent, Button, Typography, Divider } from '@material-ui/core';
-import Info from '../../components/info';
+import { Card, CardContent, Button } from '@material-ui/core';
 
 const styles = {
   root: {
@@ -31,27 +29,12 @@ class Stripe extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      card: null,
-      payment: null,
-      createPayment: this.createPayment.bind(this),
+      tokenized: false,
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.api) {
-      this.renderStripeElements(nextProps.api);
-    }
-  }
-
   componentDidMount() {
-    const { api } = this.props;
-
-    if (api) {
-      this.renderStripeElements(api);
-    }
-  }
-
-  renderStripeElements(api) {
+    const { api, onError } = this.props;
     api.payment.createElements({
       card: {
         options: {
@@ -63,23 +46,16 @@ class Stripe extends React.Component {
           },
         },
       },
-      onSuccess: (card) => {
-        this.setState({ card, payment: null });
+      onSuccess: async () => {
+        this.setState({ tokenized: true });
       },
+      onError: (err) => onError(err.message),
     });
   }
 
-  async createPayment() {
-    const { api, checkout: { order } = {} } = this.props;
-    const { card } = this.state;
-
-    const payment = await api.payment.create(order.id, order.grand_total, 'card', card);
-    this.setState({ payment });
-  }
-
   render() {
-    const { classes, checkout: { order } = {} } = this.props;
-    const { card, payment, createPayment } = this.state;
+    const { classes, onOrderSubmit } = this.props;
+    const { tokenized } = this.state;
 
     return (
       <div className={classes.root}>
@@ -100,25 +76,22 @@ class Stripe extends React.Component {
                 variant="contained"
                 color="secondary"
                 size="small"
-                disabled={!(order && card)}
+                disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={createPayment}
+                onClick={onOrderSubmit}
               >
-                Pay
+                Submit
               </Button>
             </div>
           </CardContent>
         </Card>
-        <Info source={card} title="Card:" />
-        <Info source={payment} title="Payment:" />
       </div>
     );
   }
 }
 
-const mapStateToProps = ({ api, checkout }) => ({
+const mapStateToProps = ({ api }) => ({
   api,
-  checkout,
 });
 
 export default compose(connect(mapStateToProps), withStyles(styles))(Stripe);

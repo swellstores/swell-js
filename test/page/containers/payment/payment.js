@@ -1,26 +1,126 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
+import { compose } from 'recompose';
+import { isEqual, isEmpty, map, find } from 'lodash';
 import { withStyles } from '@material-ui/core/styles';
-import { Container, Grid, Typography } from '@material-ui/core';
-import Checkout from '../../components/checkout';
+import {
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  CardHeader,
+  IconButton,
+  Divider,
+} from '@material-ui/core';
+import { RemoveCircle } from '@material-ui/icons';
+import cartActions from '../../actions/cart';
+import flashActions from '../../actions/flash';
+import Products from '../../components/products';
 import BraintreePayPal from './braintree-paypal';
 import Stripe from './stripe';
+import Info from '../../components/info';
 
-const styles = {};
+const styles = {
+  cart: {
+    margin: '10px 0',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  cartHeader: {
+    padding: '2px 10px',
+  },
+  items: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  item: {
+    width: '200px',
+    height: '100px',
+    margin: '5px 5px 0 0',
+  },
+  itemHeader: {
+    padding: '2px 10px',
+  },
+  removeItemButton: {
+    marginTop: '10px',
+    padding: 0,
+  },
+  divider: {
+    margin: '10px 0',
+  },
+};
 
 class Payment extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      order: null,
+      cartProducts: [],
+      onAddProduct: this.onAddProduct.bind(this),
+      onRemoveItem: this.onRemoveItem.bind(this),
+      onOrderSubmit: this.onOrderSubmit.bind(this),
+      onError: this.onError.bind(this),
+    };
   }
 
-  renderGataway() {
-    const { gateway } = this.props;
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.api && !isEqual(this.props.api, nextProps.api)) {
+      this.props.initCart();
+    }
+    if (nextProps.cart && !isEqual(this.props.cart, nextProps.cart)) {
+      this.initCartProducts(nextProps.cart.items);
+    }
+    if (nextProps.gateway && !isEqual(this.props.gateway, nextProps.gateway)) {
+      this.setState({ order: null });
+    }
+  }
+
+  componentDidMount() {
+    const { api } = this.props;
+    api && this.props.initCart();
+  }
+
+  async initCartProducts(items) {
+    const { api } = this.props;
+
+    const cartProducts = await Promise.all(
+      map(items, (item) => new Promise((resolve) => resolve(api.products.get(item.product_id)))),
+    );
+    this.setState({ cartProducts });
+  }
+
+  async onAddProduct(product) {
+    this.props.addItem(product);
+  }
+
+  async onRemoveItem(itemId) {
+    this.props.removeItem(itemId);
+  }
+
+  async onOrderSubmit() {
+    const order = await this.props.submitOrder();
+    this.setState({ order });
+  }
+
+  onError(message) {
+    this.props.error(message);
+  }
+
+  renderGateway() {
+    const { gateway, warning, user } = this.props;
+    const { onOrderSubmit, onError } = this.state;
+
+    if (!user) {
+      warning('User is not logged');
+    }
 
     switch (gateway) {
       case 'braintree-paypal':
-        return <BraintreePayPal />;
+        return <BraintreePayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'stripe':
-        return <Stripe />;
+        return <Stripe onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'square':
         return <Typography variant="h4">Coming soon</Typography>;
       case 'braintree':
@@ -30,20 +130,116 @@ class Payment extends React.Component {
     }
   }
 
-  render() {
+  renderItems(items) {
+    const { cartProducts, onRemoveItem } = this.state;
+    const { classes } = this.props;
+
     return (
-      <Container>
+      !isEmpty(cartProducts) && (
+        <div className={classes.items}>
+          {map(items, (item) => {
+            const product = find(cartProducts, { id: item.product_id });
+            return (
+              product && (
+                <Card key={product.id} classes={{ root: classes.item }}>
+                  <CardHeader
+                    subheader={product.name}
+                    classes={{ root: classes.itemHeader }}
+                    action={
+                      <IconButton
+                        classes={{ root: classes.removeItemButton }}
+                        onClick={() => onRemoveItem(item.id)}
+                      >
+                        <RemoveCircle />
+                      </IconButton>
+                    }
+                  />
+                  <CardContent classes={{ root: classes.productContent }}>
+                    <Typography>Quantity: {item.quantity}</Typography>
+                    <Typography>
+                      Price: {item.price_total} {product.currency}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )
+            );
+          })}
+        </div>
+      )
+    );
+  }
+
+  renderCart() {
+    const { classes, cart } = this.props;
+
+    return (
+      <Card classes={{ root: classes.cart }}>
+        <CardHeader classes={{ root: classes.cartHeader }} subheader={`Cart ID: ${cart.id}`} />
+        <CardContent>
+          {this.renderItems(cart.items)}
+          <Divider classes={{ root: classes.divider }} />
+          <Typography>Tax: {cart.tax_total ? cart.tax_total.toFixed(2) : 0}</Typography>
+          <Typography>
+            Discount: {cart.discount_total ? cart.discount_total.toFixed(2) : 0}
+          </Typography>
+          <Typography>Total: {cart.grand_total ? cart.grand_total.toFixed(2) : 0}</Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  render() {
+    const { onAddProduct, order } = this.state;
+    const { cart, api } = this.props;
+
+    return (
+      api && (
         <Grid container direction="row" justify="center" alignItems="stretch" spacing={10}>
           <Grid item xs={5}>
-            <Checkout />
+            <Products onAddProduct={onAddProduct} />
           </Grid>
-          <Grid item xs={5}>
-            {this.renderGataway()}
-          </Grid>
+          {(cart || order) && (
+            <Grid item xs={5}>
+              {cart && (
+                <>
+                  {this.renderCart()}
+                  {this.renderGateway()}
+                </>
+              )}
+              {order && !cart && <Info source={order} title="Order:" />}
+            </Grid>
+          )}
         </Grid>
-      </Container>
+      )
     );
   }
 }
 
-export default withStyles(styles)(Payment);
+const mapStateToProps = ({ api, cart, user }) => ({
+  api,
+  cart,
+  user,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  initCart: () => {
+    dispatch(cartActions.initCart());
+  },
+  addItem: (product) => {
+    dispatch(cartActions.addItem(product));
+  },
+  removeItem: (itemId) => {
+    dispatch(cartActions.removeItem(itemId));
+  },
+  submitOrder: async () => {
+    return await dispatch(cartActions.submitOrder());
+  },
+  error: (message) => {
+    dispatch(flashActions.error(message));
+  },
+  warning: (message) => {
+    dispatch(flashActions.warning(message));
+  },
+});
+
+export default compose(connect(mapStateToProps, mapDispatchToProps), withStyles(styles))(Payment);

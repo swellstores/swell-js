@@ -5,15 +5,21 @@ export default {
   init(store = config.store, key = config.key) {
     return (dispatch) => {
       const { url, vaultUrl } = config;
-      api.init(store, key, {
-        url,
-        vaultUrl,
-      });
-
-      dispatch({
-        type: 'INIT_API',
-        payload: api,
-      });
+      if (store && key) {
+        api.init(store, key, {
+          url,
+          vaultUrl,
+        });
+        dispatch({
+          type: 'INIT_API',
+          payload: api,
+        });
+      } else {
+        dispatch({
+          type: 'INIT_API',
+          payload: null,
+        });
+      }
     };
   },
 };

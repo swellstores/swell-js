@@ -1,6 +1,7 @@
-export default (state = {}, action) => {
+export default (state = null, action) => {
   switch (action.type) {
-    case 'SET_CHECKOUT':
+    case 'USER_LOGIN':
+    case 'USER_LOGOUT':
       return action.payload;
     default:
       return state;

@@ -110,14 +110,12 @@ class Sidebar extends React.Component {
   }
 
   render() {
-    const { classes, onToggleSidebar, openSidebar } = this.props;
+    const { classes, onToggleSidebar, open } = this.props;
 
     return (
-      <>
-        <SwipeableDrawer open={openSidebar} onClose={onToggleSidebar} onOpen={onToggleSidebar}>
-          <List>{this.getListItems()}</List>
-        </SwipeableDrawer>
-      </>
+      <SwipeableDrawer open={open} onClose={onToggleSidebar} onOpen={onToggleSidebar}>
+        <List>{this.getListItems()}</List>
+      </SwipeableDrawer>
     );
   }
 }

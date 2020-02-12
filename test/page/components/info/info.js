@@ -1,9 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { map, isPlainObject, isEmpty, isArray } from 'lodash';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import { Typography, Divider, Card } from '@material-ui/core';
+import { Typography, Card } from '@material-ui/core';
 
 const styles = {
   card: {
@@ -30,7 +29,7 @@ class Info extends React.Component {
       !isEmpty(source) && (
         <Card classes={{ root: classes.card }}>
           {map(source, (field, key) => (
-            <Typography component={'span'} variant={'body2'}>
+            <Typography key={key} component={'span'} variant={'body2'}>
               {key}:{' '}
               {field === null
                 ? 'null'
