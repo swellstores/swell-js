@@ -11,6 +11,7 @@ describe('api', () => {
       expect(api.options).toEqual({
         store: 'test1',
         key: 'pk_test1',
+        timeout: 20000,
         url: 'https://test1.swell.store',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
@@ -24,6 +25,7 @@ describe('api', () => {
       expect(api.options).toEqual({
         store: 'test1',
         key: 'pk_test1',
+        timeout: 20000,
         url: 'https://test1.swell.store',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
@@ -37,6 +39,7 @@ describe('api', () => {
       expect(api.options).toEqual({
         store: 'test2',
         key: 'pk_test2',
+        timeout: 20000,
         url: 'https://www.test2.com',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
@@ -49,13 +52,10 @@ describe('api', () => {
       await api.request('get', '/test');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][1]).toHaveProperty(
-        'headers',
-        {
-          'Content-Type': `application/json`,
-          Authorization: `Basic ${Buffer.from('pk_test').toString('base64')}`,
-        },
-      );
+      expect(fetch.mock.calls[0][1]).toHaveProperty('headers', {
+        'Content-Type': `application/json`,
+        Authorization: `Basic ${Buffer.from('pk_test').toString('base64')}`,
+      });
     });
 
     it('should make a fetch request with credentials', async () => {

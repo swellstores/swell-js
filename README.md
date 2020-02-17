@@ -430,7 +430,6 @@ Returns an object with settings that can affect checkout behavior.
 await swell.cart.getSettings();
 ```
 
-
 ## Customer account
 
 #### Login
@@ -467,7 +466,7 @@ await swell.account.create({
   first_name: 'John', // optional
   last_name: 'Doe', // optional
   email_optin: true, // optional
-  password: 'example',  // optional
+  password: 'example', // optional
 });
 ```
 
@@ -481,7 +480,7 @@ await swell.account.update({
   first_name: 'Jane', // optional
   last_name: 'Doe', // optional
   email_optin: false, // optional
-  password: 'example',  // optional
+  password: 'example', // optional
 });
 ```
 
@@ -732,10 +731,116 @@ await swell.subscriptions.removeItem('5c15505200c7d14d851e510f', '<item_id>');
 await swell.subscriptions.setItems([]);
 ```
 
+## Payment elements
+
+Render 3rd party payment elements with settings configured by your Swell store. This method dynamically loads 3rd party libraries such as Stripe, Braintree and PayPal, in order to standardize the way payment details are captured.
+
+#### Stripe
+
+Render Stripe elements to capture credit card information. You can choose to use a unified [card element](https://stripe.com/docs/js/elements_object/create_element?type=card 'card element') or separate elements ([cardNumber](https://stripe.com/docs/js/elements_object/create_element?type=cardNumber 'cardNumber'), [cardExpiry](https://stripe.com/docs/js/elements_object/create_element?type=cardExpiry 'cardExpiry'), [cardCvc](https://stripe.com/docs/js/elements_object/create_element?type=cardCvc 'cardCvc')).
+
+##### Render a Stripe card element
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  card: {
+    elementId: '#card-element-id', // default: #card-element
+    options: {
+      // options are passed as a direct argument to stripe.js
+      style: {
+        base: {
+          fontWeight: 500,
+          fontSize: '16px',
+        },
+      },
+    },
+  },
+  onSuccess: (result) => {
+    // optional, called on payment success
+  },
+  onError: (error) => {
+    // optional, called on payment error
+  },
+});
+```
+
+##### Render other Stripe elements
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  separateElements: true, // required for separate elements
+  cardNumber: {
+    elementId: '#card-number-id', // default: #cardNumber-element
+    options: {
+      // options are passed as a direct argument to stripe.js
+      style: {
+        base: {
+          fontWeight: 500,
+          fontSize: '16px',
+        },
+      },
+    },
+  },
+  cardExpiry: {
+    elementId: '#card-expiry-id', // default: #cardExpiry-element
+  },
+  cardCvc: {
+    elementId: '#card-expiry-id', // default: #cardCvc-element
+  },
+  onSuccess: (result) => {
+    // optional, called on payment success
+  },
+  onError: (error) => {
+    // optional, called on payment error
+  },
+});
+```
+
+Note: see Stripe documentation for [options](https://stripe.com/docs/js/elements_object/create_element?type=card#elements_create-options 'options') and [customization](https://stripe.com/docs/js/appendix/style?type=card 'customization').
+
+#### PayPal button
+
+Render a PayPal checkout button.
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  elementId: '#element-id', // default: #paypal-button
+  style: {
+    layout: 'horizontal', // optional
+    color: 'blue',
+    shape: 'rect',
+    label: 'buynow',
+    tagline: false,
+  },
+  onSuccess: (result) => {
+    // optional, called on payment success
+  },
+  onCancel: () => {
+    // optional, called on payment cancel
+  },
+  onError: (error) => {
+    // optional, called on payment error
+  },
+});
+```
+
+Note: see [PayPal documentation](https://developer.paypal.com/docs/checkout/integration-features/customize-button/) for details on available style parameters.
 
 ## Credit card tokenization
 
-In order to avoid PCI requirements.
+If a <a href="#payment-elements">payment element</a> isn't available for your credit card processor, you can tokenize credit card information directly.
 
 #### Create a card token
 

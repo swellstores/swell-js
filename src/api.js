@@ -1,12 +1,21 @@
 const card = require('./card');
 const { getCookie, setCookie } = require('./cookie');
-const { toCamel, toSnake, trimBoth, trimStart, trimEnd, stringifyQuery } = require('./utils');
+const {
+  setOptions,
+  toCamel,
+  toSnake,
+  trimBoth,
+  trimStart,
+  trimEnd,
+  stringifyQuery,
+} = require('./utils');
 const cart = require('./cart');
 const account = require('./account');
 const products = require('./products');
 const categories = require('./categories');
 const subscriptions = require('./subscriptions');
 const settings = require('./settings');
+const payment = require('./payment');
 
 require('isomorphic-fetch');
 
@@ -26,8 +35,9 @@ const api = {
     options.store = store;
     options.url = opt.url ? trimEnd(opt.url) : `https://${store}.swell.store`;
     options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : `https://vault.schema.io`;
+    options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
-    card.options = options;
+    setOptions(options);
   },
 
   // Backward compatibility
@@ -64,6 +74,8 @@ const api = {
   subscriptions: subscriptions.methods(request),
 
   settings: settings.methods(request),
+
+  payment: payment.methods(request),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
