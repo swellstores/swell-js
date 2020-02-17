@@ -14,12 +14,14 @@ class BraintreePayPal extends React.Component {
   componentDidMount() {
     const { api, onOrderSubmit, onError } = this.props;
     api.payment.createElements({
-      style: {
-        layout: 'horizontal',
-        color: 'blue',
-        shape: 'rect',
-        label: 'buynow',
-        tagline: false,
+      paypal: {
+        style: {
+          layout: 'horizontal',
+          color: 'blue',
+          shape: 'rect',
+          label: 'buynow',
+          tagline: false,
+        },
       },
       onSuccess: () => onOrderSubmit(),
       onError: (err) => onError(err.message),

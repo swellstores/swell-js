@@ -45,12 +45,17 @@ class Stripe extends React.Component {
             },
           },
         },
+        onSuccess: () => {
+          this.setState({ tokenized: true });
+        },
+        onError: (err) => onError(err.message),
       },
-      onSuccess: async () => {
-        this.setState({ tokenized: true });
-      },
-      onError: (err) => onError(err.message),
     });
+  }
+
+  onClickTokenize(event) {
+    event.preventDefault();
+    api.payment.tokenize();
   }
 
   render() {
@@ -69,6 +74,7 @@ class Stripe extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
+                onClick={this.onClickTokenize.bind(this)}
               >
                 Tokenize
               </Button>

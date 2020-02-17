@@ -100,7 +100,10 @@ class Products extends React.Component {
     return reduce(
       product.options,
       (options, option) => {
-        options.push({ name: option.name, value: option.values[0].name });
+        options.push({
+          name: option.name,
+          value: option.values && option.values.length && option.values[0].name,
+        });
         return options;
       },
       [],
@@ -255,4 +258,7 @@ const mapStateToProps = ({ api }) => ({
   api,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(Products);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(Products);

@@ -735,9 +735,11 @@ await swell.subscriptions.setItems([]);
 
 Render 3rd party payment elements with settings configured by your Swell store. This method dynamically loads 3rd party libraries such as Stripe, Braintree and PayPal, in order to standardize the way payment details are captured.
 
+Note: when using a card element, it's necessary to <a href="#tokenize-payment-elements">tokenize</a> card details before submitting an order.
+
 #### Stripe
 
-Render Stripe elements to capture credit card information. You can choose to use a unified [card element](https://stripe.com/docs/js/elements_object/create_element?type=card 'card element') or separate elements ([cardNumber](https://stripe.com/docs/js/elements_object/create_element?type=cardNumber 'cardNumber'), [cardExpiry](https://stripe.com/docs/js/elements_object/create_element?type=cardExpiry 'cardExpiry'), [cardCvc](https://stripe.com/docs/js/elements_object/create_element?type=cardCvc 'cardCvc')).
+Render Stripe elements to capture credit card information. You can choose between a unified [card element](https://stripe.com/docs/js/elements_object/create_element?type=card 'card element') or separate elements ([cardNumber](https://stripe.com/docs/js/elements_object/create_element?type=cardNumber 'cardNumber'), [cardExpiry](https://stripe.com/docs/js/elements_object/create_element?type=cardExpiry 'cardExpiry'), [cardCvc](https://stripe.com/docs/js/elements_object/create_element?type=cardCvc 'cardCvc')).
 
 ##### Render a Stripe card element
 
@@ -758,12 +760,12 @@ swell.payment.createElements({
         },
       },
     },
-  },
-  onSuccess: (result) => {
-    // optional, called on payment success
-  },
-  onError: (error) => {
-    // optional, called on payment error
+    onSuccess: (result) => {
+      // optional, called on card payment success
+    },
+    onError: (error) => {
+      // optional, called on card payment error
+    },
   },
 });
 ```
@@ -776,30 +778,32 @@ import swell from 'swell-js';
 swell.init('my-store', 'pk_...');
 
 swell.payment.createElements({
-  separateElements: true, // required for separate elements
-  cardNumber: {
-    elementId: '#card-number-id', // default: #cardNumber-element
-    options: {
-      // options are passed as a direct argument to stripe.js
-      style: {
-        base: {
-          fontWeight: 500,
-          fontSize: '16px',
+  card: {
+    separateElements: true, // required for separate elements
+    cardNumber: {
+      elementId: '#card-number-id', // default: #cardNumber-element
+      options: {
+        // options are passed as a direct argument to stripe.js
+        style: {
+          base: {
+            fontWeight: 500,
+            fontSize: '16px',
+          },
         },
       },
     },
-  },
-  cardExpiry: {
-    elementId: '#card-expiry-id', // default: #cardExpiry-element
-  },
-  cardCvc: {
-    elementId: '#card-expiry-id', // default: #cardCvc-element
-  },
-  onSuccess: (result) => {
-    // optional, called on payment success
-  },
-  onError: (error) => {
-    // optional, called on payment error
+    cardExpiry: {
+      elementId: '#card-expiry-id', // default: #cardExpiry-element
+    },
+    cardCvc: {
+      elementId: '#card-expiry-id', // default: #cardCvc-element
+    },
+    onSuccess: (result) => {
+      // optional, called on card payment success
+    },
+    onError: (error) => {
+      // optional, called on card payment error
+    },
   },
 });
 ```
@@ -816,29 +820,66 @@ import swell from 'swell-js';
 swell.init('my-store', 'pk_...');
 
 swell.payment.createElements({
-  elementId: '#element-id', // default: #paypal-button
-  style: {
-    layout: 'horizontal', // optional
-    color: 'blue',
-    shape: 'rect',
-    label: 'buynow',
-    tagline: false,
-  },
-  onSuccess: (result) => {
-    // optional, called on payment success
-  },
-  onCancel: () => {
-    // optional, called on payment cancel
-  },
-  onError: (error) => {
-    // optional, called on payment error
+  paypal: {
+    elementId: '#element-id', // default: #paypal-button
+    style: {
+      layout: 'horizontal', // optional
+      color: 'blue',
+      shape: 'rect',
+      label: 'buynow',
+      tagline: false,
+    },
+    onSuccess: (result) => {
+      // optional, called on payment success
+    },
+    onCancel: () => {
+      // optional, called on payment cancel
+    },
+    onError: (error) => {
+      // optional, called on payment error
+    },
   },
 });
 ```
 
 Note: see [PayPal documentation](https://developer.paypal.com/docs/checkout/integration-features/customize-button/) for details on available style parameters.
 
-## Credit card tokenization
+#### Tokenize payment elements
+
+When using a payment element such as `card` with Stripe, it's necessary to tokenize card details before submitting a payment form. Note: Some payment methods such as PayPal will auto-submit once the user completes authorization via PayPal, but tokenizing is always required for credit card elements.
+
+If successful, `tokenize()` will automatically update the cart with relevant payment details. Otherwise, returns a validation error.
+
+```javascript
+import swell from 'swell-js';
+
+swell.init('my-store', 'pk_...');
+
+swell.payment.createElements({
+  card: {
+    ...
+  },
+});
+
+const form = document.getElementById('payment-form');
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  showLoading();
+
+  const result = await swell.payment.tokenize();
+
+  hideLoading();
+
+  if (result.error) {
+    // inform the customer there was an error
+  } else {
+    // finally submit the form
+    form.submit();
+  }
+});
+```
+
+## Direct credit card tokenization
 
 If a <a href="#payment-elements">payment element</a> isn't available for your credit card processor, you can tokenize credit card information directly.
 
@@ -921,4 +962,22 @@ Returns `true` if the card CVC code is valid, otherwise `false`.
 ```javascript
 swell.card.validateCVC('321'); // => true
 swell.card.validateCVC('1'); // => false
+```
+
+## Settings
+
+#### Retrieve store settings
+
+Return an object representing store settings.
+
+```javascript
+swell.settings.get();
+```
+
+#### Retrieve payment settings
+
+Return an object representing payment settings.
+
+```javascript
+swell.settings.payments();
 ```

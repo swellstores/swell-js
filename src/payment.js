@@ -1,59 +1,97 @@
 const cartApi = require('./cart');
 const cardApi = require('./card');
+const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
+
+const LOADING_SCRIPTS = {};
 
 function methods(request) {
   return {
-    async createElements(params = {}) {
+    params: null,
+    methodSettings: null,
+
+    async methods() {
+      if (this.methodSettings) {
+        return this.methodSettings;
+      }
+      const result = await request('get', '/payment/methods');
+      return (this.methodSettings = result);
+    },
+
+    async createElements(elementParams) {
+      this.params = elementParams || {};
       const cart = await cartApi.methods(request).get();
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const gateways = await vaultRequest('get', '/gateways');
-      if (gateways.error) {
-        throw new Error(gateways.error);
+      const payMethods = await settingsApi.methods(request).payments();
+      if (payMethods.error) {
+        throw new Error(payMethods.error);
       }
-      await render(request, cart, gateways, params);
+      await render(request, cart, payMethods, this.params);
+    },
+
+    async tokenize() {
+      const payMethods = await settingsApi.methods(request).payments();
+      if (payMethods.error) {
+        throw new Error(payMethods.error);
+      }
+      return await paymentTokenize(this.params, payMethods);
     },
   };
 }
 
-async function render(request, cart, gateways, params) {
-  if (gateways.braintree && gateways.paypal) {
-    if (!(window.braintree && window.braintree.client)) {
-      await loadScript(
-        'braintree-web',
-        'https://js.braintreegateway.com/web/3.57.0/js/client.min.js',
-      );
+async function render(request, cart, payMethods, params) {
+  if (params.card) {
+    if (!payMethods.card) {
+      console.error(`Payment element error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.`);
+    } else if (payMethods.card.gateway === 'braintree') {
+      if (!window.braintree) {
+        await loadScript(
+          'braintree-web',
+          'https://js.braintreegateway.com/web/3.57.0/js/client.min.js',
+        );
+      }
+      // TODO: implement braintree elements
+    } else if (payMethods.card.gateway === 'stripe') {
+      if (!window.Stripe) {
+        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+      }
+      await stripeElements(request, payMethods, params);
     }
-    if (!(window.braintree && window.braintree.paypalCheckout)) {
-      await loadScript(
-        'braintree-web-paypal-checkout',
-        'https://js.braintreegateway.com/web/3.57.0/js/paypal-checkout.min.js',
-      );
-    }
-    if (!window.paypal) {
-      await loadScript(
-        'paypal-sdk',
-        `https://www.paypal.com/sdk/js?client-id=${gateways.paypal.client_id}&merchant-id=${gateways.paypal.merchant_id}&vault=true`,
-      );
-    }
-    return await braintreePayPalButton(request, cart, gateways, params);
-  } else if (gateways.stripe) {
-    if (!window.Stripe) {
-      await loadScript('stripe-js', 'https://js.stripe.com/v3/');
-    }
-    return await stripeElements(request, gateways, params);
   }
-
-  throw new Error('Gateway elements are not implemented');
+  if (params.paypal) {
+    if (!payMethods.paypal) {
+      console.error(`Payment element error: PayPal payments are disabled. See Payment settings in the Swell dashboard for details.`);
+    } else {
+      if (!window.paypal) {
+        await loadScript(
+          'paypal-sdk',
+          `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&vault=true`,
+        );
+      }
+      if (payMethods.card && payMethods.card.gateway === 'braintree') {
+        if (!window.braintree) {
+          await loadScript(
+            'braintree-web',
+            'https://js.braintreegateway.com/web/3.57.0/js/client.min.js',
+          );
+        }
+        if (window.braintree && !window.braintree.paypalCheckout) {
+          await loadScript(
+            'braintree-web-paypal-checkout',
+            'https://js.braintreegateway.com/web/3.57.0/js/paypal-checkout.min.js',
+          );
+        }
+        await braintreePayPalButton(request, cart, payMethods, params);
+      }
+    }
+  }
 }
 
-const loading = {};
-
 const loadScript = async (id, src) => {
-  loading[id] =
-    loading[id] ||
+  LOADING_SCRIPTS[id] =
+    LOADING_SCRIPTS[id] ||
     new Promise((resolve) => {
       const script = document.createElement('script');
       script.id = id;
@@ -64,7 +102,7 @@ const loadScript = async (id, src) => {
         'load',
         () => {
           resolve();
-          loading[id] = null;
+          LOADING_SCRIPTS[id] = null;
         },
         {
           once: true,
@@ -72,10 +110,41 @@ const loadScript = async (id, src) => {
       );
       document.head.appendChild(script);
     });
-  return loading[id];
+  return LOADING_SCRIPTS[id];
 };
 
-async function braintreePayPalButton(request, cart, gateways, params) {
+async function stripeElements(request, payMethods, params) {
+  const onError = (error) => {
+    if (isFunction(params.onError)) {
+      return params.onError(error);
+    }
+    throw new Error(error.message);
+  };
+
+  const { public_key: publicKey } = payMethods.card;
+  const stripe = window.Stripe(publicKey);
+  const elements = stripe.elements();
+  let card = null;
+  const createElement = (type) => {
+    const elementParams = params.card[type] || {};
+    const elementOptions = elementParams.options || {};
+    const element = elements.create(type, elementOptions);
+    element.mount(elementParams.elementId || `#${type}-element`);
+    if (type === 'card' || type === 'cardNumber') {
+      card = element;
+    }
+  };
+
+  if (params.card.separateElements) {
+    createElement('cardNumber');
+    createElement('cardExpiry');
+    createElement('cardCvc');
+  } else {
+    createElement('card');
+  }
+}
+
+async function braintreePayPalButton(request, cart, payMethods, params) {
   const authorization = await vaultRequest('post', '/authorization', { gateway: 'braintree' });
   if (authorization.error) {
     throw new Error(authorization.error);
@@ -94,7 +163,7 @@ async function braintreePayPalButton(request, cart, gateways, params) {
     .then((paypalCheckoutInstance) => {
       return paypal
         .Buttons({
-          style: params.style || {},
+          style: params.paypal.style || {},
           createBillingAgreement: () =>
             paypalCheckoutInstance.createPayment({
               flow: 'vault',
@@ -120,54 +189,24 @@ async function braintreePayPalButton(request, cart, gateways, params) {
             ? (err) => params.onError(err)
             : (err) => console.error('PayPal error', err),
         })
-        .render(params.elementId || '#paypal-button');
+        .render(params.paypal.elementId || '#paypal-button');
     })
     .catch(
       isFunction(params.onError) ? params.onError : (err) => console.error('PayPal error', err),
     );
 }
 
-async function stripeElements(request, gateways, params) {
-  const onError = (error) => {
-    if (isFunction(params.onError)) {
-      return params.onError(error);
-    }
-    throw new Error(error.message);
-  };
-
-  const submitButton = document.getElementById(params.submitButtonId || 'stripe-submit-button');
-  if (!submitButton) {
-    return onError({ message: 'Submit button not found' });
+async function paymentTokenize(params, payMethods) {
+  if (!params) {
+    return;
   }
-  const { public_key: publicKey } = gateways.stripe;
-  const stripe = window.Stripe(publicKey);
-  const elements = stripe.elements();
-  let card = null;
-  const createElement = (type) => {
-    const elementParams = params[type] || {};
-    const elementOptions = elementParams.options || {};
-    const element = elements.create(type, elementOptions);
-    element.mount(elementParams.elementId || `#${type}-element`);
-    if (type === 'card' || type === 'cardNumber') {
-      card = element;
-    }
-  };
+  if (params.card && payMethods.card) {
+    if (payMethods.card.gateway === 'stripe') {
+      const stripeToken = await stripe
+        .createToken(card)
+        .then(({ token, error }) => (error ? onError(error) : token));
 
-  if (params.separateElements) {
-    createElement('cardNumber');
-    createElement('cardExpiry');
-    createElement('cardCvc');
-  } else {
-    createElement('card');
-  }
-
-  const onSubmit = async () => {
-    const token = await stripe
-      .createToken(card)
-      .then(({ token, error }) => (error ? onError(error) : token));
-
-    await cardApi
-      .createToken({
+      const cardData = {
         nonce: token.id,
         last4: token.card.last4,
         exp_month: token.card.exp_month,
@@ -176,13 +215,19 @@ async function stripeElements(request, gateways, params) {
         address_check: token.card.address_line1_check,
         cvc_check: token.card.cvc_check,
         zip_check: token.card.address_zip_check,
-      })
-      .then(({ token }) => cartApi.methods(request).update({ billing: { card: { token } } }))
-      .then(() => isFunction(params.onSuccess) && params.onSuccess())
-      .catch((err) => onError(err));
-  };
+      };
 
-  submitButton.addEventListener('click', onSubmit);
+      await cardApi
+        .createToken(cardData)
+        .then(async ({ token }) => {
+          await cartApi.methods(request).update({ billing: { card: { token } } });
+          if (isFunction(params.onSuccess)) {
+            params.onSuccess({ ...cardData, token, stripe_token: stripeToken.id });
+          }
+        })
+        .catch((err) => onError(err));
+    }
+  }
 }
 
 module.exports = {

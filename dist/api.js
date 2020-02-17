@@ -6,9 +6,13 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var card = require('./card');
 
@@ -17,6 +21,7 @@ var _require = require('./cookie'),
     setCookie = _require.setCookie;
 
 var _require2 = require('./utils'),
+    setOptions = _require2.setOptions,
     toCamel = _require2.toCamel,
     toSnake = _require2.toSnake,
     trimBoth = _require2.trimBoth,
@@ -36,6 +41,8 @@ var subscriptions = require('./subscriptions');
 
 var settings = require('./settings');
 
+var payment = require('./payment');
+
 require('isomorphic-fetch');
 
 var options = {
@@ -53,8 +60,9 @@ var api = {
     options.store = store;
     options.url = opt.url ? trimEnd(opt.url) : "https://".concat(store, ".swell.store");
     options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : "https://vault.schema.io";
+    options.timeout = opt.timeout && parseInt(opt.timeout, 10) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
-    card.options = options;
+    setOptions(options);
   },
   // Backward compatibility
   auth: function auth() {
@@ -78,7 +86,8 @@ var api = {
   products: products.methods(request),
   categories: categories.methods(request),
   subscriptions: subscriptions.methods(request),
-  settings: settings.methods(request)
+  settings: settings.methods(request),
+  payment: payment.methods(request)
 };
 
 function request(_x, _x2) {
@@ -127,7 +136,7 @@ function _request() {
               reqData = data;
             }
 
-            allOptions = (0, _objectSpread2["default"])({}, options, opt);
+            allOptions = _objectSpread({}, options, {}, opt);
             baseUrl = "".concat(allOptions.url).concat(allOptions.base || '', "/api");
             reqUrl = allOptions.fullUrl || "".concat(baseUrl, "/").concat(trimBoth(reqUrl));
             reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;
@@ -144,7 +153,7 @@ function _request() {
             }
 
             session = getCookie('swell-session');
-            reqHeaders = (0, _objectSpread2["default"])({
+            reqHeaders = _objectSpread({
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(Buffer.from(allOptions.key).toString('base64'))
             }, session ? {

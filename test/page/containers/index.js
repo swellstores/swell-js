@@ -27,7 +27,7 @@ class Main extends React.Component {
   }
 
   componentDidMount() {
-    this.initApi();
+    this.initApi({});
   }
 
   onToggleSidebar() {
@@ -36,8 +36,8 @@ class Main extends React.Component {
     });
   }
 
-  onStoreInit(store, key) {
-    this.initApi(store, key);
+  onStoreInit(params) {
+    this.initApi(params);
   }
 
   onUserLogin(email, password) {
@@ -48,8 +48,8 @@ class Main extends React.Component {
     this.props.logout();
   }
 
-  initApi(store, key) {
-    this.props.initApi(store, key);
+  initApi(params = {}) {
+    this.props.initApi(params);
   }
 
   login(email, password) {
@@ -81,8 +81,8 @@ const mapStateToProps = ({ api, flash }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  initApi: (store, key) => {
-    dispatch(api.init(store, key));
+  initApi: (params) => {
+    dispatch(api.init(params));
   },
 
   login: (email, password) => {

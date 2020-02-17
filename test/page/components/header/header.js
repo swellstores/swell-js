@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from '@material-ui/core';
 import { MenuOpen, Store, Person } from '@material-ui/icons';
+import config from '../../config';
 import api from '../../actions/api';
 
 const styles = {
@@ -43,6 +44,7 @@ class Header extends React.Component {
     this.state = {
       storeIdRef: React.createRef(),
       publicKeyRef: React.createRef(),
+      urlRef: React.createRef(),
       emailKeyRef: React.createRef(),
       passwordKeyRef: React.createRef(),
       openStoreDialog: false,
@@ -52,6 +54,13 @@ class Header extends React.Component {
       onToggleUserDialog: this.onToggleUserDialog.bind(this),
       onSubmitUser: this.onSubmitUser.bind(this),
     };
+  }
+
+  componentDidMount() {
+    const { onStoreInit } = this.props;
+    if (config.store) {
+      onStoreInit({ ...config });
+    }
   }
 
   onToggleStoreDialog() {
@@ -68,12 +77,13 @@ class Header extends React.Component {
 
   onSubmitStore() {
     const { onStoreInit } = this.props;
-    const { onToggleStoreDialog, storeIdRef, publicKeyRef } = this.state;
+    const { onToggleStoreDialog, storeIdRef, publicKeyRef, urlRef } = this.state;
 
     const store = storeIdRef.current.value;
     const key = publicKeyRef.current.value;
+    const url = urlRef.current.value;
 
-    onStoreInit(store, key);
+    onStoreInit({ store, key, url: url || undefined });
     onToggleStoreDialog();
   }
 
@@ -96,14 +106,41 @@ class Header extends React.Component {
       onSubmitStore,
       storeIdRef,
       publicKeyRef,
+      urlRef,
     } = this.state;
 
     return (
       <Dialog open={openStoreDialog} onClose={onToggleStoreDialog}>
         <DialogTitle classes={{ root: classes.dialogTitle }}>Init API</DialogTitle>
         <DialogContent>
-          <Input fullWidth type="text" placeholder="Store ID" inputRef={storeIdRef} />
-          <Input fullWidth type="text" placeholder="Public key" inputRef={publicKeyRef} />
+          <Input
+            fullWidth
+            type="text"
+            placeholder="Store ID"
+            inputRef={storeIdRef}
+            value={config.store}
+          />
+          <Input
+            fullWidth
+            type="text"
+            placeholder="Public key"
+            inputRef={publicKeyRef}
+            value={config.publicKey}
+          />
+          <Input
+            fullWidth
+            type="text"
+            placeholder="URL (optional)"
+            inputRef={urlRef}
+            value={config.url}
+          />
+          <Input
+            fullWidth
+            type="text"
+            placeholder="Vault URL (optional)"
+            inputRef={urlRef}
+            value={config.vaultUrl}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={onToggleStoreDialog} color="primary">
@@ -199,4 +236,7 @@ const mapStateToProps = ({ api, user }) => ({
   user,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(Header);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(Header);

@@ -2,9 +2,8 @@ import api from '../../../src/api';
 import config from '../config';
 
 export default {
-  init(store = config.store, key = config.key) {
+  init({ store = config.store, key = config.key, url = config.url, vaultUrl = config.vaultUrl }) {
     return (dispatch) => {
-      const { url, vaultUrl } = config;
       if (store && key) {
         api.init(store, key, {
           url,

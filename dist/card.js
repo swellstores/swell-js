@@ -2,21 +2,14 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _require = require('./utils'),
-    trimStart = _require.trimStart,
-    trimEnd = _require.trimEnd,
-    toCamel = _require.toCamel;
+    vaultRequest = _require.vaultRequest;
 
-var VAULT_URL = 'https://vault.schema.io';
-var VAULT_TIMEOUT = 20000;
 var cardApi = {
-  options: {},
   createToken: function () {
     var _createToken = (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
@@ -36,32 +29,34 @@ var cardApi = {
                 param = '';
               }
 
-              if (!this.validateNumber(card.number)) {
-                error = 'Card number appears to be invalid';
-                code = 'invalid_card_number';
-                param = 'number';
-              }
+              if (!card.nonce) {
+                if (!this.validateNumber(card.number)) {
+                  error = 'Card number appears to be invalid';
+                  code = 'invalid_card_number';
+                  param = 'number';
+                }
 
-              if (card.exp) {
-                exp = this.expiry(card.exp);
-                card.exp_month = exp.month;
-                card.exp_year = exp.year;
-              }
+                if (card.exp) {
+                  exp = this.expiry(card.exp);
+                  card.exp_month = exp.month;
+                  card.exp_year = exp.year;
+                }
 
-              if (!this.validateExpiry(card.exp_month, card.exp_year)) {
-                error = 'Card expiry appears to be invalid';
-                code = 'invalid_card_expiry';
-                param = 'exp_month';
-              }
+                if (!this.validateExpiry(card.exp_month, card.exp_year)) {
+                  error = 'Card expiry appears to be invalid';
+                  code = 'invalid_card_expiry';
+                  param = 'exp_month';
+                }
 
-              if (!this.validateCVC(card.cvc)) {
-                error = 'Card CVC code appears to be invalid';
-                code = 'invalid_card_cvc';
-                param = 'exp_cvc';
+                if (!this.validateCVC(card.cvc)) {
+                  error = 'Card CVC code appears to be invalid';
+                  code = 'invalid_card_cvc';
+                  param = 'exp_cvc';
+                }
               }
 
               if (!error) {
-                _context.next = 14;
+                _context.next = 11;
                 break;
               }
 
@@ -71,15 +66,15 @@ var cardApi = {
               err.param = param;
               throw err;
 
-            case 14:
-              _context.next = 16;
-              return this.vaultRequest('post', '/tokens', card);
+            case 11:
+              _context.next = 13;
+              return vaultRequest('post', '/tokens', card);
 
-            case 16:
+            case 13:
               result = _context.sent;
 
               if (!result.errors) {
-                _context.next = 24;
+                _context.next = 21;
                 break;
               }
 
@@ -90,10 +85,10 @@ var cardApi = {
               _err.status = 402;
               throw _err;
 
-            case 24:
+            case 21:
               return _context.abrupt("return", result);
 
-            case 25:
+            case 22:
             case "end":
               return _context.stop();
           }
@@ -164,140 +159,6 @@ var cardApi = {
   },
   validateCVC: function validateCVC(val) {
     return val = String(val).trim(), /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
-  },
-  vaultRequest: function () {
-    var _vaultRequest = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee2(method, url, data) {
-      var opt,
-          options,
-          vaultUrl,
-          timeout,
-          requestId,
-          callback,
-          _args2 = arguments;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              opt = _args2.length > 3 && _args2[3] !== undefined ? _args2[3] : undefined;
-              options = this.options;
-              vaultUrl = options.vaultUrl || VAULT_URL;
-              timeout = options.timeout || VAULT_TIMEOUT;
-              requestId = vaultRequestId();
-              callback = "swell_vault_response_".concat(requestId);
-              data = {
-                $jsonp: {
-                  method: method,
-                  callback: callback
-                },
-                $data: data,
-                $key: options.key
-              };
-              return _context2.abrupt("return", new Promise(function (resolve, reject) {
-                var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = "".concat(trimEnd(vaultUrl), "/").concat(trimStart(url), "?").concat(serializeData(data));
-                var errorTimeout = setTimeout(function () {
-                  window[callback]({
-                    $error: "Request timed out after ".concat(timeout / 1000, " seconds"),
-                    $status: 500
-                  });
-                }, timeout);
-
-                window[callback] = function (result) {
-                  clearTimeout(errorTimeout);
-
-                  if (result && result.$error) {
-                    var err = new Error(result.$error);
-                    err.code = 'request_error';
-                    err.status = result.$status;
-                    reject(err);
-                  } else if (!result || result.$status >= 300) {
-                    var _err2 = new Error('A connection error occurred while making the request');
-
-                    _err2.code = 'connection_error';
-                    _err2.status = result.$status;
-                    reject(_err2);
-                  } else {
-                    resolve(options.useCamelCase ? toCamel(result.$data) : result.$data);
-                  }
-
-                  delete window[callback];
-                  script.parentNode.removeChild(script);
-                };
-
-                document.getElementsByTagName('head')[0].appendChild(script);
-              }));
-
-            case 8:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function vaultRequest(_x2, _x3, _x4) {
-      return _vaultRequest.apply(this, arguments);
-    }
-
-    return vaultRequest;
-  }()
+  }
 };
-
-function vaultRequestId() {
-  window.__swell_vault_request_id = window.__swell_vault_request_id || 0;
-  window.__swell_vault_request_id++;
-  return window.__swell_vault_request_id;
-}
-
-function serializeData(data) {
-  var key;
-  var s = [];
-
-  var add = function add(key, value) {
-    // If value is a function, invoke it and return its value
-    if (typeof value === 'function') {
-      value = value();
-    } else if (value == null) {
-      value = '';
-    }
-
-    s[s.length] = encodeURIComponent(key) + '=' + encodeURIComponent(value);
-  };
-
-  for (var _key in data) {
-    buildParams(_key, data[_key], add);
-  }
-
-  return s.join('&').replace(' ', '+');
-}
-
-var rbracket = /\[\]$/;
-
-function buildParams(key, obj, add) {
-  var name;
-
-  if (obj instanceof Array) {
-    for (var i = 0; i < obj.length; i++) {
-      if (rbracket.test(key)) {
-        // Treat each array item as a scalar.
-        add(key, v);
-      } else {
-        // Item is non-scalar (array or object), encode its numeric index.
-        buildParams(key + '[' + ((typeof v === "undefined" ? "undefined" : (0, _typeof2["default"])(v)) === 'object' && v != null ? i : '') + ']', v, add);
-      }
-    }
-  } else if (obj && (0, _typeof2["default"])(obj) === 'object') {
-    // Serialize object item.
-    for (name in obj) {
-      buildParams(key + '[' + name + ']', obj[name], add);
-    }
-  } else {
-    // Serialize scalar item.
-    add(key, obj);
-  }
-}
-
 module.exports = cardApi;
