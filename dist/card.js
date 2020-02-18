@@ -79,10 +79,10 @@ var cardApi = {
               }
 
               _param = Object.keys(result.errors)[0];
-              _err = new Error(result.errors[_param]);
-              _err.params = _param;
+              _err = new Error(result.errors[_param].message || 'Unknown error');
               _err.code = 'vault_error';
               _err.status = 402;
+              _err.param = _param;
               throw _err;
 
             case 21:

@@ -44,10 +44,10 @@ const cardApi = {
     const result = await vaultRequest('post', '/tokens', card);
     if (result.errors) {
       const param = Object.keys(result.errors)[0];
-      const err = new Error(result.errors[param]);
-      err.params = param;
+      const err = new Error(result.errors[param].message || 'Unknown error');
       err.code = 'vault_error';
       err.status = 402;
+      err.param = param;
       throw err;
     }
     return result;

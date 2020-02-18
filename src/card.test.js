@@ -3,11 +3,14 @@ global.window = {};
 
 const api = require('./api');
 
+let VAULT_RESPONSE;
+
 describe('card', () => {
   let script;
 
   beforeEach(() => {
     api.init('test', 'pk_test');
+    VAULT_RESPONSE = null;
     // Mock document
     global.document = {
       createElement: (tag) => {
@@ -17,7 +20,9 @@ describe('card', () => {
           },
         };
         setTimeout(() => {
-          window[`swell_vault_response_${window.__swell_vault_request_id}`]({ $data: { ok: 1 } });
+          window[`swell_vault_response_${window.__swell_vault_request_id}`]({
+            $data: VAULT_RESPONSE || { token: 't_test' },
+          });
         }, 100);
         return script;
       },
@@ -76,6 +81,23 @@ describe('card', () => {
           throw new Error();
         } catch (err) {
           expect(err.message).toEqual('Card number appears to be invalid');
+        }
+      });
+
+      it('should throw an of vault request returns errors', async () => {
+        try {
+          VAULT_RESPONSE = { errors: { gateway: { code: 'INVALID', message: 'Test error' } } };
+          await api.card.createToken({
+            cvc: 123,
+            exp_month: 1,
+            exp_year: 2099,
+            number: '4242 4242 4242 4242',
+          });
+          throw new Error();
+        } catch (err) {
+          expect(err.message).toEqual('Test error');
+          expect(err.param).toEqual('gateway');
+          expect(err.status).toEqual(402);
         }
       });
     });
