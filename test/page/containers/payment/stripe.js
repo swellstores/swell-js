@@ -54,6 +54,8 @@ class Stripe extends React.Component {
   }
 
   onClickTokenize(event) {
+    const { api } = this.props;
+
     event.preventDefault();
     api.payment.tokenize();
   }

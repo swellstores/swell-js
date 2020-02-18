@@ -4,6 +4,8 @@ const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
 
 const LOADING_SCRIPTS = {};
+const CARD_ELEMENTS = {};
+const API = {};
 
 function methods(request) {
   return {
@@ -36,7 +38,7 @@ function methods(request) {
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
-      return await paymentTokenize(this.params, payMethods);
+      return await paymentTokenize(request, this.params, payMethods);
     },
   };
 }
@@ -44,7 +46,9 @@ function methods(request) {
 async function render(request, cart, payMethods, params) {
   if (params.card) {
     if (!payMethods.card) {
-      console.error(`Payment element error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.`);
+      console.error(
+        `Payment element error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.`,
+      );
     } else if (payMethods.card.gateway === 'braintree') {
       if (!window.braintree) {
         await loadScript(
@@ -62,7 +66,9 @@ async function render(request, cart, payMethods, params) {
   }
   if (params.paypal) {
     if (!payMethods.paypal) {
-      console.error(`Payment element error: PayPal payments are disabled. See Payment settings in the Swell dashboard for details.`);
+      console.error(
+        `Payment element error: PayPal payments are disabled. See Payment settings in the Swell dashboard for details.`,
+      );
     } else {
       if (!window.paypal) {
         await loadScript(
@@ -114,26 +120,19 @@ const loadScript = async (id, src) => {
 };
 
 async function stripeElements(request, payMethods, params) {
-  const onError = (error) => {
-    if (isFunction(params.onError)) {
-      return params.onError(error);
-    }
-    throw new Error(error.message);
-  };
-
   const { public_key: publicKey } = payMethods.card;
   const stripe = window.Stripe(publicKey);
   const elements = stripe.elements();
-  let card = null;
   const createElement = (type) => {
     const elementParams = params.card[type] || {};
     const elementOptions = elementParams.options || {};
     const element = elements.create(type, elementOptions);
     element.mount(elementParams.elementId || `#${type}-element`);
     if (type === 'card' || type === 'cardNumber') {
-      card = element;
+      CARD_ELEMENTS.stripe = element;
     }
   };
+  API.stripe = stripe;
 
   if (params.card.separateElements) {
     createElement('cardNumber');
@@ -196,33 +195,46 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
     );
 }
 
-async function paymentTokenize(params, payMethods) {
+async function paymentTokenize(request, params, payMethods) {
+  const onError = (error) => {
+    if (isFunction(params.card.onError)) {
+      return params.card.onError(error);
+    }
+    throw new Error(error.message);
+  };
+
   if (!params) {
     return;
   }
   if (params.card && payMethods.card) {
-    if (payMethods.card.gateway === 'stripe') {
+    if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
+      const stripe = API.stripe;
       const stripeToken = await stripe
-        .createToken(card)
-        .then(({ token, error }) => (error ? onError(error) : token));
+        .createToken(CARD_ELEMENTS.stripe)
+        .then(({ token }) => token)
+        .catch((error) => onError(error));
+
+      if (!stripeToken) {
+        return;
+      }
 
       const cardData = {
-        nonce: token.id,
-        last4: token.card.last4,
-        exp_month: token.card.exp_month,
-        exp_year: token.card.exp_year,
-        brand: token.card.brand,
-        address_check: token.card.address_line1_check,
-        cvc_check: token.card.cvc_check,
-        zip_check: token.card.address_zip_check,
+        nonce: stripeToken.id,
+        last4: stripeToken.card.last4,
+        exp_month: stripeToken.card.exp_month,
+        exp_year: stripeToken.card.exp_year,
+        brand: stripeToken.card.brand,
+        address_check: stripeToken.card.address_line1_check,
+        cvc_check: stripeToken.card.cvc_check,
+        zip_check: stripeToken.card.address_zip_check,
       };
 
       await cardApi
         .createToken(cardData)
         .then(async ({ token }) => {
           await cartApi.methods(request).update({ billing: { card: { token } } });
-          if (isFunction(params.onSuccess)) {
-            params.onSuccess({ ...cardData, token, stripe_token: stripeToken.id });
+          if (isFunction(params.card.onSuccess)) {
+            params.card.onSuccess({ ...cardData, token, stripe_token: stripeToken.id });
           }
         })
         .catch((err) => onError(err));
