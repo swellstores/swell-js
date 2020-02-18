@@ -40,8 +40,8 @@ class Main extends React.Component {
     this.initApi(params);
   }
 
-  onUserLogin(email, password) {
-    this.login(email, password);
+  onUserLogin(params = {}) {
+    this.login(params);
   }
 
   onUserLogout() {
@@ -52,8 +52,8 @@ class Main extends React.Component {
     this.props.initApi(params);
   }
 
-  login(email, password) {
-    this.props.login(email, password);
+  login(params = {}) {
+    this.props.login(params);
   }
 
   render() {
@@ -85,8 +85,8 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(api.init(params));
   },
 
-  login: (email, password) => {
-    dispatch(userActions.login(email, password));
+  login: (params) => {
+    dispatch(userActions.login(params));
   },
 
   logout: () => {

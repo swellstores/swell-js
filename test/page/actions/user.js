@@ -1,7 +1,7 @@
 import config from '../config';
 
 export default {
-  login(email = config.email, password = config.password) {
+  login({ email = config.email, password = config.password }) {
     return async (dispatch, getState) => {
       const { api } = getState();
       const user = await api.account.login(email, password);
