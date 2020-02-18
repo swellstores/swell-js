@@ -94,7 +94,7 @@ class Header extends React.Component {
     const email = emailKeyRef.current.value;
     const password = passwordKeyRef.current.value;
 
-    onUserLogin(email, password);
+    onUserLogin({ email, password });
     onToggleUserDialog();
   }
 
@@ -236,7 +236,4 @@ const mapStateToProps = ({ api, user }) => ({
   user,
 });
 
-export default compose(
-  connect(mapStateToProps),
-  withStyles(styles),
-)(Header);
+export default compose(connect(mapStateToProps), withStyles(styles))(Header);

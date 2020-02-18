@@ -7,6 +7,8 @@ var raw = {
   PUBLIC_KEY: process.env.PUBLIC_KEY,
   STORE_URL: process.env.STORE_URL,
   VAULT_URL: process.env.VAULT_URL,
+  EMAIL: process.env.EMAIL,
+  PASSWORD: process.env.PASSWORD,
 };
 
 module.exports = {
