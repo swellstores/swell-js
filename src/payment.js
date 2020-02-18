@@ -76,7 +76,7 @@ async function render(request, cart, payMethods, params) {
           `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&vault=true`,
         );
       }
-      if (payMethods.card && payMethods.card.gateway === 'braintree') {
+      if (payMethods.card && payMethods.paypal.gateway === 'braintree') {
         if (!window.braintree) {
           await loadScript(
             'braintree-web',
