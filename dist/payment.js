@@ -23,6 +23,8 @@ var _require = require('./utils'),
     vaultRequest = _require.vaultRequest;
 
 var LOADING_SCRIPTS = {};
+var CARD_ELEMENTS = {};
+var API = {};
 
 function methods(request) {
   return {
@@ -145,7 +147,7 @@ function methods(request) {
 
               case 5:
                 _context3.next = 7;
-                return paymentTokenize(this.params, payMethods);
+                return paymentTokenize(request, this.params, payMethods);
 
               case 7:
                 return _context3.abrupt("return", _context3.sent);
@@ -337,23 +339,14 @@ function _stripeElements() {
   _stripeElements = (0, _asyncToGenerator2["default"])(
   /*#__PURE__*/
   _regenerator["default"].mark(function _callee6(request, payMethods, params) {
-    var onError, publicKey, stripe, elements, card, createElement;
+    var publicKey, stripe, elements, createElement;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
-            onError = function onError(error) {
-              if (isFunction(params.onError)) {
-                return params.onError(error);
-              }
-
-              throw new Error(error.message);
-            };
-
             publicKey = payMethods.card.public_key;
             stripe = window.Stripe(publicKey);
             elements = stripe.elements();
-            card = null;
 
             createElement = function createElement(type) {
               var elementParams = params.card[type] || {};
@@ -362,9 +355,11 @@ function _stripeElements() {
               element.mount(elementParams.elementId || "#".concat(type, "-element"));
 
               if (type === 'card' || type === 'cardNumber') {
-                card = element;
+                CARD_ELEMENTS.stripe = element;
               }
             };
+
+            API.stripe = stripe;
 
             if (params.card.separateElements) {
               createElement('cardNumber');
@@ -374,7 +369,7 @@ function _stripeElements() {
               createElement('card');
             }
 
-          case 7:
+          case 6:
           case "end":
             return _context6.stop();
         }
@@ -472,57 +467,76 @@ function _braintreePayPalButton() {
   return _braintreePayPalButton.apply(this, arguments);
 }
 
-function paymentTokenize(_x15, _x16) {
+function paymentTokenize(_x15, _x16, _x17) {
   return _paymentTokenize.apply(this, arguments);
 }
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])(
   /*#__PURE__*/
-  _regenerator["default"].mark(function _callee9(params, payMethods) {
-    var stripeToken, cardData;
+  _regenerator["default"].mark(function _callee9(request, params, payMethods) {
+    var onError, stripe, stripeToken, cardData;
     return _regenerator["default"].wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
+            onError = function onError(error) {
+              if (isFunction(params.card.onError)) {
+                return params.card.onError(error);
+              }
+
+              throw new Error(error.message);
+            };
+
             if (params) {
-              _context9.next = 2;
+              _context9.next = 3;
               break;
             }
 
             return _context9.abrupt("return");
 
-          case 2:
+          case 3:
             if (!(params.card && payMethods.card)) {
-              _context9.next = 10;
+              _context9.next = 14;
               break;
             }
 
-            if (!(payMethods.card.gateway === 'stripe')) {
-              _context9.next = 10;
+            if (!(payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe)) {
+              _context9.next = 14;
               break;
             }
 
-            _context9.next = 6;
-            return stripe.createToken(card).then(function (_ref3) {
-              var token = _ref3.token,
-                  error = _ref3.error;
-              return error ? onError(error) : token;
+            stripe = API.stripe;
+            _context9.next = 8;
+            return stripe.createToken(CARD_ELEMENTS.stripe).then(function (_ref3) {
+              var token = _ref3.token;
+              return token;
+            })["catch"](function (error) {
+              return onError(error);
             });
 
-          case 6:
+          case 8:
             stripeToken = _context9.sent;
+
+            if (stripeToken) {
+              _context9.next = 11;
+              break;
+            }
+
+            return _context9.abrupt("return");
+
+          case 11:
             cardData = {
-              nonce: token.id,
-              last4: token.card.last4,
-              exp_month: token.card.exp_month,
-              exp_year: token.card.exp_year,
-              brand: token.card.brand,
-              address_check: token.card.address_line1_check,
-              cvc_check: token.card.cvc_check,
-              zip_check: token.card.address_zip_check
+              nonce: stripeToken.id,
+              last4: stripeToken.card.last4,
+              exp_month: stripeToken.card.exp_month,
+              exp_year: stripeToken.card.exp_year,
+              brand: stripeToken.card.brand,
+              address_check: stripeToken.card.address_line1_check,
+              cvc_check: stripeToken.card.cvc_check,
+              zip_check: stripeToken.card.address_zip_check
             };
-            _context9.next = 10;
+            _context9.next = 14;
             return cardApi.createToken(cardData).then(
             /*#__PURE__*/
             function () {
@@ -545,8 +559,8 @@ function _paymentTokenize() {
                         });
 
                       case 3:
-                        if (isFunction(params.onSuccess)) {
-                          params.onSuccess(_objectSpread({}, cardData, {
+                        if (isFunction(params.card.onSuccess)) {
+                          params.card.onSuccess(_objectSpread({}, cardData, {
                             token: token,
                             stripe_token: stripeToken.id
                           }));
@@ -560,14 +574,14 @@ function _paymentTokenize() {
                 }, _callee8);
               }));
 
-              return function (_x17) {
+              return function (_x18) {
                 return _ref5.apply(this, arguments);
               };
             }())["catch"](function (err) {
               return onError(err);
             });
 
-          case 10:
+          case 14:
           case "end":
             return _context9.stop();
         }
