@@ -1,3 +1,4 @@
+const { get } = require('lodash');
 const cartApi = require('./cart');
 const cardApi = require('./card');
 const settingsApi = require('./settings');
@@ -34,11 +35,15 @@ function methods(request) {
     },
 
     async tokenize() {
+      const cart = await cartApi.methods(request).get();
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
       const payMethods = await settingsApi.methods(request).payments();
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
-      return await paymentTokenize(request, this.params, payMethods);
+      return await paymentTokenize(request, cart, this.params, payMethods);
     },
   };
 }
@@ -199,7 +204,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
     );
 }
 
-async function paymentTokenize(request, params, payMethods) {
+async function paymentTokenize(request, cart, params, payMethods) {
   const onError = (error) => {
     if (isFunction(params.card.onError)) {
       return params.card.onError(error);
@@ -222,6 +227,7 @@ async function paymentTokenize(request, params, payMethods) {
         return;
       }
 
+      const billing = get(cart, 'account.billing');
       const cardData = {
         nonce: stripeToken.id,
         last4: stripeToken.card.last4,
@@ -231,6 +237,7 @@ async function paymentTokenize(request, params, payMethods) {
         address_check: stripeToken.card.address_line1_check,
         cvc_check: stripeToken.card.cvc_check,
         zip_check: stripeToken.card.address_zip_check,
+        ...(billing ? { billing } : {}),
       };
 
       await cardApi
