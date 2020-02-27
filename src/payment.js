@@ -218,30 +218,26 @@ async function paymentTokenize(request, params, payMethods) {
         .then(({ token }) => token)
         .catch((error) => onError(error));
 
-      if (!stripeToken) {
-        return;
+      if (stripeToken) {
+        await cartApi
+          .methods(request)
+          .update({
+            billing: {
+              card: {
+                token: stripeToken.id,
+                last4: stripeToken.card.last4,
+                exp_month: stripeToken.card.exp_month,
+                exp_year: stripeToken.card.exp_year,
+                brand: stripeToken.card.brand,
+                address_check: stripeToken.card.address_line1_check,
+                cvc_check: stripeToken.card.cvc_check,
+                zip_check: stripeToken.card.address_zip_check,
+              },
+            },
+          })
+          .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
+          .catch((err) => onError(err));
       }
-
-      const cardData = {
-        nonce: stripeToken.id,
-        last4: stripeToken.card.last4,
-        exp_month: stripeToken.card.exp_month,
-        exp_year: stripeToken.card.exp_year,
-        brand: stripeToken.card.brand,
-        address_check: stripeToken.card.address_line1_check,
-        cvc_check: stripeToken.card.cvc_check,
-        zip_check: stripeToken.card.address_zip_check,
-      };
-
-      await cardApi
-        .createToken(cardData)
-        .then(async ({ token }) => {
-          await cartApi.methods(request).update({ billing: { card: { token } } });
-          if (isFunction(params.card.onSuccess)) {
-            params.card.onSuccess({ ...cardData, token, stripe_token: stripeToken.id });
-          }
-        })
-        .catch((err) => onError(err));
     }
   }
 }
