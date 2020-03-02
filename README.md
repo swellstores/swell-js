@@ -348,10 +348,10 @@ Important note: At of February 2019, PayPal introduced Smart Payment Buttons whi
 
 #### Apply a coupon or gift card code
 
-Apply either a coupon or gift card code, allowing you to have a single input for a code value. Coupon and gift card codes are not case sensitive. If successful, returns the updated cart object. Otherwise, returns a validation error.
+Apply either a coupon or gift card code, allowing you to have a single input for both. A cart can have a single coupon and multiple gift card codes applied. Codes are not case sensitive. If successful, returns the updated cart object. Otherwise, returns a validation error.
 
 ```javascript
-await swell.cart.applyCouponCode('FREESHIPPING');
+await swell.cart.applyCoupon('FREESHIPPING');
 ```
 
 #### Remove coupon code
