@@ -829,7 +829,7 @@ swell.payment.createElements({
       label: 'buynow',
       tagline: false,
     },
-    onSuccess: (result) => {
+    onSuccess: (data, actions) => {
       // optional, called on payment success
     },
     onCancel: () => {

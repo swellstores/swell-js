@@ -22,9 +22,9 @@ class BraintreePayPal extends React.Component {
           label: 'buynow',
           tagline: false,
         },
+        onSuccess: () => onOrderSubmit(),
+        onError: (err) => onError(err.message),
       },
-      onSuccess: () => onOrderSubmit(),
-      onError: (err) => onError(err.message),
     });
   }
 
