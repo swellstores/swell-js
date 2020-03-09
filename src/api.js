@@ -122,7 +122,15 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     body: reqBody,
     credentials: 'include',
     mode: 'cors',
-  });
+  }).catch(() =>
+    console.error(
+      'Request failed! This may be due to invalid initialization parameters. Check your <store-id> passed during initialization',
+    ),
+  );
+
+  if (!response) {
+    return;
+  }
   const responseSession = response.headers.get('X-Session');
 
   if (typeof responseSession === 'string' && session !== responseSession) {
