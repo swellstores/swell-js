@@ -179,23 +179,27 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
               .then(({ nonce }) =>
                 cartApi.methods(request).update({ billing: { paypal: { nonce } } }),
               )
-              .then(() => isFunction(params.onSuccess) && params.onSuccess())
+              .then(
+                () => isFunction(params.paypal.onSuccess) && params.paypal.onSuccess(data, actions),
+              )
               .catch(
-                isFunction(params.onError)
-                  ? params.onError
+                isFunction(params.paypal.onError)
+                  ? params.paypal.onError
                   : (err) => console.error('PayPal error', err),
               ),
-          onCancel: isFunction(params.onCancel)
-            ? () => params.onCancel()
+          onCancel: isFunction(params.paypal.onCancel)
+            ? () => params.paypal.onCancel()
             : () => console.log('PayPal payment cancelled'),
-          onError: isFunction(params.onError)
-            ? (err) => params.onError(err)
+          onError: isFunction(params.paypal.onError)
+            ? (err) => params.paypal.onError(err)
             : (err) => console.error('PayPal error', err),
         })
         .render(params.paypal.elementId || '#paypal-button');
     })
     .catch(
-      isFunction(params.onError) ? params.onError : (err) => console.error('PayPal error', err),
+      isFunction(params.paypal.onError)
+        ? params.paypal.onError
+        : (err) => console.error('PayPal error', err),
     );
 }
 
