@@ -23,20 +23,14 @@ function methods(request, options) {
     requested: false,
     pendingRequests: [],
     requestStateChange: function () {
-      var _requestStateChange = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee2(method, url, id, data) {
+      var _requestStateChange = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(method, url, id, data) {
         var _this = this;
 
         return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                return _context2.abrupt("return", this.requestStateSync(
-                /*#__PURE__*/
-                (0, _asyncToGenerator2["default"])(
-                /*#__PURE__*/
-                _regenerator["default"].mark(function _callee() {
+                return _context2.abrupt("return", this.requestStateSync( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
                   var result;
                   return _regenerator["default"].wrap(function _callee$(_context) {
                     while (1) {
@@ -82,9 +76,7 @@ function methods(request, options) {
       return requestStateChange;
     }(),
     requestStateSync: function () {
-      var _requestStateSync = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee3(handler) {
+      var _requestStateSync = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(handler) {
         var _this2 = this;
 
         var result, _this$pendingRequests, _handler, resolve;
@@ -209,9 +201,7 @@ function methods(request, options) {
       return this.requestStateChange('delete', "/cart/giftcards/".concat(id));
     },
     getShippingRates: function () {
-      var _getShippingRates = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee4() {
+      var _getShippingRates = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
         return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
@@ -237,9 +227,7 @@ function methods(request, options) {
       return getShippingRates;
     }(),
     submitOrder: function () {
-      var _submitOrder = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee5() {
+      var _submitOrder = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
         var result;
         return _regenerator["default"].wrap(function _callee5$(_context5) {
           while (1) {
@@ -278,9 +266,7 @@ function methods(request, options) {
       return submitOrder;
     }(),
     getOrder: function () {
-      var _getOrder = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee6() {
+      var _getOrder = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6() {
         var checkoutId,
             result,
             _args6 = arguments;
@@ -331,9 +317,7 @@ function methods(request, options) {
       return getOrder;
     }(),
     getSettings: function () {
-      var _getSettings = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee7() {
+      var _getSettings = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
         return _regenerator["default"].wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {

@@ -11,9 +11,7 @@ var _require = require('./utils'),
 
 var cardApi = {
   createToken: function () {
-    var _createToken = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee(card) {
+    var _createToken = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(card) {
       var error, code, param, exp, err, result, _param, _err;
 
       return _regenerator["default"].wrap(function _callee$(_context) {

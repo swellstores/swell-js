@@ -95,9 +95,7 @@ function request(_x, _x2) {
 }
 
 function _request() {
-  _request = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee(method, url) {
+  _request = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(method, url) {
     var id,
         data,
         opt,

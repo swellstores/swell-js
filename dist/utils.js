@@ -81,9 +81,7 @@ function vaultRequest(_x, _x2, _x3) {
 }
 
 function _vaultRequest() {
-  _vaultRequest = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee(method, url, data) {
+  _vaultRequest = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(method, url, data) {
     var opt,
         vaultUrl,
         timeout,

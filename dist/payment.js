@@ -2,15 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var cartApi = require('./cart');
 
@@ -31,9 +25,7 @@ function methods(request) {
     params: null,
     methodSettings: null,
     methods: function () {
-      var _methods = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee() {
+      var _methods = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         var result;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -69,9 +61,7 @@ function methods(request) {
       return methods;
     }(),
     createElements: function () {
-      var _createElements = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee2(elementParams) {
+      var _createElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(elementParams) {
         var cart, payMethods;
         return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
@@ -124,9 +114,7 @@ function methods(request) {
       return createElements;
     }(),
     tokenize: function () {
-      var _tokenize = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee3() {
+      var _tokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
         var payMethods;
         return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
@@ -174,9 +162,7 @@ function render(_x2, _x3, _x4, _x5) {
 }
 
 function _render() {
-  _render = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee5(request, cart, payMethods, params) {
+  _render = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(request, cart, payMethods, params) {
     return _regenerator["default"].wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
@@ -256,7 +242,7 @@ function _render() {
             return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?client-id=".concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&vault=true"));
 
           case 25:
-            if (!(payMethods.card && payMethods.card.gateway === 'braintree')) {
+            if (!(payMethods.card && payMethods.card.gateway === 'braintree' && payMethods.paypal.gateway === 'braintree')) {
               _context5.next = 34;
               break;
             }
@@ -292,12 +278,8 @@ function _render() {
   return _render.apply(this, arguments);
 }
 
-var loadScript =
-/*#__PURE__*/
-function () {
-  var _ref = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee4(id, src) {
+var loadScript = /*#__PURE__*/function () {
+  var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(id, src) {
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
@@ -336,9 +318,7 @@ function stripeElements(_x8, _x9, _x10) {
 }
 
 function _stripeElements() {
-  _stripeElements = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee6(request, payMethods, params) {
+  _stripeElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(request, payMethods, params) {
     var publicKey, stripe, elements, createElement;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
@@ -384,9 +364,7 @@ function braintreePayPalButton(_x11, _x12, _x13, _x14) {
 }
 
 function _braintreePayPalButton() {
-  _braintreePayPalButton = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee7(request, cart, payMethods, params) {
+  _braintreePayPalButton = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(request, cart, payMethods, params) {
     var authorization, braintree, paypal;
     return _regenerator["default"].wrap(function _callee7$(_context7) {
       while (1) {
@@ -437,23 +415,23 @@ function _braintreePayPalButton() {
                       }
                     });
                   }).then(function () {
-                    return isFunction(params.onSuccess) && params.onSuccess();
-                  })["catch"](isFunction(params.onError) ? params.onError : function (err) {
+                    return isFunction(params.paypal.onSuccess) && params.paypal.onSuccess(data, actions);
+                  })["catch"](isFunction(params.paypal.onError) ? params.paypal.onError : function (err) {
                     return console.error('PayPal error', err);
                   });
                 },
-                onCancel: isFunction(params.onCancel) ? function () {
-                  return params.onCancel();
+                onCancel: isFunction(params.paypal.onCancel) ? function () {
+                  return params.paypal.onCancel();
                 } : function () {
                   return console.log('PayPal payment cancelled');
                 },
-                onError: isFunction(params.onError) ? function (err) {
-                  return params.onError(err);
+                onError: isFunction(params.paypal.onError) ? function (err) {
+                  return params.paypal.onError(err);
                 } : function (err) {
                   return console.error('PayPal error', err);
                 }
               }).render(params.paypal.elementId || '#paypal-button');
-            })["catch"](isFunction(params.onError) ? params.onError : function (err) {
+            })["catch"](isFunction(params.paypal.onError) ? params.paypal.onError : function (err) {
               return console.error('PayPal error', err);
             });
 
@@ -472,13 +450,11 @@ function paymentTokenize(_x15, _x16, _x17) {
 }
 
 function _paymentTokenize() {
-  _paymentTokenize = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee9(request, params, payMethods) {
-    var onError, stripe, stripeToken, cardData;
-    return _regenerator["default"].wrap(function _callee9$(_context9) {
+  _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(request, params, payMethods) {
+    var onError, stripe, stripeToken;
+    return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
-        switch (_context9.prev = _context9.next) {
+        switch (_context8.prev = _context8.next) {
           case 0:
             onError = function onError(error) {
               if (isFunction(params.card.onError)) {
@@ -489,25 +465,25 @@ function _paymentTokenize() {
             };
 
             if (params) {
-              _context9.next = 3;
+              _context8.next = 3;
               break;
             }
 
-            return _context9.abrupt("return");
+            return _context8.abrupt("return");
 
           case 3:
             if (!(params.card && payMethods.card)) {
-              _context9.next = 14;
+              _context8.next = 12;
               break;
             }
 
             if (!(payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe)) {
-              _context9.next = 14;
+              _context8.next = 12;
               break;
             }
 
             stripe = API.stripe;
-            _context9.next = 8;
+            _context8.next = 8;
             return stripe.createToken(CARD_ELEMENTS.stripe).then(function (_ref3) {
               var token = _ref3.token;
               return token;
@@ -516,77 +492,39 @@ function _paymentTokenize() {
             });
 
           case 8:
-            stripeToken = _context9.sent;
+            stripeToken = _context8.sent;
 
-            if (stripeToken) {
-              _context9.next = 11;
+            if (!stripeToken) {
+              _context8.next = 12;
               break;
             }
 
-            return _context9.abrupt("return");
-
-          case 11:
-            cardData = {
-              nonce: stripeToken.id,
-              last4: stripeToken.card.last4,
-              exp_month: stripeToken.card.exp_month,
-              exp_year: stripeToken.card.exp_year,
-              brand: stripeToken.card.brand,
-              address_check: stripeToken.card.address_line1_check,
-              cvc_check: stripeToken.card.cvc_check,
-              zip_check: stripeToken.card.address_zip_check
-            };
-            _context9.next = 14;
-            return cardApi.createToken(cardData).then(
-            /*#__PURE__*/
-            function () {
-              var _ref5 = (0, _asyncToGenerator2["default"])(
-              /*#__PURE__*/
-              _regenerator["default"].mark(function _callee8(_ref4) {
-                var token;
-                return _regenerator["default"].wrap(function _callee8$(_context8) {
-                  while (1) {
-                    switch (_context8.prev = _context8.next) {
-                      case 0:
-                        token = _ref4.token;
-                        _context8.next = 3;
-                        return cartApi.methods(request).update({
-                          billing: {
-                            card: {
-                              token: token
-                            }
-                          }
-                        });
-
-                      case 3:
-                        if (isFunction(params.card.onSuccess)) {
-                          params.card.onSuccess(_objectSpread({}, cardData, {
-                            token: token,
-                            stripe_token: stripeToken.id
-                          }));
-                        }
-
-                      case 4:
-                      case "end":
-                        return _context8.stop();
-                    }
-                  }
-                }, _callee8);
-              }));
-
-              return function (_x18) {
-                return _ref5.apply(this, arguments);
-              };
-            }())["catch"](function (err) {
+            _context8.next = 12;
+            return cartApi.methods(request).update({
+              billing: {
+                card: {
+                  token: stripeToken.id,
+                  last4: stripeToken.card.last4,
+                  exp_month: stripeToken.card.exp_month,
+                  exp_year: stripeToken.card.exp_year,
+                  brand: stripeToken.card.brand,
+                  address_check: stripeToken.card.address_line1_check,
+                  cvc_check: stripeToken.card.cvc_check,
+                  zip_check: stripeToken.card.address_zip_check
+                }
+              }
+            }).then(function () {
+              return isFunction(params.card.onSuccess) && params.card.onSuccess();
+            })["catch"](function (err) {
               return onError(err);
             });
 
-          case 14:
+          case 12:
           case "end":
-            return _context9.stop();
+            return _context8.stop();
         }
       }
-    }, _callee9);
+    }, _callee8);
   }));
   return _paymentTokenize.apply(this, arguments);
 }

@@ -14,9 +14,7 @@ function methods(request) {
     state: null,
     paymentState: null,
     get: function () {
-      var _get = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee() {
+      var _get = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         var result;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -57,9 +55,7 @@ function methods(request) {
       return this.get();
     },
     getMenu: function () {
-      var _getMenu = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee2(id) {
+      var _getMenu = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(id) {
         return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
@@ -88,9 +84,7 @@ function methods(request) {
       return getMenu;
     }(),
     payments: function () {
-      var _payments = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee3() {
+      var _payments = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
         var result;
         return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
