@@ -1,5 +1,4 @@
 const cartApi = require('./cart');
-const cardApi = require('./card');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
 
