@@ -7,6 +7,7 @@ function methods(request, options) {
     settings: null,
     requested: false,
     pendingRequests: [],
+    cacheClear: null,
 
     async requestStateChange(method, url, id, data) {
       return this.requestStateSync(async () => {
@@ -39,7 +40,16 @@ function methods(request, options) {
     },
 
     get() {
-      return this.requestStateChange('get', '/cart');
+      let data;
+      if (this.cacheClear) {
+        this.cacheClear = null;
+        data = { $cache: false };
+      }
+      return this.requestStateChange('get', '/cart', undefined, data);
+    },
+
+    clearCache() {
+      this.cacheClear = true;
     },
 
     getItemData(item, data = {}) {

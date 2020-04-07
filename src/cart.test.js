@@ -21,6 +21,23 @@ describe('cart', () => {
     });
   });
 
+  describe('clearCache', () => {
+    it('should make request to GET /cart?$cache=false (once only)', async () => {
+      api.cart.clearCache();
+      await api.cart.get();
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart?$cache=false`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+
+      await api.cart.get();
+
+      expect(fetch.mock.calls.length).toEqual(2);
+      expect(fetch.mock.calls[1][0]).toEqual(`https://test.swell.store/api/cart`);
+      expect(fetch.mock.calls[1][1]).toHaveProperty('method', 'get');
+    });
+  });
+
   describe('addItem', () => {
     it('should make request to POST /cart/items', async () => {
       await api.cart.addItem({ product_id: '123' });

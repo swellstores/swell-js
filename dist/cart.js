@@ -22,6 +22,7 @@ function methods(request, options) {
     settings: null,
     requested: false,
     pendingRequests: [],
+    cacheClear: null,
     requestStateChange: function () {
       var _requestStateChange = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(method, url, id, data) {
         var _this = this;
@@ -140,7 +141,19 @@ function methods(request, options) {
       return requestStateSync;
     }(),
     get: function get() {
-      return this.requestStateChange('get', '/cart');
+      var data;
+
+      if (this.cacheClear) {
+        this.cacheClear = null;
+        data = {
+          $cache: false
+        };
+      }
+
+      return this.requestStateChange('get', '/cart', undefined, data);
+    },
+    clearCache: function clearCache() {
+      this.cacheClear = true;
     },
     getItemData: function getItemData(item) {
       var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
