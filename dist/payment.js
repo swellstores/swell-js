@@ -8,8 +8,6 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var cartApi = require('./cart');
 
-var cardApi = require('./card');
-
 var settingsApi = require('./settings');
 
 var _require = require('./utils'),
@@ -153,136 +151,210 @@ function methods(request) {
       }
 
       return tokenize;
+    }(),
+    createIntent: function () {
+      var _createIntent = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(data) {
+        var intent;
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return vaultRequest('post', '/intent', data);
+
+              case 2:
+                intent = _context4.sent;
+
+                if (!intent.error) {
+                  _context4.next = 5;
+                  break;
+                }
+
+                throw new Error(intent.error);
+
+              case 5:
+                return _context4.abrupt("return", intent);
+
+              case 6:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }));
+
+      function createIntent(_x2) {
+        return _createIntent.apply(this, arguments);
+      }
+
+      return createIntent;
+    }(),
+    updateIntent: function () {
+      var _updateIntent = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(data) {
+        var intent;
+        return _regenerator["default"].wrap(function _callee5$(_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                _context5.next = 2;
+                return vaultRequest('put', '/intent', data);
+
+              case 2:
+                intent = _context5.sent;
+
+                if (!intent.error) {
+                  _context5.next = 5;
+                  break;
+                }
+
+                throw new Error(intent.error);
+
+              case 5:
+                return _context5.abrupt("return", intent);
+
+              case 6:
+              case "end":
+                return _context5.stop();
+            }
+          }
+        }, _callee5);
+      }));
+
+      function updateIntent(_x3) {
+        return _updateIntent.apply(this, arguments);
+      }
+
+      return updateIntent;
     }()
   };
 }
 
-function render(_x2, _x3, _x4, _x5) {
+function render(_x4, _x5, _x6, _x7) {
   return _render.apply(this, arguments);
 }
 
 function _render() {
-  _render = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(request, cart, payMethods, params) {
-    return _regenerator["default"].wrap(function _callee5$(_context5) {
+  _render = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(request, cart, payMethods, params) {
+    return _regenerator["default"].wrap(function _callee7$(_context7) {
       while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context7.prev = _context7.next) {
           case 0:
             if (!params.card) {
-              _context5.next = 17;
+              _context7.next = 17;
               break;
             }
 
             if (payMethods.card) {
-              _context5.next = 5;
+              _context7.next = 5;
               break;
             }
 
             console.error("Payment element error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.");
-            _context5.next = 17;
+            _context7.next = 17;
             break;
 
           case 5:
             if (!(payMethods.card.gateway === 'braintree')) {
-              _context5.next = 11;
+              _context7.next = 11;
               break;
             }
 
             if (window.braintree) {
-              _context5.next = 9;
+              _context7.next = 9;
               break;
             }
 
-            _context5.next = 9;
+            _context7.next = 9;
             return loadScript('braintree-web', 'https://js.braintreegateway.com/web/3.57.0/js/client.min.js');
 
           case 9:
-            _context5.next = 17;
+            _context7.next = 17;
             break;
 
           case 11:
             if (!(payMethods.card.gateway === 'stripe')) {
-              _context5.next = 17;
+              _context7.next = 17;
               break;
             }
 
             if (window.Stripe) {
-              _context5.next = 15;
+              _context7.next = 15;
               break;
             }
 
-            _context5.next = 15;
+            _context7.next = 15;
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
           case 15:
-            _context5.next = 17;
+            _context7.next = 17;
             return stripeElements(request, payMethods, params);
 
           case 17:
             if (!params.paypal) {
-              _context5.next = 34;
+              _context7.next = 34;
               break;
             }
 
             if (payMethods.paypal) {
-              _context5.next = 22;
+              _context7.next = 22;
               break;
             }
 
             console.error("Payment element error: PayPal payments are disabled. See Payment settings in the Swell dashboard for details.");
-            _context5.next = 34;
+            _context7.next = 34;
             break;
 
           case 22:
             if (window.paypal) {
-              _context5.next = 25;
+              _context7.next = 25;
               break;
             }
 
-            _context5.next = 25;
+            _context7.next = 25;
             return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?client-id=".concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&vault=true"));
 
           case 25:
             if (!(payMethods.card && payMethods.card.gateway === 'braintree' && payMethods.paypal.gateway === 'braintree')) {
-              _context5.next = 34;
+              _context7.next = 34;
               break;
             }
 
             if (window.braintree) {
-              _context5.next = 29;
+              _context7.next = 29;
               break;
             }
 
-            _context5.next = 29;
+            _context7.next = 29;
             return loadScript('braintree-web', 'https://js.braintreegateway.com/web/3.57.0/js/client.min.js');
 
           case 29:
             if (!(window.braintree && !window.braintree.paypalCheckout)) {
-              _context5.next = 32;
+              _context7.next = 32;
               break;
             }
 
-            _context5.next = 32;
+            _context7.next = 32;
             return loadScript('braintree-web-paypal-checkout', 'https://js.braintreegateway.com/web/3.57.0/js/paypal-checkout.min.js');
 
           case 32:
-            _context5.next = 34;
+            _context7.next = 34;
             return braintreePayPalButton(request, cart, payMethods, params);
 
           case 34:
           case "end":
-            return _context5.stop();
+            return _context7.stop();
         }
       }
-    }, _callee5);
+    }, _callee7);
   }));
   return _render.apply(this, arguments);
 }
 
 var loadScript = /*#__PURE__*/function () {
-  var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(id, src) {
-    return _regenerator["default"].wrap(function _callee4$(_context4) {
+  var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(id, src) {
+    return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
-        switch (_context4.prev = _context4.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
             LOADING_SCRIPTS[id] = LOADING_SCRIPTS[id] || new Promise(function (resolve) {
               var script = document.createElement('script');
@@ -298,31 +370,31 @@ var loadScript = /*#__PURE__*/function () {
               });
               document.head.appendChild(script);
             });
-            return _context4.abrupt("return", LOADING_SCRIPTS[id]);
+            return _context6.abrupt("return", LOADING_SCRIPTS[id]);
 
           case 2:
           case "end":
-            return _context4.stop();
+            return _context6.stop();
         }
       }
-    }, _callee4);
+    }, _callee6);
   }));
 
-  return function loadScript(_x6, _x7) {
+  return function loadScript(_x8, _x9) {
     return _ref.apply(this, arguments);
   };
 }();
 
-function stripeElements(_x8, _x9, _x10) {
+function stripeElements(_x10, _x11, _x12) {
   return _stripeElements.apply(this, arguments);
 }
 
 function _stripeElements() {
-  _stripeElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(request, payMethods, params) {
+  _stripeElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(request, payMethods, params) {
     var publicKey, stripe, elements, createElement;
-    return _regenerator["default"].wrap(function _callee6$(_context6) {
+    return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
-        switch (_context6.prev = _context6.next) {
+        switch (_context8.prev = _context8.next) {
           case 0:
             publicKey = payMethods.card.public_key;
             stripe = window.Stripe(publicKey);
@@ -351,35 +423,35 @@ function _stripeElements() {
 
           case 6:
           case "end":
-            return _context6.stop();
+            return _context8.stop();
         }
       }
-    }, _callee6);
+    }, _callee8);
   }));
   return _stripeElements.apply(this, arguments);
 }
 
-function braintreePayPalButton(_x11, _x12, _x13, _x14) {
+function braintreePayPalButton(_x13, _x14, _x15, _x16) {
   return _braintreePayPalButton.apply(this, arguments);
 }
 
 function _braintreePayPalButton() {
-  _braintreePayPalButton = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(request, cart, payMethods, params) {
+  _braintreePayPalButton = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(request, cart, payMethods, params) {
     var authorization, braintree, paypal;
-    return _regenerator["default"].wrap(function _callee7$(_context7) {
+    return _regenerator["default"].wrap(function _callee9$(_context9) {
       while (1) {
-        switch (_context7.prev = _context7.next) {
+        switch (_context9.prev = _context9.next) {
           case 0:
-            _context7.next = 2;
+            _context9.next = 2;
             return vaultRequest('post', '/authorization', {
               gateway: 'braintree'
             });
 
           case 2:
-            authorization = _context7.sent;
+            authorization = _context9.sent;
 
             if (!authorization.error) {
-              _context7.next = 5;
+              _context9.next = 5;
               break;
             }
 
@@ -437,24 +509,24 @@ function _braintreePayPalButton() {
 
           case 8:
           case "end":
-            return _context7.stop();
+            return _context9.stop();
         }
       }
-    }, _callee7);
+    }, _callee9);
   }));
   return _braintreePayPalButton.apply(this, arguments);
 }
 
-function paymentTokenize(_x15, _x16, _x17) {
+function paymentTokenize(_x17, _x18, _x19) {
   return _paymentTokenize.apply(this, arguments);
 }
 
 function _paymentTokenize() {
-  _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(request, params, payMethods) {
+  _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(request, params, payMethods) {
     var onError, stripe, stripeToken;
-    return _regenerator["default"].wrap(function _callee8$(_context8) {
+    return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
-        switch (_context8.prev = _context8.next) {
+        switch (_context10.prev = _context10.next) {
           case 0:
             onError = function onError(error) {
               if (isFunction(params.card.onError)) {
@@ -465,25 +537,25 @@ function _paymentTokenize() {
             };
 
             if (params) {
-              _context8.next = 3;
+              _context10.next = 3;
               break;
             }
 
-            return _context8.abrupt("return");
+            return _context10.abrupt("return");
 
           case 3:
             if (!(params.card && payMethods.card)) {
-              _context8.next = 12;
+              _context10.next = 12;
               break;
             }
 
             if (!(payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe)) {
-              _context8.next = 12;
+              _context10.next = 12;
               break;
             }
 
             stripe = API.stripe;
-            _context8.next = 8;
+            _context10.next = 8;
             return stripe.createToken(CARD_ELEMENTS.stripe).then(function (_ref3) {
               var token = _ref3.token;
               return token;
@@ -492,14 +564,14 @@ function _paymentTokenize() {
             });
 
           case 8:
-            stripeToken = _context8.sent;
+            stripeToken = _context10.sent;
 
             if (!stripeToken) {
-              _context8.next = 12;
+              _context10.next = 12;
               break;
             }
 
-            _context8.next = 12;
+            _context10.next = 12;
             return cartApi.methods(request).update({
               billing: {
                 card: {
@@ -521,10 +593,10 @@ function _paymentTokenize() {
 
           case 12:
           case "end":
-            return _context8.stop();
+            return _context10.stop();
         }
       }
-    }, _callee8);
+    }, _callee10);
   }));
   return _paymentTokenize.apply(this, arguments);
 }
