@@ -1,5 +1,4 @@
 const cartApi = require('./cart');
-const cardApi = require('./card');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
 
@@ -39,6 +38,22 @@ function methods(request) {
         throw new Error(payMethods.error);
       }
       return await paymentTokenize(request, this.params, payMethods);
+    },
+
+    async createIntent(data) {
+      const intent = await vaultRequest('post', '/intent', data);
+      if (intent.error) {
+        throw new Error(intent.error);
+      }
+      return intent;
+    },
+
+    async updateIntent(data) {
+      const intent = await vaultRequest('put', '/intent', data);
+      if (intent.error) {
+        throw new Error(intent.error);
+      }
+      return intent;
     },
   };
 }
