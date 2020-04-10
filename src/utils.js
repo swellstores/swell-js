@@ -8,7 +8,22 @@ function setOptions(optns) {
 }
 
 function toCamel(obj) {
-  return normalizeKeys(obj, 'camel');
+  const reserved =
+    obj && typeof obj === 'object'
+      ? Object.keys(obj).reduce((acc, key) => {
+          if (key[0] === '$') {
+            const value = obj[key];
+            delete obj[key];
+            return { ...acc, [key]: value };
+          }
+          return acc;
+        }, {})
+      : null;
+  const normal = normalizeKeys(obj, 'camel');
+  if (reserved) {
+    return { ...normal, ...reserved };
+  }
+  return normal;
 }
 
 function toSnake(obj) {

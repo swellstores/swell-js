@@ -39,4 +39,14 @@ describe('utils', () => {
       });
     });
   });
+
+  describe('toCamel', () => {
+    it('should preserve $ prefixed keys', () => {
+      const obj = utils.toCamel({ $cache: true, other_stuff: true });
+      expect(obj).toEqual({
+        $cache: true,
+        otherStuff: true,
+      })
+    });
+  });
 });
