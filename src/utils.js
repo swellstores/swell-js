@@ -7,18 +7,21 @@ function setOptions(optns) {
   options = optns;
 }
 
+function isObject(val) {
+  return val && typeof val === 'object' && !(val instanceof Array);
+}
+
 function toCamel(obj) {
-  const reserved =
-    obj && typeof obj === 'object'
-      ? Object.keys(obj).reduce((acc, key) => {
-          if (key[0] === '$') {
-            const value = obj[key];
-            delete obj[key];
-            return { ...acc, [key]: value };
-          }
-          return acc;
-        }, {})
-      : null;
+  const reserved = isObject(obj)
+    ? Object.keys(obj).reduce((acc, key) => {
+        if (key[0] === '$') {
+          const value = obj[key];
+          delete obj[key];
+          return { ...acc, [key]: value };
+        }
+        return acc;
+      }, {})
+    : null;
   const normal = normalizeKeys(obj, 'camel');
   if (reserved) {
     return { ...normal, ...reserved };
@@ -30,16 +33,21 @@ function toSnake(obj) {
   if (!obj) return;
   // Make a copy to avoid mutating source object
   const objCopy = JSON.parse(JSON.stringify(obj));
-  const reserved = Object.keys(objCopy).reduce((acc, key) => {
-    if (key[0] === '$') {
-      const value = objCopy[key];
-      delete objCopy[key];
-      return { ...acc, [key]: value };
-    }
-    return acc;
-  }, {});
+  const reserved = isObject(objCopy)
+    ? Object.keys(objCopy).reduce((acc, key) => {
+        if (key[0] === '$') {
+          const value = objCopy[key];
+          delete objCopy[key];
+          return { ...acc, [key]: value };
+        }
+        return acc;
+      }, {})
+    : null;
   const normal = normalizeKeys(objCopy, 'snake');
-  return { ...normal, ...reserved };
+  if (reserved) {
+    return { ...normal, ...reserved };
+  }
+  return normal;
 }
 
 function trimBoth(str) {

@@ -48,6 +48,11 @@ describe('utils', () => {
         otherStuff: true,
       })
     });
+
+    it('should not break arrays', () => {
+      const obj = utils.toCamel([{ quantity_value: 1 }]);
+      expect(obj).toEqual([{ quantityValue: 1 }])
+    });
   });
 
   describe('toSnake', () => {
@@ -57,6 +62,11 @@ describe('utils', () => {
         $cache: true,
         other_stuff: true,
       })
+    });
+
+    it('should not break arrays', () => {
+      const obj = utils.toSnake([{ quantityValue: 1 }]);
+      expect(obj).toEqual([{ quantity_value: 1 }])
     });
   });
 

@@ -25,8 +25,12 @@ function setOptions(optns) {
   options = optns;
 }
 
+function isObject(val) {
+  return val && (0, _typeof2["default"])(val) === 'object' && !(val instanceof Array);
+}
+
 function toCamel(obj) {
-  var reserved = obj && (0, _typeof2["default"])(obj) === 'object' ? Object.keys(obj).reduce(function (acc, key) {
+  var reserved = isObject(obj) ? Object.keys(obj).reduce(function (acc, key) {
     if (key[0] === '$') {
       var value = obj[key];
       delete obj[key];
@@ -48,7 +52,7 @@ function toSnake(obj) {
   if (!obj) return; // Make a copy to avoid mutating source object
 
   var objCopy = JSON.parse(JSON.stringify(obj));
-  var reserved = Object.keys(objCopy).reduce(function (acc, key) {
+  var reserved = isObject(objCopy) ? Object.keys(objCopy).reduce(function (acc, key) {
     if (key[0] === '$') {
       var value = objCopy[key];
       delete objCopy[key];
@@ -56,9 +60,14 @@ function toSnake(obj) {
     }
 
     return acc;
-  }, {});
+  }, {}) : null;
   var normal = normalizeKeys(objCopy, 'snake');
-  return _objectSpread({}, normal, {}, reserved);
+
+  if (reserved) {
+    return _objectSpread({}, normal, {}, reserved);
+  }
+
+  return normal;
 }
 
 function trimBoth(str) {
