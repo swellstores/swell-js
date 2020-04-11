@@ -30,7 +30,16 @@ function toSnake(obj) {
   if (!obj) return;
   // Make a copy to avoid mutating source object
   const objCopy = JSON.parse(JSON.stringify(obj));
-  return normalizeKeys(objCopy, 'snake');
+  const reserved = Object.keys(objCopy).reduce((acc, key) => {
+    if (key[0] === '$') {
+      const value = objCopy[key];
+      delete objCopy[key];
+      return { ...acc, [key]: value };
+    }
+    return acc;
+  }, {});
+  const normal = normalizeKeys(objCopy, 'snake');
+  return { ...normal, ...reserved };
 }
 
 function trimBoth(str) {

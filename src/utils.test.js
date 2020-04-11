@@ -49,4 +49,21 @@ describe('utils', () => {
       })
     });
   });
+
+  describe('toSnake', () => {
+    it('should preserve $ prefixed keys', () => {
+      const obj = utils.toSnake({ $cache: true, otherStuff: true });
+      expect(obj).toEqual({
+        $cache: true,
+        other_stuff: true,
+      })
+    });
+  });
+
+  describe('stringifyQuery', () => {
+    it('should preserve $ prefixed keys', () => {
+      const str = utils.stringifyQuery({ $cache: true, other_stuff: true });
+      expect(str).toEqual('$cache=true&other_stuff=true')
+    });
+  });
 });
