@@ -5,11 +5,11 @@ function methods(request) {
     state: null,
     paymentState: null,
 
-    async get() {
+    async get(query) {
       if (this.state) {
         return this.state;
       }
-      const result = await request('get', '/settings');
+      const result = await request('get', '/settings', query);
       return (this.state = result);
     },
 
