@@ -14,7 +14,7 @@ function methods(request) {
     state: null,
     paymentState: null,
     get: function () {
-      var _get = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+      var _get = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(query) {
         var result;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -29,7 +29,7 @@ function methods(request) {
 
               case 2:
                 _context.next = 4;
-                return request('get', '/settings');
+                return request('get', '/settings', query);
 
               case 4:
                 result = _context.sent;
@@ -43,7 +43,7 @@ function methods(request) {
         }, _callee, this);
       }));
 
-      function get() {
+      function get(_x) {
         return _get.apply(this, arguments);
       }
 
@@ -77,7 +77,7 @@ function methods(request) {
         }, _callee2, this);
       }));
 
-      function getMenu(_x) {
+      function getMenu(_x2) {
         return _getMenu.apply(this, arguments);
       }
 
