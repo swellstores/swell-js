@@ -39,6 +39,8 @@ var categories = require('./categories');
 
 var subscriptions = require('./subscriptions');
 
+var content = require('./content');
+
 var settings = require('./settings');
 
 var payment = require('./payment');
@@ -86,6 +88,7 @@ var api = {
   products: products.methods(request),
   categories: categories.methods(request),
   subscriptions: subscriptions.methods(request),
+  content: content.methods(request),
   settings: settings.methods(request),
   payment: payment.methods(request)
 };
