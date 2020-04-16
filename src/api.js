@@ -14,6 +14,7 @@ const account = require('./account');
 const products = require('./products');
 const categories = require('./categories');
 const subscriptions = require('./subscriptions');
+const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
 
@@ -72,6 +73,8 @@ const api = {
   categories: categories.methods(request),
 
   subscriptions: subscriptions.methods(request),
+
+  content: content.methods(request),
 
   settings: settings.methods(request),
 
