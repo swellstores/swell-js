@@ -470,6 +470,23 @@ await swell.account.create({
 });
 ```
 
+#### Create a new account with options
+
+```javascript
+await swell.account.create(
+  {
+    email: 'customer@example.com',
+    first_name: 'John', // optional
+    last_name: 'Doe', // optional
+    email_optin: true, // optional
+    password: 'example', // optional
+  },
+  {
+    login: false, // account won't be logged into the current session after creation
+  },
+);
+```
+
 #### Update a logged in account
 
 Update the current logged in account, if possible. If successful, returns the updated account object. Otherwise, returns a validation error.

@@ -14,8 +14,8 @@ function methods(request) {
       return this.requestStateChange('get', '/account');
     },
 
-    create(data) {
-      return this.requestStateChange('post', '/account', data);
+    create(data, options) {
+      return this.requestStateChange('post', '/account', { ...data, options });
     },
 
     update(data) {
