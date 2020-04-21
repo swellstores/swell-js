@@ -10,8 +10,8 @@ function methods(request) {
       return (this.state = result);
     },
 
-    get() {
-      return this.requestStateChange('get', '/account');
+    get(query) {
+      return this.requestStateChange('get', '/account', query);
     },
 
     create(data) {
