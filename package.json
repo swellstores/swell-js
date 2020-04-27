@@ -24,6 +24,7 @@
     "@material-ui/icons": "4.5.1",
     "@material-ui/lab": "4.0.0-alpha.42",
     "babel-loader": "8.0.6",
+    "cross-var": "1.1.0",
     "css-loader": "3.4.2",
     "dotenv": "8.2.0",
     "html-webpack-plugin": "4.0.0-beta.11",
@@ -38,6 +39,7 @@
     "recompose": "0.30.0",
     "redux": "4.0.5",
     "redux-thunk": "2.3.0",
+    "replace": "1.1.5",
     "style-loader": "1.1.3",
     "webpack": "4.41.5",
     "webpack-cli": "3.3.10",
@@ -48,8 +50,9 @@
     "test:watch": "jest --config=jest.config.json --watch",
     "test:page": "webpack-dev-server --open --config test/page/webpack.config.js",
     "watch": "nodemon --watch src --exec 'npm run build'",
+    "inject-version": "cross-var replace \"@VERSION@\" $npm_package_version dist/api.js",
     "build": "babel src --out-dir dist --ignore src/**/*.test.js",
     "version": "npm run build && git add -A dist",
-    "bump": "npm version patch && npm publish"
+    "bump": "npm version patch && npm run inject-version && npm publish"
   }
 }
