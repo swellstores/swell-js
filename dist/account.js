@@ -46,8 +46,8 @@ function methods(request) {
 
       return requestStateChange;
     }(),
-    get: function get() {
-      return this.requestStateChange('get', '/account');
+    get: function get(query) {
+      return this.requestStateChange('get', '/account', query);
     },
     create: function create(data) {
       return this.requestStateChange('post', '/account', data);

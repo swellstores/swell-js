@@ -217,4 +217,7 @@ function _request() {
   return _request.apply(this, arguments);
 }
 
+window.swell = {
+  version: '@VERSION@'
+};
 module.exports = api;
