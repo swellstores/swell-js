@@ -156,7 +156,7 @@ function _request() {
             session = getCookie('swell-session');
             reqHeaders = _objectSpread({
               'Content-Type': 'application/json',
-              Authorization: "Basic ".concat(Buffer.from(allOptions.key).toString('base64'))
+              Authorization: "Basic ".concat(Buffer.from(String(allOptions.key)).toString('base64'))
             }, session ? {
               'X-Session': session
             } : {});
