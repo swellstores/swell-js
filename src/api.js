@@ -115,7 +115,7 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   const session = getCookie('swell-session');
   const reqHeaders = {
     'Content-Type': 'application/json',
-    Authorization: `Basic ${Buffer.from(allOptions.key).toString('base64')}`,
+    Authorization: `Basic ${Buffer.from(String(allOptions.key)).toString('base64')}`,
     ...(session ? { 'X-Session': session } : {}),
   };
 
