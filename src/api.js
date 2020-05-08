@@ -149,8 +149,10 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   return options.useCamelCase ? toCamel(result) : result;
 }
 
-window.swell = {
-  version: '@VERSION@',
-};
+if (typeof window !== 'undefined') {
+  window.swell = {
+    version: '@VERSION@',
+  };
+}
 
 module.exports = api;
