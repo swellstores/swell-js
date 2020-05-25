@@ -16,10 +16,36 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 var qs = require('qs');
 
+var set = require('lodash/set');
+
+var get = require('lodash/get');
+
+var deepmerge = require('deepmerge');
+
 var _require = require('object-keys-normalizer'),
     normalizeKeys = _require.normalizeKeys;
 
 var options = {};
+
+function merge(x, y) {
+  return deepmerge(x, y, {
+    arrayMerge: arrayMerge
+  });
+}
+
+function arrayMerge(target, source, options) {
+  var destination = target.slice();
+  source.forEach(function (item, index) {
+    if (typeof destination[index] === 'undefined') {
+      destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
+    } else if (options.isMergeableObject(item)) {
+      destination[index] = merge(target[index], item, options);
+    } else if (target.indexOf(item) === -1) {
+      destination.push(item);
+    }
+  });
+  return destination;
+}
 
 function setOptions(optns) {
   options = optns;
@@ -246,6 +272,9 @@ function buildParams(key, obj, add) {
 }
 
 module.exports = {
+  set: set,
+  get: get,
+  merge: merge,
   setOptions: setOptions,
   toCamel: toCamel,
   toSnake: toSnake,

@@ -9,10 +9,11 @@
   "main": "./dist/api.js",
   "dependencies": {
     "@babel/runtime": "7.4.5",
+    "deepmerge": "4.2.2",
     "isomorphic-fetch": "2.2.1",
+    "lodash": "4.17.15",
     "object-keys-normalizer": "1.0.1",
-    "qs": "6.7.0",
-    "lodash": "4.17.15"
+    "qs": "6.7.0"
   },
   "devDependencies": {
     "@babel/cli": "7.4.4",

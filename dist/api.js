@@ -29,6 +29,8 @@ var _require2 = require('./utils'),
     trimEnd = _require2.trimEnd,
     stringifyQuery = _require2.stringifyQuery;
 
+var cache = require('./cache');
+
 var cart = require('./cart');
 
 var account = require('./account');
@@ -82,6 +84,7 @@ var api = {
   "delete": function _delete(url, data) {
     return request('delete', url, data);
   },
+  cache: cache,
   card: card,
   cart: cart.methods(request, options),
   account: account.methods(request),

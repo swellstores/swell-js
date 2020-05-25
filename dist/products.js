@@ -15,10 +15,26 @@ var _require = require('./utils'),
     reduce = _require.reduce,
     defaultMethods = _require.defaultMethods;
 
+var cache = require('./cache');
+
 function methods(request) {
-  return _objectSpread({}, defaultMethods(request, '/products', ['list', 'get']), {
+  var _defaultMethods = defaultMethods(request, '/products', ['list', 'get']),
+      _get = _defaultMethods.get,
+      list = _defaultMethods.list;
+
+  return {
+    get: function get(id) {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      return cache.getSetOnce('products', id, function () {
+        return _get.apply(void 0, [id].concat(args));
+      });
+    },
+    list: list,
     variation: calculateVariation
-  });
+  };
 }
 
 function getProductOptionIndex(product) {

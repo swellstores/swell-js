@@ -1,7 +1,31 @@
 const qs = require('qs');
+const set = require('lodash/set');
+const get = require('lodash/get');
+const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
 let options = {};
+
+function merge(x, y) {
+  return deepmerge(x, y, {
+    arrayMerge
+  });
+}
+
+function arrayMerge(target, source, options) {
+  const destination = target.slice();
+
+  source.forEach((item, index) => {
+    if (typeof destination[index] === 'undefined') {
+      destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
+    } else if (options.isMergeableObject(item)) {
+      destination[index] = merge(target[index], item, options);
+    } else if (target.indexOf(item) === -1) {
+      destination.push(item);
+    }
+  });
+  return destination;
+}
 
 function setOptions(optns) {
   options = optns;
@@ -89,14 +113,14 @@ function defaultMethods(request, uri, methods) {
   return {
     list:
       methods.indexOf('list') >= 0
-        ? function(query) {
+        ? function (query) {
             return request('get', uri, undefined, query);
           }
         : undefined,
 
     get:
       methods.indexOf('get') >= 0
-        ? function(id, query) {
+        ? function (id, query) {
             return request('get', uri, id, query);
           }
         : undefined,
@@ -162,7 +186,7 @@ function vaultRequestId() {
 function serializeData(data) {
   let key;
   const s = [];
-  const add = function(key, value) {
+  const add = function (key, value) {
     // If value is a function, invoke it and return its value
     if (typeof value === 'function') {
       value = value();
@@ -201,6 +225,9 @@ function buildParams(key, obj, add) {
 }
 
 module.exports = {
+  set,
+  get,
+  merge,
   setOptions,
   toCamel,
   toSnake,

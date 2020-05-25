@@ -1,8 +1,15 @@
 const { defaultMethods } = require('./utils');
+const cache = require('./cache');
 
 function methods(request) {
+  const { get, list } = defaultMethods(request, '/categories', ['list', 'get']);
+
   return {
-    ...defaultMethods(request, '/categories', ['list', 'get']),
+    get: (id, ...args) => {
+      return cache.getSetOnce('categories', id, () => get(id, ...args));
+    },
+
+    list,
   };
 }
 

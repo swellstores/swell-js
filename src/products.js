@@ -1,8 +1,14 @@
 const { map, reduce, defaultMethods } = require('./utils');
+const cache = require('./cache');
 
 function methods(request) {
+  const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
   return {
-    ...defaultMethods(request, '/products', ['list', 'get']),
+    get: (id, ...args) => {
+      return cache.getSetOnce('products', id, () => get(id, ...args));
+    },
+
+    list,
 
     variation: calculateVariation,
   };

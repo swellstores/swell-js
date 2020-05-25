@@ -9,6 +9,7 @@ const {
   trimEnd,
   stringifyQuery,
 } = require('./utils');
+const cache = require('./cache');
 const cart = require('./cart');
 const account = require('./account');
 const products = require('./products');
@@ -61,6 +62,8 @@ const api = {
   delete(url, data) {
     return request('delete', url, data);
   },
+
+  cache,
 
   card,
 
