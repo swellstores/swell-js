@@ -28,27 +28,37 @@ var _require = require('object-keys-normalizer'),
 var options = {};
 
 function merge(x, y) {
+  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+  function arrayMerge(target, source, options) {
+    if (opt.replaceArrays) {
+      return source;
+    }
+
+    var destination = target.slice();
+    source.forEach(function (item, index) {
+      if (typeof destination[index] === 'undefined') {
+        destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
+      } else if (options.isMergeableObject(item)) {
+        destination[index] = merge(target[index], item, options);
+      } else if (target.indexOf(item) === -1) {
+        destination.push(item);
+      }
+    });
+    return destination;
+  }
+
   return deepmerge(x, y, {
     arrayMerge: arrayMerge
   });
 }
 
-function arrayMerge(target, source, options) {
-  var destination = target.slice();
-  source.forEach(function (item, index) {
-    if (typeof destination[index] === 'undefined') {
-      destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
-    } else if (options.isMergeableObject(item)) {
-      destination[index] = merge(target[index], item, options);
-    } else if (target.indexOf(item) === -1) {
-      destination.push(item);
-    }
-  });
-  return destination;
-}
-
 function setOptions(optns) {
   options = optns;
+}
+
+function getOptions() {
+  return options;
 }
 
 function isObject(val) {
@@ -276,6 +286,7 @@ module.exports = {
   get: get,
   merge: merge,
   setOptions: setOptions,
+  getOptions: getOptions,
   toCamel: toCamel,
   toSnake: toSnake,
   trimBoth: trimBoth,

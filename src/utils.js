@@ -6,29 +6,34 @@ const { normalizeKeys } = require('object-keys-normalizer');
 
 let options = {};
 
-function merge(x, y) {
+function merge(x, y, opt = {}) {
+  function arrayMerge(target, source, options) {
+    if (opt.replaceArrays) {
+      return source;
+    }
+    const destination = target.slice();
+    source.forEach((item, index) => {
+      if (typeof destination[index] === 'undefined') {
+        destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
+      } else if (options.isMergeableObject(item)) {
+        destination[index] = merge(target[index], item, options);
+      } else if (target.indexOf(item) === -1) {
+        destination.push(item);
+      }
+    });
+    return destination;
+  }
   return deepmerge(x, y, {
     arrayMerge
   });
 }
 
-function arrayMerge(target, source, options) {
-  const destination = target.slice();
-
-  source.forEach((item, index) => {
-    if (typeof destination[index] === 'undefined') {
-      destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
-    } else if (options.isMergeableObject(item)) {
-      destination[index] = merge(target[index], item, options);
-    } else if (target.indexOf(item) === -1) {
-      destination.push(item);
-    }
-  });
-  return destination;
-}
-
 function setOptions(optns) {
   options = optns;
+}
+
+function getOptions() {
+  return options;
 }
 
 function isObject(val) {
@@ -229,6 +234,7 @@ module.exports = {
   get,
   merge,
   setOptions,
+  getOptions,
   toCamel,
   toSnake,
   trimBoth,
