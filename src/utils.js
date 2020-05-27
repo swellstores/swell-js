@@ -8,9 +8,6 @@ let options = {};
 
 function merge(x, y, opt = {}) {
   function arrayMerge(target, source, options) {
-    if (opt.replaceArrays) {
-      return source;
-    }
     const destination = target.slice();
     source.forEach((item, index) => {
       if (typeof destination[index] === 'undefined') {
@@ -107,7 +104,7 @@ function reduce(arr, cb, init) {
 }
 
 function isServer() {
-  return !(typeof window !== 'undefined' && window.document);
+  return !(window && window.document);
 }
 
 function isFunction(func) {

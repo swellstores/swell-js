@@ -31,10 +31,6 @@ function merge(x, y) {
   var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   function arrayMerge(target, source, options) {
-    if (opt.replaceArrays) {
-      return source;
-    }
-
     var destination = target.slice();
     source.forEach(function (item, index) {
       if (typeof destination[index] === 'undefined') {
@@ -134,7 +130,7 @@ function reduce(arr, cb, init) {
 }
 
 function isServer() {
-  return !(typeof window !== 'undefined' && window.document);
+  return !(window && window.document);
 }
 
 function isFunction(func) {

@@ -31,6 +31,7 @@ var VALUES = {
   }
   */
 };
+var ONCE_TIMER;
 var cacheApi = {
   set: function set(_ref) {
     var model = _ref.model,
@@ -55,15 +56,19 @@ var cacheApi = {
     data = data || {};
     var mergeData = {};
 
-    if (path) {
-      _set(mergeData, path || '', value);
-    } else {
-      mergeData = value;
-    }
+    if (value instanceof Array) {
+      var upData = _objectSpread({}, data);
 
-    data = merge(data, mergeData, {
-      replaceArrays: value instanceof Array
-    });
+      _set(upData, path || '', value);
+
+      data = upData;
+    } else if (path) {
+      _set(mergeData, path || '', value);
+
+      data = merge(data, mergeData);
+    } else {
+      data = merge(data, value);
+    }
 
     _set(VALUES, "".concat(model, ".").concat(id, ".data"), data);
 
@@ -75,6 +80,13 @@ var cacheApi = {
     VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
   },
   setOnce: function setOnce(details) {
+    if (ONCE_TIMER) {
+      clearTimeout(ONCE_TIMER);
+    }
+
+    ONCE_TIMER = setTimeout(function () {
+      return ONCE_TIMER = null;
+    }, 1000);
     return this.set(details, true);
   },
   get: function get(model, id) {
@@ -85,6 +97,10 @@ var cacheApi = {
 
     if (obj && obj.counter > 0) {
       obj.counter--;
+      return _objectSpread({}, obj.data);
+    }
+
+    if (obj && ONCE_TIMER) {
       return _objectSpread({}, obj.data);
     }
   },

@@ -11,6 +11,8 @@ let VALUES = {
 */
 };
 
+let ONCE_TIMER;
+
 const cacheApi = {
   set({ model, id, path, value }, once = false) {
     const { useCamelCase } = getOptions();
@@ -23,12 +25,16 @@ const cacheApi = {
     }
     data = data || {};
     let mergeData = {};
-    if (path) {
+    if (value instanceof Array) {
+      const upData = { ...data };
+      set(upData, path || '', value);
+      data = upData;
+    } else if (path) {
       set(mergeData, path || '', value);
+      data = merge(data, mergeData);
     } else {
-      mergeData = value;
+      data = merge(data, value);
     }
-    data = merge(data, mergeData, { replaceArrays: value instanceof Array });
     set(VALUES, `${model}.${id}.data`, data);
     if (once) {
       set(VALUES, `${model}.${id}.counter`, get(VALUES, `${model}.${id}.counter`, 0) + 1);
@@ -38,6 +44,10 @@ const cacheApi = {
   },
 
   setOnce(details) {
+    if (ONCE_TIMER) {
+      clearTimeout(ONCE_TIMER);
+    }
+    ONCE_TIMER = setTimeout(() => ONCE_TIMER = null, 1000);
     return this.set(details, true);
   },
 
@@ -49,6 +59,9 @@ const cacheApi = {
     const obj = get(VALUES, `${model}.${id}`);
     if (obj && obj.counter > 0) {
       obj.counter--;
+      return { ...obj.data };
+    }
+    if (obj && ONCE_TIMER) {
       return { ...obj.data };
     }
   },
