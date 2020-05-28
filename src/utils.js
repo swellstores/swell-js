@@ -104,7 +104,7 @@ function reduce(arr, cb, init) {
 }
 
 function isServer() {
-  return !(window && window.document);
+  return !(typeof window !== 'undefined' && window && window.document);
 }
 
 function isFunction(func) {
