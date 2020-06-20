@@ -70,7 +70,7 @@ function methods(request) {
       var where = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
       var def = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
       return this.getState(uri, stateName).then(function (state) {
-        return get(find(state, where), def);
+        return find(state, where) || def;
       });
     },
     get: function get() {

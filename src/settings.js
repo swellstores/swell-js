@@ -27,7 +27,7 @@ function methods(request) {
     },
 
     findState(uri, stateName, where = undefined, def = undefined) {
-      return this.getState(uri, stateName).then((state) => get(find(state, where), def));
+      return this.getState(uri, stateName).then((state) => find(state, where) || def);
     },
 
     get(id = undefined, def = undefined) {
