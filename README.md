@@ -974,6 +974,26 @@ Return an object representing store settings.
 swell.settings.get();
 ```
 
+Return a value using object path notation with an optional default if the value is undefined.
+
+```javascript
+swell.settings.get('colors.primary.dark', '#000000');
+```
+
+#### Retrieve menu settings
+
+Return an array representing store menus.
+
+```javascript
+swell.settings.menus();
+```
+
+Return an object representing a menu by ID.
+
+```javascript
+swell.settings.menus('header');
+```
+
 #### Retrieve payment settings
 
 Return an object representing payment settings.

@@ -20,6 +20,8 @@ var set = require('lodash/set');
 
 var get = require('lodash/get');
 
+var find = require('lodash/find');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -280,6 +282,7 @@ function buildParams(key, obj, add) {
 module.exports = {
   set: set,
   get: get,
+  find: find,
   merge: merge,
   setOptions: setOptions,
   getOptions: getOptions,

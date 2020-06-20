@@ -20,7 +20,7 @@ const cacheApi = {
       value = toCamel(value);
     }
     let data = get(VALUES, `${model}.${id}.data`);
-    if ((path && data === undefined) || data === null) {
+    if (id === null || (path && data === undefined) || data === null) {
       return;
     }
     data = data || {};
@@ -40,7 +40,9 @@ const cacheApi = {
       set(VALUES, `${model}.${id}.counter`, get(VALUES, `${model}.${id}.counter`, 0) + 1);
     }
     // Make sure values have clean refs
-    VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
+    if (VALUES[model][id] !== undefined) {
+      VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
+    }
   },
 
   setOnce(details) {

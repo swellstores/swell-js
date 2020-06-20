@@ -6,34 +6,51 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _require = require('lodash'),
+var _require = require('./utils'),
+    get = _require.get,
     find = _require.find;
 
 function methods(request) {
   return {
     state: null,
+    menuState: null,
     paymentState: null,
-    get: function () {
-      var _get = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(query) {
-        var result;
+    refresh: function refresh() {
+      this.state = null;
+      this.menuState = null;
+      this.paymentState = null;
+      return this.get();
+    },
+    getState: function () {
+      var _getState = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(uri, stateName) {
+        var _this = this;
+
+        var id,
+            def,
+            _args = arguments;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                if (!this.state) {
-                  _context.next = 2;
+                id = _args.length > 2 && _args[2] !== undefined ? _args[2] : undefined;
+                def = _args.length > 3 && _args[3] !== undefined ? _args[3] : undefined;
+
+                if (!this[stateName]) {
+                  this[stateName] = request('get', uri);
+                }
+
+                if (!(typeof this[stateName].then === 'function')) {
+                  _context.next = 5;
                   break;
                 }
 
-                return _context.abrupt("return", this.state);
+                return _context.abrupt("return", this[stateName].then(function (state) {
+                  _this[stateName] = state;
+                  return id ? get(state, id, def) : state;
+                }));
 
-              case 2:
-                _context.next = 4;
-                return request('get', '/settings', query);
-
-              case 4:
-                result = _context.sent;
-                return _context.abrupt("return", this.state = result);
+              case 5:
+                return _context.abrupt("return", id ? get(this[stateName], id, def) : this[stateName]);
 
               case 6:
               case "end":
@@ -43,82 +60,36 @@ function methods(request) {
         }, _callee, this);
       }));
 
-      function get(_x) {
-        return _get.apply(this, arguments);
+      function getState(_x, _x2) {
+        return _getState.apply(this, arguments);
       }
 
-      return get;
+      return getState;
     }(),
-    refresh: function refresh() {
-      this.state = null;
-      this.paymentState = null;
-      return this.get();
+    findState: function findState(uri, stateName) {
+      var where = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+      var def = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+      return this.getState(uri, stateName).then(function (state) {
+        return get(find(state, where), def);
+      });
     },
-    getMenu: function () {
-      var _getMenu = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(id) {
-        return _regenerator["default"].wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.t0 = find;
-                _context2.next = 3;
-                return this.get();
-
-              case 3:
-                _context2.t1 = _context2.sent;
-                _context2.t2 = id;
-                return _context2.abrupt("return", (0, _context2.t0)(_context2.t1, _context2.t2));
-
-              case 6:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2, this);
-      }));
-
-      function getMenu(_x2) {
-        return _getMenu.apply(this, arguments);
-      }
-
-      return getMenu;
-    }(),
-    payments: function () {
-      var _payments = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
-        var result;
-        return _regenerator["default"].wrap(function _callee3$(_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                if (!this.paymentState) {
-                  _context3.next = 2;
-                  break;
-                }
-
-                return _context3.abrupt("return", this.paymentState);
-
-              case 2:
-                _context3.next = 4;
-                return request('get', '/settings/payments');
-
-              case 4:
-                result = _context3.sent;
-                return _context3.abrupt("return", this.paymentState = result);
-
-              case 6:
-              case "end":
-                return _context3.stop();
-            }
-          }
-        }, _callee3, this);
-      }));
-
-      function payments() {
-        return _payments.apply(this, arguments);
-      }
-
-      return payments;
-    }()
+    get: function get() {
+      var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      return this.getState('/settings', 'state', id, def);
+    },
+    menus: function menus() {
+      var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      return this.findState('/settings/menus', 'menuState', {
+        id: id
+      }, def);
+    },
+    payments: function payments() {
+      var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      return this.getState('/settings/payments', 'paymentState', id, def);
+    }
   };
 }
 

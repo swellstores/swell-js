@@ -1,6 +1,7 @@
 const qs = require('qs');
 const set = require('lodash/set');
 const get = require('lodash/get');
+const find = require('lodash/find');
 const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
@@ -229,6 +230,7 @@ function buildParams(key, obj, add) {
 module.exports = {
   set,
   get,
+  find,
   merge,
   setOptions,
   getOptions,
