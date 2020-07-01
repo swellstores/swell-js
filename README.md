@@ -1,48 +1,41 @@
-# Swell JS
+# Swell.js - Headless ecommerce storefront SDK
 
-The Swell JS library is a wrapper around the Storefront API, which provides restricted access to store data for client-side applications.
+Universal JavaScript client for Swell's Frontend API, providing client-safe access to store and customer data. You can use it in JAMstack or SSR apps to:
 
-> **Important:** This library implements a subset of the operations available using the <a href="https://swell.store/docs/api">Swell API</a> and uses a public key, making it safe to use anywhere. As secret keys provide full access to your store's data, you should only use them server-side via environment variables to prevent them from being exposed in your source code.
-
-To better understand how this library works, read the <a href="https://swell.store/docs/api">Swell API docs</a>.
-
-**Use cases**
-
-- List product and category data
+- Fetch products, categories, store settings, nav menus, and custom content
 - Create, recover, and update shopping carts
-- Create a checkout flow to convert a shopping cart to an order
-- Create a subscription signup and billing flow
-- Authenticate customers and allow them to edit account information, orders and subscriptions
+- Build custom checkout and subscription flows
+- Authenticate customers and allow them to edit account details, orders, and subscriptions
+- Resolve linked content to dynamically generate page URLs
+- Format prices in the store's currency
+
+> This SDK implements a subset of operations available in Swell's [Backend API](https://swell.store/docs/api) and is authorized with a public key + session token, making it safe to use in any context. You should only use the Backend API server-side, and keep your secret keys stored as environment variables.
+
+**About Swell**
+
+[Swell](https://www.swell.is) is a customizable, API-first platform for powering modern B2C/B2B shopping experiences and marketplaces.
 
 ## Installation
 
-With npm
-
 ```bash
-npm install swell-js --save
-```
-
-With Yarn
-
-```bash
-yarn add swell-js
+npm install swell-js # or yarn add swell-js
 ```
 
 ## Configuration
 
-The client is authenticated using your Store ID and public key. You can find these details in your dashboard under _Settings > API_.
-
-**Basic**
+The client uses your store ID and public key for authorization. You can find these in your dashboard under _Settings > API_.
 
 ```javascript
-await swell.init('<store-id>', '<public_key>');
+swell.init('<store-id>', '<public_key>');
 ```
 
-Note: `swell.auth()` was renamed to `swell.init()` in v1.3.0.
+> **Note**: `swell.auth()` was renamed to `swell.init()` in v1.3.0.
 
-**With options**
+#### Options
 
-If your application uses camelCase, you can set an flag to transform the API's snake_case responses. This works on request data you provide as well.
+If your application uses camelCase, you can set a flag to transform the API's snake_case responses. This works on objects you pass to it as well.
+
+##### useCamelCase
 
 ```javascript
 const options = {
@@ -52,9 +45,9 @@ const options = {
 swell.init('<store-id>', '<public_key>', options)
 ```
 
-## Example usage
+## Basic usage
 
-The examples here use ES6 async/await syntax. For ES5, all methods return a promise.
+These examples use ES6 async/await syntax. For ES5, all methods return a promise.
 
 ```javascript
 import swell from 'swell-js';
@@ -72,22 +65,22 @@ await swell.products.list({
 
 #### List products
 
-Return a list of products, up to `limit` results. Max 100 per page.
+_Returns all products, with offset pagination using `limit` and `skip`._
 
 ```javascript
 await swell.products.list({
-  limit: 25,
+  limit: 25, // Max. 100
   page: 1,
 });
 ```
 
-#### List products with variants
+#### List products + variants
 
-Return a list of products with active variants expanded, up to `limit` results. Max 100 per page.
+_Returns all products and their active variants, with offset pagination using `limit` and `skip`._
 
 ```javascript
 await swell.products.list({
-  limit: 25,
+  limit: 25, // Max. 100
   page: 1,
   expand: ['variants'],
 });
@@ -95,47 +88,47 @@ await swell.products.list({
 
 #### List products by category
 
-Return a list of products category slug, up to `limit` results. Max 100 per page.
+_Returns products in a specific category, with offset pagination using `limit` and `skip`._
 
 ```javascript
 await swell.products.list({
-  category: 't-shirts',
-  limit: 25,
+  category: 't-shirts', // Slug or ID
+  limit: 25, // Max. 100
   page: 1,
 });
+```
+
+#### Get product
+
+_Returns a single product._
+
+```javascript
+// By slug
+await swell.products.get('blue-shoes');
+
+// By ID
+await swell.products.get('5c15505200c7d14d851e510f');
 ```
 
 #### Search products
 
-Return a list of products by search, up to `limit` results. Max 100 per page. Search is performed using "and" syntax, where all words must be present in one or more fields of the product.
+Perform a full text search with a string. The search operation is performed using AND syntax, where all words must be present in at least one field of the product.
+
+_Returns products matching the search query string, with offset pagination using `limit` and `skip`._
 
 ```javascript
 await swell.products.list({
-  search: 'blue jeans',
-  limit: 25,
+  search: 'black jeans', // Any text string
+  limit: 25, // Max. 100
   page: 1,
 });
 ```
 
-#### Retrieve a product
+#### Find a product variant matching selected options
 
-Return a single product by slug.
+Resolve the correct `price`, `sale_price`, `orig_price` and `stock_status` values based on the customer's chosen options. Typically you would <a href="#get-product">retrieve a product</a> earlier in the page's lifecycle and pass it to this method along with the options. Options can be either an array or an object with option name/value pairs.
 
-```javascript
-await swell.products.get('blue-shoes');
-```
-
-Or by ID.
-
-```javascript
-await swell.products.get('5c15505200c7d14d851e510f');
-```
-
-#### Get a product variation with selected options
-
-Apply options to a product to resolve `price`, `sale_price`, `orig_price` and `stock_status` values related to the selected options. Typically you would <a href="#retrieve-a-product">retrieve a product</a> earlier in the page's lifecycle and pass it along with selected options to this method. Options can be either an array or an object with option name/value pairs.
-
-Returns a new object with product and option values merged together.
+_Returns a new object with product and option/variant values merged together._
 
 ```javascript
 await swell.products.variation(product, {
@@ -148,7 +141,7 @@ await swell.products.variation(product, {
 
 #### List categories
 
-Return a list of product categories, up to `limit` results. Max 100 per page.
+Return a list of product categories, with offset pagination using `limit` and `skip`.
 
 ```javascript
 await swell.categories.list({
@@ -157,17 +150,15 @@ await swell.categories.list({
 });
 ```
 
-#### Retrieve a category
+#### Get category
 
-Return a single category by slug.
+Returns a single category.
 
 ```javascript
+// By slug
 await swell.categories.get('mens-shirts');
-```
 
-Or by ID.
-
-```javascript
+// By ID
 await swell.categories.get('5c15505200c7d14d851e510g');
 ```
 
