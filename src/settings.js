@@ -17,7 +17,7 @@ function methods(request) {
       if (!this[stateName]) {
         this[stateName] = request('get', uri);
       }
-      if (typeof this[stateName].then === 'function') {
+      if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then((state) => {
           this[stateName] = state;
           return id ? get(state, id, def) : state;
@@ -27,7 +27,11 @@ function methods(request) {
     },
 
     findState(uri, stateName, where = undefined, def = undefined) {
-      return this.getState(uri, stateName).then((state) => find(state, where) || def);
+      const state = this.getState(uri, stateName);
+      if (state && typeof state.then === 'function') {
+        return state.then((state) => find(state, where) || def);
+      }
+      return find(state, where) || def;
     },
 
     load() {

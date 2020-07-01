@@ -25,7 +25,7 @@ function methods(request) {
         this[stateName] = request('get', uri);
       }
 
-      if (typeof this[stateName].then === 'function') {
+      if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then(function (state) {
           _this[stateName] = state;
           return id ? get(state, id, def) : state;
@@ -37,9 +37,15 @@ function methods(request) {
     findState: function findState(uri, stateName) {
       var where = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
       var def = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
-      return this.getState(uri, stateName).then(function (state) {
-        return find(state, where) || def;
-      });
+      var state = this.getState(uri, stateName);
+
+      if (state && typeof state.then === 'function') {
+        return state.then(function (state) {
+          return find(state, where) || def;
+        });
+      }
+
+      return find(state, where) || def;
     },
     load: function load() {
       return this.getState('/settings', 'state');
