@@ -13,7 +13,7 @@ function methods(request) {
       return this.get();
     },
 
-    async getState(uri, stateName, id = undefined, def = undefined) {
+    getState(uri, stateName, id = undefined, def = undefined) {
       if (!this[stateName]) {
         this[stateName] = request('get', uri);
       }
@@ -28,6 +28,10 @@ function methods(request) {
 
     findState(uri, stateName, where = undefined, def = undefined) {
       return this.getState(uri, stateName).then((state) => find(state, where) || def);
+    },
+
+    load() {
+      return this.getState('/settings', 'state');
     },
 
     get(id = undefined, def = undefined) {
