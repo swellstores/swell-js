@@ -13,7 +13,7 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 
 **About Swell**
 
-[Swell](https://www.swell.is) is a customizable, API-first platform for powering modern B2C/B2B shopping experiences and marketplaces.
+[Swell](https://www.swell.is) is a customizable, API-first platform for powering modern B2C/B2B shopping experiences and marketplaces. Build and connect anything using your favorite technologies, and provide admins with an easy to use dashboard.
 
 ## Installation
 
@@ -146,7 +146,7 @@ await swell.products.list({
 });
 ```
 
-#### Get product
+#### Get a product
 
 _Returns a single product._
 
@@ -158,7 +158,7 @@ await swell.products.get('blue-shoes');
 await swell.products.get('5c15505200c7d14d851e510f');
 ```
 
-#### Search products
+#### Search for products
 
 Perform a full text search with a string. The search operation is performed using AND syntax, where all words must be present in at least one field of the product.
 
@@ -189,7 +189,7 @@ await swell.products.variation(product, {
 
 #### List categories
 
-Return a list of product categories, with offset pagination using `limit` and `skip`.
+_Returns a list of product categories, with offset pagination using `limit` and `skip`._
 
 ```javascript
 await swell.categories.list({
@@ -198,9 +198,9 @@ await swell.categories.list({
 });
 ```
 
-#### Get category
+#### Get a category
 
-Returns a single category.
+_Returns a single category._
 
 ```javascript
 // By slug
@@ -212,9 +212,11 @@ await swell.categories.get('5c15505200c7d14d851e510g');
 
 ## Shopping carts
 
-#### Retrieve the cart
+#### Get a cart
 
-Retrieve the current cart, if one has been created with at least one item. Returns a cart object or `null` if no items have been added to the cart.
+Retrieve the cart attached to the current session.
+
+_Returns the cart object or `null` if no items have been added yet._
 
 ```javascript
 await swell.cart.get();
@@ -222,81 +224,85 @@ await swell.cart.get();
 
 #### Add an item
 
-Add a single item to the cart. Returns the updated cart object. Item options can be either an array or an object with option name/value pairs.
+Add a single item to the cart. Item options can be either an array of product options or an object with product option name/value pairs.
+
+_Returns the updated cart object._
 
 ```javascript
+// Options as array
 await swell.cart.addItem({
   product_id: '5c15505200c7d14d851e510f',
   quantity: 1,
   options: [
-    {
-      name: 'Color',
-      value: 'Blue',
-    },
+    { name: 'Size', value: 'S' },
+    { name: 'Color', value: 'Midnight blue' },
   ],
+});
+
+// Options as object
+await swell.cart.addItem({
+  product_id: '5c15505200c7d14d851e510f',
+  quantity: 1,
+  options: {
+    Size: 'S',
+    Color: 'Midnight blue',
+  },
 });
 ```
 
 #### Update an item
 
-Update a single cart item by ID. Returns the updated cart object.
+Update properties of a single cart item by ID.
+
+_Returns the updated cart object._
 
 ```javascript
-await swell.cart.updateItem('5c15505200c7d14d851e510f', {
+await swell.cart.updateItem('7d51p8ce72f5542e009fa4c8', {
   quantity: 2,
 });
 ```
 
 #### Update all items
 
-Update all items in the cart by replacing existing items. Returns the updated cart object.
+If you want to update multiple items at once, you can clone `cart.items`, iterate through the items to perform your operation(s), then use this method to replace `cart.items` with your updated array.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.setItems([
   {
     id: '5c15505200c7d14d851e510f',
     quantity: 2,
-    options: [
-      {
-        id: 'color',
-        value: 'Blue',
-      },
-    ],
+    options: [{ id: 'Color', value: 'Midnight blue' }],
   },
   {
     id: '5c15505200c7d14d851e510g',
     quantity: 3,
-    options: [
-      {
-        id: 'color',
-        value: 'Red',
-      },
-    ],
+    options: [{ id: 'Color', value: 'Ivory' }],
   },
   {
     id: '5c15505200c7d14d851e510h',
     quantity: 4,
-    options: [
-      {
-        id: 'color',
-        value: 'White',
-      },
-    ],
+    options: [{ id: 'Color', value: 'Bright red' }],
   },
 ]);
 ```
 
 #### Remove an item
 
-Removes a single item from the cart. Returns the updated cart object.
+Remove a single item from the cart by ID.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.removeItem('5c15505200c7d14d851e510f');
 ```
 
-#### Remove all items
+#### Empty the cart
 
-Removes all items from the cart. Returns the updated cart object.
+Remove all items from the cart.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.setItems([]);
@@ -304,7 +310,9 @@ await swell.cart.setItems([]);
 
 #### Recover a cart
 
-Normally used with an abandoned cart recovery email. Your email may have a link to your store with a `checkout_id` identifying the cart that was abandoned. Making this request will add the cart to the current session and mark it as `recovered`. Returns the recovered cart object.
+Normally used with an abandoned cart recovery email. The email should have a link to your store with a `checkout_id` identifying the cart that was abandoned. Calling this method will add the cart to the current session and mark it as `recovered`.
+
+_Returns the recovered cart object._
 
 ```javascript
 await swell.cart.recover('878663b2fb4175b128e40de428cd7b0c');
@@ -312,70 +320,79 @@ await swell.cart.recover('878663b2fb4175b128e40de428cd7b0c');
 
 #### Update cart account info
 
-Update the cart with customer account information. Returns the updated cart object.
+Update the cart with customer account information.
 
-An account is assigned to a cart by its email address. If the account has no password saved, then it's considered a guest checkout and the cart will have the property `guest=true`. On the other hand, if the account has a password saved, the cart will have the property `account_logged_in=false` which you can use to prompt the user to <a href="#login">log in</a> to continue. Once the account is logged in, then `account_logged_in` will be updated to `true`.
+An account is assigned to a cart by email address.
+
+- If the account has no password set, it's considered a guest checkout and the cart will have the property `guest=true`.
+- If the account has a password set, the cart will have the property `account_logged_in=false`. You can use this to prompt the user to <a href="#login">log in</a> to continue. Once the account is logged in, `account_logged_in` will be `true`.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.update({
   account: {
-    email: 'customer@example.com',
-    email_optin: true, // optional, indicates the customer wants to receive marketing emails
-    password: 'example', // optional, will save the customer's password if one doesn't exist yet
+    email: 'julia@example.com',
+    email_optin: true, // Optional; indicates the customer has consented to receive marketing emails
+    password: 'ohpiseiThe5', // Optional; sets the customer's password if one doesn't exist yet
   },
 });
 ```
 
 #### Update cart shipping info
 
-Update the cart with customer shipping information. Returns the updated cart object.
+Update the cart with customer shipping information.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.update({
   shipping: {
-    name: 'Ship to name',
-    address1: '...',
-    address2: '...',
-    city: '...',
-    state: '...',
-    zip: '...',
-    country: '...',
-    phone: '...',
+    name: 'Julia Villatoro',
+    address1: '560 Olive Drive',
+    address2: '',
+    city: 'Ellinwood',
+    state: 'KS',
+    zip: '67526',
+    country: 'United States',
+    phone: '620-564-3737',
   },
 });
 ```
 
 #### Update cart billing info
 
-Update the cart with customer billing information. This method can update both shipping and billing at once if desired. Returns the updated cart object.
+Update the cart with customer billing information. This method can update both shipping and billing at once if desired.
+
+_Returns the updated cart object._
 
 ```javascript
 await swell.cart.update({
   billing: {
-    name: 'Bill to name',
-    address1: '...',
-    address2: '...',
-    city: '...',
-    state: '...',
-    zip: '...',
-    country: '...',
-    phone: '...',
-    // Using credit card
+    name: 'Julia Villatoro',
+    address1: '560 Olive Drive',
+    address2: '',
+    city: 'Ellinwood',
+    state: 'KS',
+    zip: '67526',
+    country: 'United States',
+    phone: '620-564-3737',
+    // Paying with credit card
     card: {
       // Token from swell.card.createToken() or Stripe.js
-      token: 'tok_...',
+      token: 'tok_1H0Qu92eZvKYlo2CsKGk6...',
     },
-    // Using PayPal
+    // Paying with PayPal
     paypal: {
       payer_id: '...',
       payment_id: '...',
     },
-    // Using Amazon
+    // Paying with Amazon Pay
     amazon: {
       access_token: '...',
       order_reference_id: '...',
     },
-    // Using Affirm
+    // Paying with Affirm
     affirm: {
       checkout_token: '...',
     },
@@ -383,43 +400,49 @@ await swell.cart.update({
 });
 ```
 
-Important note: At of February 2019, PayPal introduced Smart Payment Buttons while Swell's integration uses a previous version named checkout.js. This version continues to be supported by PayPal and Swell. For more details and examples, <a href="https://www.notion.so/swellstores/Swell-PayPal-integration-examples-e693bcb3cdeb435f91488bb9ed671a3e">see this document</a>.
+> **Note:** In February 2019, PayPal introduced Smart Payment Buttons. Swell's integration uses a previous version named checkout.js, which continues to be supported by PayPal and Swell. <a href="https://www.notion.so/swellstores/Swell-PayPal-integration-examples-e693bcb3cdeb435f91488bb9ed671a3e">More details and examples</a>.
 
-#### Apply a coupon or gift card code
+#### Apply a coupon (or gift card) code
 
-Apply either a coupon or gift card code, allowing you to have a single input for both. A cart can have a single coupon and multiple gift card codes applied. Codes are not case sensitive. If successful, returns the updated cart object. Otherwise, returns a validation error.
+Use to apply a coupon or gift card code to the cart (works with both so you can have a single input field). A cart can have one coupon and multiple gift card codes applied at once. Codes are not case sensitive.
 
-```javascript
-await swell.cart.applyCoupon('FREESHIPPING');
-```
-
-#### Remove coupon code
-
-Remove a coupon code if one was applied.
+_Returns the updated cart object if code is valid. Otherwise, returns a validation error._
 
 ```javascript
-await swell.cart.removeCouponCode();
+await swell.cart.applyCoupon('SUMMERTIME');
 ```
 
 #### Apply a gift card
 
-Use this method to apply a gift card code only. You can apply any number of gift cards to a cart at once. Gift card codes are not case sensitive. If successful, returns the updated cart object. Otherwise, returns a validation error.
+Use to apply a gift card code to the cart. A cart can have multiple gift card codes applied at once. Codes are not case sensitive.
+
+_Returns the updated cart object if code is valid. Otherwise, returns a validation error._
 
 ```javascript
 await swell.cart.applyGiftcard('BUYS SFX4 BMZH YY7N');
 ```
 
+#### Remove coupon
+
+Use to remove the coupon code from the cart, if one was applied.
+
+```javascript
+await swell.cart.removeCouponCode();
+```
+
 #### Remove a gift card
 
-Remove a gift card using the ID that was assigned to `cart.giftcards.id`.
+Use to remove a gift card from the cart, by passing the ID that was assigned to `cart.giftcards.id`.
 
 ```javascript
 await swell.cart.removeGiftcard('5c15505200c7d14d851e51af');
 ```
 
-#### Retrieve shipping rates
+#### Get shipping rates
 
-A shipment rating is contains all the available shipping services given the cart contents and shipping info. The cart must have at least `shipping.country` set before it will return a rating. Returns an object with shipping services and rates.
+A shipment rating contains all available shipping services and their price, based on cart items and the customer's shipping address. The cart must have at least `shipping.country` set to generate a rating.
+
+_Returns an object with shipping services and rates._
 
 ```javascript
 await swell.cart.getShippingRates();
@@ -427,39 +450,45 @@ await swell.cart.getShippingRates();
 
 #### Submit an order
 
-When a customer is finished checking out, call this method to convert a cart to an order. Returns the newly created order.
+When a customer has entered all the information needed to finalize their order, call this method to process their payment and convert the cart to an order.
+
+_Returns the newly created order._
 
 ```javascript
 await swell.cart.submitOrder();
 ```
 
-#### Retrieve order details
+#### Get order details
 
-You can retrieve order details after a cart is submitted. By default, this method will return the last order created by the current session. You can also retrieve an order using `checkout_id`, allowing you to display order details from an email containing an appropriate link, for example `https://example.com/order/{checkout_id}`.
+When a cart is submitted, the newly created order will be returned. However, you can use this method if you need to get the order information separately. You can also retrieve an order by `checkout_id`, allowing you to display order details from an email containing a link like `https://my-store.com/order/{checkout_id}`.
+
+_Returns order with the passed ID, or if no parameters are passed, the last order placed in the current session._
 
 ```javascript
-// Get the last order placed by the current session
+// Get the last order placed in the current session
 await swell.cart.getOrder();
 
 // Get an order by checkout_id
 await swell.cart.getOrder('878663b2fb4175b128e40de428cd7b0c');
 ```
 
-#### Retrieve checkout settings
+#### Get checkout settings
 
-Returns an object with settings that can affect checkout behavior.
+Use to retrieve settings that can affect checkout behavior.
 
-- `name` - Name of the store
+_Returns object with:_
+
+- `name` - Store name
 - `currency` - Store base currency
 - `support_email` - Email address for customer support
-- `fields` - Set of checkout fields to render as optional or required
+- `fields` - Set of checkout fields to show as optional or required
 - `scripts` - Custom scripts including script tags
 - `accounts` - Indicates whether account login is `optional`, `disabled` or `required`
 - `email_optin` - Indicates whether email newsletter opt-in should be presented as optional
 - `terms_policy` - Store terms and conditions
 - `refund_policy` - Store refund policy
 - `privacy_policy` - Store privacy policy
-- `theme` - Checkout theme settings
+- `theme` - Checkout style settings
 - `countries` - List of country codes that have shipping zones configured
 - `payment_methods` - List of active payment methods
 - `coupons` - Indicates whether the store has coupons
