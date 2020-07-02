@@ -47,18 +47,66 @@ swell.init('<store-id>', '<public_key>', options)
 
 ## Basic usage
 
-These examples use ES6 async/await syntax. For ES5, all methods return a promise.
+If a code example has the `await` prefix, the method returns a promise. All other methods are synchronous. We're using ES6 async/await syntax here, but you can use regular Promises too.
 
 ```javascript
 import swell from 'swell-js';
 
-swell.init('my-store', 'pk_...');
+// Initialize the client first
+swell.init('my-store', 'pk_md0JkpLnp9gBjkQ085oiebb0XBuwqZX9');
 
+// Now you can use any method
 await swell.products.list({
   category: 't-shirts',
   limit: 25,
   page: 1,
 });
+```
+
+## Settings
+
+#### Fetch store settings
+
+_Returns an object representing store settings, and saves it to an internal cache for accessing synchronously._
+
+> **Note:** This must be called before trying to get a setting by path
+
+```javascript
+await swell.settings.get();
+```
+
+#### Get setting by path
+
+_Returns a value from the store settings object using path notation, with an optional default if the value is undefined._
+
+```javascript
+swell.settings.get('colors.primary.dark', '#000000');
+```
+
+#### Fetch all nav menus
+
+_Returns an array containing store navigation menus, and saves it to an internal cache for accessing synchronously._
+
+> **Note:** This must be called before trying to get a menu by ID
+
+```javascript
+await swell.settings.menus();
+```
+
+#### Get nav menu by ID
+
+_Returns a single navigation menu object._
+
+```javascript
+swell.settings.menus('header');
+```
+
+#### Fetch payment settings
+
+_Returns an object representing payment settings, and saves it to an internal cache for using with [checkout](#checkout) methods._
+
+```javascript
+swell.settings.payments();
 ```
 
 ## Products
@@ -953,42 +1001,4 @@ Returns `true` if the card CVC code is valid, otherwise `false`.
 ```javascript
 swell.card.validateCVC('321'); // => true
 swell.card.validateCVC('1'); // => false
-```
-
-## Settings
-
-#### Retrieve store settings
-
-Return an object representing store settings.
-
-```javascript
-swell.settings.get();
-```
-
-Return a value using object path notation with an optional default if the value is undefined.
-
-```javascript
-swell.settings.get('colors.primary.dark', '#000000');
-```
-
-#### Retrieve menu settings
-
-Return an array representing store menus.
-
-```javascript
-swell.settings.menus();
-```
-
-Return an object representing a menu by ID.
-
-```javascript
-swell.settings.menus('header');
-```
-
-#### Retrieve payment settings
-
-Return an object representing payment settings.
-
-```javascript
-swell.settings.payments();
 ```
