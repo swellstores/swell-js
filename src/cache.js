@@ -15,30 +15,44 @@ let ONCE_TIMER;
 
 const cacheApi = {
   set({ model, id, path, value }, once = false) {
+    let data = get(VALUES, `${model}.${id}.data`);
+
+    if (id === null || (path && data === undefined) || data === null) {
+      return;
+    }
+
     const { useCamelCase } = getOptions();
     if (useCamelCase && value && typeof value === 'object') {
       value = toCamel(value);
     }
-    let data = get(VALUES, `${model}.${id}.data`);
-    if (id === null || (path && data === undefined) || data === null) {
-      return;
-    }
-    data = data || {};
+
     let mergeData = {};
     if (value instanceof Array) {
       const upData = { ...data };
       set(upData, path || '', value);
+      if (useCamelCase) {
+        upData = toCamel(upData);
+      }
       data = upData;
     } else if (path) {
       set(mergeData, path || '', value);
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
       data = merge(data, mergeData);
-    } else {
+    } else if (value && typeof value === 'object') {
+      data = data || {};
       data = merge(data, value);
+    } else {
+      data = value;
     }
+
     set(VALUES, `${model}.${id}.data`, data);
+
     if (once) {
-      set(VALUES, `${model}.${id}.counter`, get(VALUES, `${model}.${id}.counter`, 0) + 1);
+      set(VALUES, `${model}.${id}.counter`, get(VALUES, `${model}.${id}.counter`, -1) + 1);
     }
+
     // Make sure values have clean refs
     if (VALUES[model][id] !== undefined) {
       VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
@@ -59,12 +73,21 @@ const cacheApi = {
 
   getOnce(model, id) {
     const obj = get(VALUES, `${model}.${id}`);
-    if (obj && obj.counter > 0) {
-      obj.counter--;
-      return { ...obj.data };
-    }
-    if (obj && ONCE_TIMER) {
-      return { ...obj.data };
+
+    if (obj) {
+      if (obj.counter > 0) {
+        obj.counter--;
+        if (obj.data && typeof obj.data === 'object') {
+          return { ...obj.data };
+        }
+        return obj.data;
+      }
+      if (ONCE_TIMER) {
+        if (obj.data && typeof obj.data === 'object') {
+          return { ...obj.data };
+        }
+        return obj.data;
+      }
     }
   },
 

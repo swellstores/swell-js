@@ -8,6 +8,8 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
+
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -40,6 +42,12 @@ var cacheApi = {
         value = _ref.value;
     var once = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+    var data = _get(VALUES, "".concat(model, ".").concat(id, ".data"));
+
+    if (id === null || path && data === undefined || data === null) {
+      return;
+    }
+
     var _getOptions = getOptions(),
         useCamelCase = _getOptions.useCamelCase;
 
@@ -47,13 +55,6 @@ var cacheApi = {
       value = toCamel(value);
     }
 
-    var data = _get(VALUES, "".concat(model, ".").concat(id, ".data"));
-
-    if (id === null || path && data === undefined || data === null) {
-      return;
-    }
-
-    data = data || {};
     var mergeData = {};
 
     if (value instanceof Array) {
@@ -61,19 +62,30 @@ var cacheApi = {
 
       _set(upData, path || '', value);
 
+      if (useCamelCase) {
+        upData = ((0, _readOnlyError2["default"])("upData"), toCamel(upData));
+      }
+
       data = upData;
     } else if (path) {
       _set(mergeData, path || '', value);
 
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+
       data = merge(data, mergeData);
-    } else {
+    } else if (value && (0, _typeof2["default"])(value) === 'object') {
+      data = data || {};
       data = merge(data, value);
+    } else {
+      data = value;
     }
 
     _set(VALUES, "".concat(model, ".").concat(id, ".data"), data);
 
     if (once) {
-      _set(VALUES, "".concat(model, ".").concat(id, ".counter"), _get(VALUES, "".concat(model, ".").concat(id, ".counter"), 0) + 1);
+      _set(VALUES, "".concat(model, ".").concat(id, ".counter"), _get(VALUES, "".concat(model, ".").concat(id, ".counter"), -1) + 1);
     } // Make sure values have clean refs
 
 
@@ -97,13 +109,24 @@ var cacheApi = {
   getOnce: function getOnce(model, id) {
     var obj = _get(VALUES, "".concat(model, ".").concat(id));
 
-    if (obj && obj.counter > 0) {
-      obj.counter--;
-      return _objectSpread({}, obj.data);
-    }
+    if (obj) {
+      if (obj.counter > 0) {
+        obj.counter--;
 
-    if (obj && ONCE_TIMER) {
-      return _objectSpread({}, obj.data);
+        if (obj.data && (0, _typeof2["default"])(obj.data) === 'object') {
+          return _objectSpread({}, obj.data);
+        }
+
+        return obj.data;
+      }
+
+      if (ONCE_TIMER) {
+        if (obj.data && (0, _typeof2["default"])(obj.data) === 'object') {
+          return _objectSpread({}, obj.data);
+        }
+
+        return obj.data;
+      }
     }
   },
   getSetOnce: function () {
