@@ -69,19 +69,19 @@ const api = {
 
   cart: cart.methods(request, options),
 
-  account: account.methods(request),
+  account: account.methods(request, options),
 
-  products: products.methods(request),
+  products: products.methods(request, options),
 
-  categories: categories.methods(request),
+  categories: categories.methods(request, options),
 
-  subscriptions: subscriptions.methods(request),
+  subscriptions: subscriptions.methods(request, options),
 
-  content: content.methods(request),
+  content: content.methods(request, options),
 
-  settings: settings.methods(request),
+  settings: settings.methods(request, options),
 
-  payment: payment.methods(request),
+  payment: payment.methods(request, options),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
