@@ -2,9 +2,12 @@
 
 var _require = require('./utils'),
     get = _require.get,
-    find = _require.find;
+    find = _require.find,
+    _set = _require.set,
+    merge = _require.merge,
+    toCamel = _require.toCamel;
 
-function methods(request) {
+function methods(request, opt) {
   return {
     state: null,
     menuState: null,
@@ -54,6 +57,18 @@ function methods(request) {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
       var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
       return this.getState('/settings', 'state', id, def);
+    },
+    set: function set(id, value) {
+      var useCamelCase = opt.useCamelCase;
+      var mergeData = {};
+
+      _set(mergeData, id || '', value);
+
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+
+      this.state = merge(this.state, mergeData);
     },
     menus: function menus() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;

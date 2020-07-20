@@ -1,6 +1,6 @@
-const { get, find } = require('./utils');
+const { get, find, set, merge, toCamel } = require('./utils');
 
-function methods(request) {
+function methods(request, opt) {
   return {
     state: null,
     menuState: null,
@@ -40,6 +40,16 @@ function methods(request) {
 
     get(id = undefined, def = undefined) {
       return this.getState('/settings', 'state', id, def);
+    },
+
+    set(id, value) {
+      const { useCamelCase } = opt;
+      let mergeData = {};
+      set(mergeData, id || '', value);
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+      this.state = merge(this.state, mergeData);
     },
 
     menus(id = undefined, def = undefined) {
