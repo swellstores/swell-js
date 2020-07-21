@@ -8,8 +8,6 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
-
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -63,7 +61,7 @@ var cacheApi = {
       _set(upData, path || '', value);
 
       if (useCamelCase) {
-        upData = ((0, _readOnlyError2["default"])("upData"), toCamel(upData));
+        upData = toCamel(upData);
       }
 
       data = upData;

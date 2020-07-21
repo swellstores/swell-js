@@ -28,7 +28,7 @@ const cacheApi = {
 
     let mergeData = {};
     if (value instanceof Array) {
-      const upData = { ...data };
+      let upData = { ...data };
       set(upData, path || '', value);
       if (useCamelCase) {
         upData = toCamel(upData);
