@@ -26,6 +26,7 @@ const options = {
   key: null,
   url: null,
   useCamelCase: null,
+  previewContent: null,
 };
 
 const api = {
@@ -39,6 +40,7 @@ const api = {
     options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : `https://vault.schema.io`;
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
+    options.previewContent = opt.previewContent || false;
     setOptions(options);
   },
 

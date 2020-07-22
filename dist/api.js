@@ -53,7 +53,8 @@ var options = {
   store: null,
   key: null,
   url: null,
-  useCamelCase: null
+  useCamelCase: null,
+  previewContent: null
 };
 var api = {
   options: options,
@@ -66,6 +67,7 @@ var api = {
     options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : "https://vault.schema.io";
     options.timeout = opt.timeout && parseInt(opt.timeout, 10) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
+    options.previewContent = opt.previewContent || false;
     setOptions(options);
   },
   // Backward compatibility
