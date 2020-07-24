@@ -13,8 +13,8 @@ function methods(request, opt) {
       return this.get();
     },
 
-    getState(uri, stateName, id = undefined, def = undefined) {
-      if (!this[stateName]) {
+    getState(uri, stateName, { id = undefined, def = undefined, refresh = false } = {}) {
+      if (!this[stateName] || refresh) {
         this[stateName] = request('get', uri);
       }
       if (this[stateName] && typeof this[stateName].then === 'function') {
@@ -26,7 +26,7 @@ function methods(request, opt) {
       return id ? get(this[stateName], id, def) : this[stateName];
     },
 
-    findState(uri, stateName, where = undefined, def = undefined) {
+    findState(uri, stateName, { where = undefined, def = undefined } = {}) {
       const state = this.getState(uri, stateName);
       if (state && typeof state.then === 'function') {
         return state.then((state) => find(state, where) || def);
@@ -34,12 +34,8 @@ function methods(request, opt) {
       return find(state, where) || def;
     },
 
-    load() {
-      return this.getState('/settings', 'state');
-    },
-
     get(id = undefined, def = undefined) {
-      return this.getState('/settings', 'state', id, def);
+      return this.getState('/settings', 'state', { id, def });
     },
 
     set(id, value) {
@@ -53,12 +49,23 @@ function methods(request, opt) {
     },
 
     menus(id = undefined, def = undefined) {
-      return this.findState('/settings/menus', 'menuState', { id }, def);
+      return this.findState('/settings/menus', 'menuState', { where: { id }, def });
     },
 
     payments(id = undefined, def = undefined) {
-      return this.getState('/settings/payments', 'paymentState', id, def);
-    }
+      return this.getState('/settings/payments', 'paymentState', { id, def });
+    },
+
+    async load() {
+      try {
+        const { settings, menus, payments } = await request('get', '/settings/all');
+        this.state = settings;
+        this.menuState = menus;
+        this.paymentState = payments;
+      } catch (err) {
+        console.error(`Swell: unable to loading settings (${err})`);
+      }
+    },
   };
 }
 
