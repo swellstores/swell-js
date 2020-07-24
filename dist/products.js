@@ -13,11 +13,17 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var _require = require('./utils'),
     map = _require.map,
     reduce = _require.reduce,
-    defaultMethods = _require.defaultMethods;
+    defaultMethods = _require.defaultMethods,
+    toSnake = _require.toSnake,
+    toCamel = _require.toCamel;
 
 var cache = require('./cache');
 
-function methods(request) {
+var OPTIONS;
+
+function methods(request, opt) {
+  OPTIONS = opt;
+
   var _defaultMethods = defaultMethods(request, '/products', ['list', 'get']),
       _get = _defaultMethods.get,
       list = _defaultMethods.list;
@@ -197,7 +203,9 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculateVariation(product, options) {
+function calculateVariation(input, options) {
+  var product = OPTIONS.useCamelCase ? toSnake(input) : input;
+
   var variation = _objectSpread({}, product, {
     price: product.price || 0,
     sale_price: product.sale_price,
@@ -271,7 +279,7 @@ function calculateVariation(product, options) {
     delete variation.orig_price;
   }
 
-  return variation;
+  return OPTIONS.useCamelCase ? toCamel(variation) : variation;
 }
 
 module.exports = {

@@ -1,16 +1,13 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _require = require('./utils'),
     get = _require.get,
-    find = _require.find;
+    find = _require.find,
+    _set = _require.set,
+    merge = _require.merge,
+    toCamel = _require.toCamel;
 
-function methods(request) {
+function methods(request, opt) {
   return {
     state: null,
     menuState: null,
@@ -21,62 +18,57 @@ function methods(request) {
       this.paymentState = null;
       return this.get();
     },
-    getState: function () {
-      var _getState = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(uri, stateName) {
-        var _this = this;
+    getState: function getState(uri, stateName) {
+      var _this = this;
 
-        var id,
-            def,
-            _args = arguments;
-        return _regenerator["default"].wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                id = _args.length > 2 && _args[2] !== undefined ? _args[2] : undefined;
-                def = _args.length > 3 && _args[3] !== undefined ? _args[3] : undefined;
+      var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+      var def = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
 
-                if (!this[stateName]) {
-                  this[stateName] = request('get', uri);
-                }
-
-                if (!(typeof this[stateName].then === 'function')) {
-                  _context.next = 5;
-                  break;
-                }
-
-                return _context.abrupt("return", this[stateName].then(function (state) {
-                  _this[stateName] = state;
-                  return id ? get(state, id, def) : state;
-                }));
-
-              case 5:
-                return _context.abrupt("return", id ? get(this[stateName], id, def) : this[stateName]);
-
-              case 6:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function getState(_x, _x2) {
-        return _getState.apply(this, arguments);
+      if (!this[stateName]) {
+        this[stateName] = request('get', uri);
       }
 
-      return getState;
-    }(),
+      if (this[stateName] && typeof this[stateName].then === 'function') {
+        return this[stateName].then(function (state) {
+          _this[stateName] = state;
+          return id ? get(state, id, def) : state;
+        });
+      }
+
+      return id ? get(this[stateName], id, def) : this[stateName];
+    },
     findState: function findState(uri, stateName) {
       var where = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
       var def = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
-      return this.getState(uri, stateName).then(function (state) {
-        return get(find(state, where), def);
-      });
+      var state = this.getState(uri, stateName);
+
+      if (state && typeof state.then === 'function') {
+        return state.then(function (state) {
+          return find(state, where) || def;
+        });
+      }
+
+      return find(state, where) || def;
+    },
+    load: function load() {
+      return this.getState('/settings', 'state');
     },
     get: function get() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
       var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
       return this.getState('/settings', 'state', id, def);
+    },
+    set: function set(id, value) {
+      var useCamelCase = opt.useCamelCase;
+      var mergeData = {};
+
+      _set(mergeData, id || '', value);
+
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+
+      this.state = merge(this.state, mergeData);
     },
     menus: function menus() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;

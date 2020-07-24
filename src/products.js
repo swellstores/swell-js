@@ -1,7 +1,10 @@
-const { map, reduce, defaultMethods } = require('./utils');
+const { map, reduce, defaultMethods, toSnake, toCamel } = require('./utils');
 const cache = require('./cache');
 
-function methods(request) {
+let OPTIONS;
+
+function methods(request, opt) {
+  OPTIONS = opt;
   const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
   return {
     get: (id, ...args) => {
@@ -99,7 +102,8 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculateVariation(product, options) {
+function calculateVariation(input, options) {
+  const product = OPTIONS.useCamelCase ? toSnake(input) : input;
   const variation = {
     ...product,
     price: product.price || 0,
@@ -144,7 +148,7 @@ function calculateVariation(product, options) {
   if (variation.orig_price === undefined) {
     delete variation.orig_price;
   }
-  return variation;
+  return OPTIONS.useCamelCase ? toCamel(variation) : variation;
 }
 
 module.exports = {

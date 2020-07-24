@@ -1,6 +1,6 @@
-const { get, find } = require('./utils');
+const { get, find, set, merge, toCamel } = require('./utils');
 
-function methods(request) {
+function methods(request, opt) {
   return {
     state: null,
     menuState: null,
@@ -13,11 +13,11 @@ function methods(request) {
       return this.get();
     },
 
-    async getState(uri, stateName, id = undefined, def = undefined) {
+    getState(uri, stateName, id = undefined, def = undefined) {
       if (!this[stateName]) {
         this[stateName] = request('get', uri);
       }
-      if (typeof this[stateName].then === 'function') {
+      if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then((state) => {
           this[stateName] = state;
           return id ? get(state, id, def) : state;
@@ -27,11 +27,29 @@ function methods(request) {
     },
 
     findState(uri, stateName, where = undefined, def = undefined) {
-      return this.getState(uri, stateName).then((state) => get(find(state, where), def));
+      const state = this.getState(uri, stateName);
+      if (state && typeof state.then === 'function') {
+        return state.then((state) => find(state, where) || def);
+      }
+      return find(state, where) || def;
+    },
+
+    load() {
+      return this.getState('/settings', 'state');
     },
 
     get(id = undefined, def = undefined) {
       return this.getState('/settings', 'state', id, def);
+    },
+
+    set(id, value) {
+      const { useCamelCase } = opt;
+      let mergeData = {};
+      set(mergeData, id || '', value);
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+      this.state = merge(this.state, mergeData);
     },
 
     menus(id = undefined, def = undefined) {

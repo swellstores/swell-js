@@ -87,13 +87,13 @@ var api = {
   cache: cache,
   card: card,
   cart: cart.methods(request, options),
-  account: account.methods(request),
-  products: products.methods(request),
-  categories: categories.methods(request),
-  subscriptions: subscriptions.methods(request),
-  content: content.methods(request),
-  settings: settings.methods(request),
-  payment: payment.methods(request)
+  account: account.methods(request, options),
+  products: products.methods(request, options),
+  categories: categories.methods(request, options),
+  subscriptions: subscriptions.methods(request, options),
+  content: content.methods(request, options),
+  settings: settings.methods(request, options),
+  payment: payment.methods(request, options)
 };
 
 function request(_x, _x2) {

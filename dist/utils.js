@@ -32,6 +32,14 @@ var options = {};
 function merge(x, y) {
   var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
+  if (!y || (0, _typeof2["default"])(y) !== 'object') {
+    return x;
+  }
+
+  if (!x || (0, _typeof2["default"])(x) !== 'object') {
+    return x;
+  }
+
   function arrayMerge(target, source, options) {
     var destination = target.slice();
     source.forEach(function (item, index) {

@@ -8,6 +8,12 @@ const { normalizeKeys } = require('object-keys-normalizer');
 let options = {};
 
 function merge(x, y, opt = {}) {
+  if (!y || typeof y !== 'object') {
+    return x;
+  }
+  if (!x || typeof x !== 'object') {
+    return x;
+  }
   function arrayMerge(target, source, options) {
     const destination = target.slice();
     source.forEach((item, index) => {
