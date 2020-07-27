@@ -66,13 +66,13 @@ var cacheApi = {
 
       data = upData;
     } else if (path) {
-      _set(mergeData, path || '', value);
+      _set(data, path, value); // TODO: make sure this is the right approach
+      // set(mergeData, path || '', value);
+      // if (useCamelCase) {
+      //   mergeData = toCamel(mergeData);
+      // }
+      // data = merge(data, mergeData);
 
-      if (useCamelCase) {
-        mergeData = toCamel(mergeData);
-      }
-
-      data = merge(data, mergeData);
     } else if (value && (0, _typeof2["default"])(value) === 'object') {
       data = data || {};
       data = merge(data, value);

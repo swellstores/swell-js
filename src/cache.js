@@ -35,11 +35,13 @@ const cacheApi = {
       }
       data = upData;
     } else if (path) {
-      set(mergeData, path || '', value);
-      if (useCamelCase) {
-        mergeData = toCamel(mergeData);
-      }
-      data = merge(data, mergeData);
+      set(data, path, value);
+      // TODO: make sure this is the right approach
+      // set(mergeData, path || '', value);
+      // if (useCamelCase) {
+      //   mergeData = toCamel(mergeData);
+      // }
+      // data = merge(data, mergeData);
     } else if (value && typeof value === 'object') {
       data = data || {};
       data = merge(data, value);
