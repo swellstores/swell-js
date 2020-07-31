@@ -22,6 +22,8 @@ var get = require('lodash/get');
 
 var find = require('lodash/find');
 
+var findIndex = require('lodash/findIndex');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -291,6 +293,7 @@ module.exports = {
   set: set,
   get: get,
   find: find,
+  findIndex: findIndex,
   merge: merge,
   setOptions: setOptions,
   getOptions: getOptions,

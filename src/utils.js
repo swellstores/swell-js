@@ -2,6 +2,7 @@ const qs = require('qs');
 const set = require('lodash/set');
 const get = require('lodash/get');
 const find = require('lodash/find');
+const findIndex = require('lodash/findIndex');
 const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
@@ -237,6 +238,7 @@ module.exports = {
   set,
   get,
   find,
+  findIndex,
   merge,
   setOptions,
   getOptions,

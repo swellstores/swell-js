@@ -73,17 +73,29 @@ function methods(request, opt) {
         def: def
       });
     },
-    set: function set(id, value) {
+    set: function set(_ref3) {
+      var model = _ref3.model,
+          path = _ref3.path,
+          value = _ref3.value;
+      var stateName = model ? "".concat(model.replace(/s$/, ''), "State") : 'state';
       var useCamelCase = opt.useCamelCase;
       var mergeData = {};
 
-      _set(mergeData, id || '', value);
+      if (model === 'menus') {
+        if (path !== undefined) {
+          _set(mergeData, path || '', value);
+        } else {
+          mergeData = value;
+        }
+      } else {
+        _set(mergeData, path || '', value);
+      }
 
       if (useCamelCase) {
         mergeData = toCamel(mergeData);
       }
 
-      this.state = merge(this.state, mergeData);
+      this[stateName] = merge(this[stateName], mergeData);
     },
     menus: function menus() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
@@ -105,7 +117,7 @@ function methods(request, opt) {
     },
     load: function () {
       var _load = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-        var _ref3, settings, menus, payments;
+        var _ref4, settings, menus, payments;
 
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -116,10 +128,10 @@ function methods(request, opt) {
                 return request('get', '/settings/all');
 
               case 3:
-                _ref3 = _context.sent;
-                settings = _ref3.settings;
-                menus = _ref3.menus;
-                payments = _ref3.payments;
+                _ref4 = _context.sent;
+                settings = _ref4.settings;
+                menus = _ref4.menus;
+                payments = _ref4.payments;
                 this.state = settings;
                 this.menuState = menus;
                 this.paymentState = payments;

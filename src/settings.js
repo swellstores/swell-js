@@ -38,14 +38,23 @@ function methods(request, opt) {
       return this.getState('/settings', 'state', { id, def });
     },
 
-    set(id, value) {
+    set({ model, path, value }) {
+      const stateName = model ? `${model.replace(/s$/, '')}State` : 'state';
       const { useCamelCase } = opt;
       let mergeData = {};
-      set(mergeData, id || '', value);
+      if (model === 'menus') {
+        if (path !== undefined) {
+          set(mergeData, path || '', value);
+        } else {
+          mergeData = value;
+        }
+      } else {
+        set(mergeData, path || '', value);
+      }
       if (useCamelCase) {
         mergeData = toCamel(mergeData);
       }
-      this.state = merge(this.state, mergeData);
+      this[stateName] = merge(this[stateName], mergeData);
     },
 
     menus(id = undefined, def = undefined) {
