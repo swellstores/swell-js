@@ -6,7 +6,7 @@ function methods(request) {
 
   return {
     get: (id, ...args) => {
-      return cache.getSetOnce('categories', id, () => get(id, ...args));
+      return cache.getFetch('categories', id, () => get(id, ...args));
     },
 
     list,

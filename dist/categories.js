@@ -16,7 +16,7 @@ function methods(request) {
         args[_key - 1] = arguments[_key];
       }
 
-      return cache.getSetOnce('categories', id, function () {
+      return cache.getFetch('categories', id, function () {
         return _get.apply(void 0, [id].concat(args));
       });
     },

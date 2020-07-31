@@ -2,10 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
@@ -25,20 +21,17 @@ var VALUES = {
   /*
   [model]: {
     [id]: {
-      counter,
       data,
     }
   }
   */
 };
-var ONCE_TIMER;
 var cacheApi = {
   set: function set(_ref) {
     var model = _ref.model,
         id = _ref.id,
         path = _ref.path,
         value = _ref.value;
-    var once = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     var data = _get(VALUES, "".concat(model, ".").concat(id, ".data"));
 
@@ -80,96 +73,25 @@ var cacheApi = {
       data = value;
     }
 
-    _set(VALUES, "".concat(model, ".").concat(id, ".data"), data);
-
-    if (once) {
-      _set(VALUES, "".concat(model, ".").concat(id, ".counter"), _get(VALUES, "".concat(model, ".").concat(id, ".counter"), -1) + 1);
-    } // Make sure values have clean refs
+    _set(VALUES, "".concat(model, ".").concat(id, ".data"), data); // Make sure values have clean refs
 
 
     if (VALUES[model][id] !== undefined) {
       VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
     }
   },
-  setOnce: function setOnce(details) {
-    if (ONCE_TIMER) {
-      clearTimeout(ONCE_TIMER);
-    }
-
-    ONCE_TIMER = setTimeout(function () {
-      return ONCE_TIMER = null;
-    }, 1000);
-    return this.set(details, true);
-  },
   get: function get(model, id) {
     return _get(VALUES, "".concat(model, ".").concat(id, ".data"));
   },
-  getOnce: function getOnce(model, id) {
-    var obj = _get(VALUES, "".concat(model, ".").concat(id));
+  getFetch: function getFetch(model, id, fetch) {
+    var value = this.get(model, id);
 
-    if (obj) {
-      if (obj.counter > 0) {
-        obj.counter--;
-
-        if (obj.data && (0, _typeof2["default"])(obj.data) === 'object') {
-          return _objectSpread({}, obj.data);
-        }
-
-        return obj.data;
-      }
-
-      if (ONCE_TIMER) {
-        if (obj.data && (0, _typeof2["default"])(obj.data) === 'object') {
-          return _objectSpread({}, obj.data);
-        }
-
-        return obj.data;
-      }
+    if (value !== undefined) {
+      return value;
     }
+
+    return fetch();
   },
-  getSetOnce: function () {
-    var _getSetOnce = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(model, id, getter) {
-      var value;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              value = this.getOnce(model, id);
-
-              if (!(value !== undefined)) {
-                _context.next = 3;
-                break;
-              }
-
-              return _context.abrupt("return", value);
-
-            case 3:
-              _context.next = 5;
-              return getter();
-
-            case 5:
-              value = _context.sent;
-              this.setOnce({
-                model: model,
-                id: id,
-                value: value
-              });
-              return _context.abrupt("return", value);
-
-            case 8:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function getSetOnce(_x, _x2, _x3) {
-      return _getSetOnce.apply(this, arguments);
-    }
-
-    return getSetOnce;
-  }(),
   clear: function clear() {
     var model = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
     var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;

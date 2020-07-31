@@ -4,17 +4,14 @@ let VALUES = {
   /*
   [model]: {
     [id]: {
-      counter,
       data,
     }
   }
 */
 };
 
-let ONCE_TIMER;
-
 const cacheApi = {
-  set({ model, id, path, value }, once = false) {
+  set({ model, id, path, value }) {
     let data = get(VALUES, `${model}.${id}.data`);
 
     if (id === null || (path && data === undefined) || data === null) {
@@ -51,56 +48,22 @@ const cacheApi = {
 
     set(VALUES, `${model}.${id}.data`, data);
 
-    if (once) {
-      set(VALUES, `${model}.${id}.counter`, get(VALUES, `${model}.${id}.counter`, -1) + 1);
-    }
-
     // Make sure values have clean refs
     if (VALUES[model][id] !== undefined) {
       VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
     }
   },
 
-  setOnce(details) {
-    if (ONCE_TIMER) {
-      clearTimeout(ONCE_TIMER);
-    }
-    ONCE_TIMER = setTimeout(() => ONCE_TIMER = null, 1000);
-    return this.set(details, true);
-  },
-
   get(model, id) {
     return get(VALUES, `${model}.${id}.data`);
   },
 
-  getOnce(model, id) {
-    const obj = get(VALUES, `${model}.${id}`);
-
-    if (obj) {
-      if (obj.counter > 0) {
-        obj.counter--;
-        if (obj.data && typeof obj.data === 'object') {
-          return { ...obj.data };
-        }
-        return obj.data;
-      }
-      if (ONCE_TIMER) {
-        if (obj.data && typeof obj.data === 'object') {
-          return { ...obj.data };
-        }
-        return obj.data;
-      }
-    }
-  },
-
-  async getSetOnce(model, id, getter) {
-    let value = this.getOnce(model, id);
+  getFetch(model, id, fetch) {
+    let value = this.get(model, id);
     if (value !== undefined) {
       return value;
     }
-    value = await getter();
-    this.setOnce({ model, id, value });
-    return value;
+    return fetch();
   },
 
   clear(model = undefined, id = undefined, path = undefined) {

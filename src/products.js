@@ -8,7 +8,7 @@ function methods(request, opt) {
   const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
   return {
     get: (id, ...args) => {
-      return cache.getSetOnce('products', id, () => get(id, ...args));
+      return cache.getFetch('products', id, () => get(id, ...args));
     },
 
     list,

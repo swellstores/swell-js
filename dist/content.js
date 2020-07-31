@@ -13,7 +13,7 @@ var cache = require('./cache');
 function methods(request, opt) {
   return {
     get: function get(type, id, query) {
-      return cache.getSetOnce("content_".concat(type), id, function () {
+      return cache.getFetch("content_".concat(type), id, function () {
         return request('get', "/content/".concat(type), id, _objectSpread({
           $preview: opt.previewContent
         }, query || {}));
