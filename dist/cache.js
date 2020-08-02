@@ -2,6 +2,10 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
@@ -11,33 +15,71 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _require = require('./utils'),
-    _get = _require.get,
+    get = _require.get,
     _set = _require.set,
     merge = _require.merge,
     toCamel = _require.toCamel,
     getOptions = _require.getOptions;
 
+var RECORD_TIMEOUT = 5000;
 var VALUES = {
   /*
   [model]: {
     [id]: {
       data,
+      record,
+      recordTimer,
+      presets,
     }
   }
   */
 };
 var cacheApi = {
-  set: function set(_ref) {
+  values: function values(_ref, setValues) {
     var model = _ref.model,
-        id = _ref.id,
-        path = _ref.path,
-        value = _ref.value;
+        id = _ref.id;
 
-    var data = _get(VALUES, "".concat(model, ".").concat(id, ".data"));
+    if (setValues !== undefined) {
+      for (var key in setValues) {
+        _set(VALUES, "".concat(model, ".").concat(id, ".").concat(key), setValues[key]);
+      }
 
-    if (id === null || path && data === undefined || data === null) {
       return;
     }
+
+    return get(VALUES, "".concat(model, ".").concat(id), {});
+  },
+  preset: function preset(details) {
+    var _this$values = this.values(details),
+        _this$values$presets = _this$values.presets,
+        presets = _this$values$presets === void 0 ? [] : _this$values$presets;
+
+    presets.push(details);
+    this.values(details, {
+      presets: presets
+    });
+  },
+  set: function set(details) {
+    var model = details.model,
+        id = details.id,
+        path = details.path,
+        value = details.value;
+
+    var _this$values2 = this.values(details),
+        _this$values2$data = _this$values2.data,
+        data = _this$values2$data === void 0 ? {} : _this$values2$data,
+        record = _this$values2.record,
+        presets = _this$values2.presets;
+
+    if (id === null) {
+      return;
+    }
+
+    if (!record) {
+      return this.preset(details);
+    }
+
+    data = merge(record, data);
 
     var _getOptions = getOptions(),
         useCamelCase = _getOptions.useCamelCase;
@@ -73,37 +115,129 @@ var cacheApi = {
       data = value;
     }
 
-    _set(VALUES, "".concat(model, ".").concat(id, ".data"), data); // Make sure values have clean refs
-
+    this.values(details, {
+      data: data
+    }); // Make sure values have clean refs
 
     if (VALUES[model][id] !== undefined) {
       VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
     }
   },
   get: function get(model, id) {
-    return _get(VALUES, "".concat(model, ".").concat(id, ".data"));
-  },
-  getFetch: function getFetch(model, id, fetch) {
-    var value = this.get(model, id);
+    var _this$values3 = this.values({
+      model: model,
+      id: id
+    }),
+        data = _this$values3.data,
+        recordTimer = _this$values3.recordTimer;
 
-    if (value !== undefined) {
-      return value;
+    if (recordTimer) {
+      return data;
+    }
+  },
+  setRecord: function setRecord(record, details) {
+    var _this = this;
+
+    var _this$values4 = this.values(details),
+        recordTimer = _this$values4.recordTimer,
+        presets = _this$values4.presets;
+
+    if (recordTimer) {
+      clearTimeout(recordTimer);
     }
 
-    return fetch();
+    recordTimer = setTimeout(function () {
+      _this.values(details, {
+        record: undefined,
+        recordTimer: undefined
+      });
+    }, RECORD_TIMEOUT);
+    this.values(details, {
+      record: record,
+      recordTimer: recordTimer
+    });
+
+    if (presets) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = presets[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var preset = _step.value;
+          this.set(preset);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      this.values(details, {
+        presets: undefined
+      });
+    }
+
+    var result = this.get(details.model, details.id);
+    return result !== undefined ? result : record;
   },
+  getFetch: function () {
+    var _getFetch = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(model, id, fetch) {
+      var value, record;
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              value = this.get(model, id);
+
+              if (!(value !== undefined)) {
+                _context.next = 3;
+                break;
+              }
+
+              return _context.abrupt("return", value);
+
+            case 3:
+              _context.next = 5;
+              return fetch();
+
+            case 5:
+              record = _context.sent;
+              return _context.abrupt("return", this.setRecord(record, {
+                model: model,
+                id: id
+              }));
+
+            case 7:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    }));
+
+    function getFetch(_x, _x2, _x3) {
+      return _getFetch.apply(this, arguments);
+    }
+
+    return getFetch;
+  }(),
   clear: function clear() {
     var model = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
     var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-    var path = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
     if (model) {
       if (id) {
-        if (path) {
-          _set(VALUES, "".concat(model, ".").concat(id, ".").concat(path), undefined);
-        } else {
-          _set(VALUES, "".concat(model, ".").concat(id), undefined);
-        }
+        _set(VALUES, "".concat(model, ".").concat(id), undefined);
       } else {
         _set(VALUES, model, undefined);
       }

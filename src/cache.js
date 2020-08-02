@@ -1,22 +1,50 @@
 const { get, set, merge, toCamel, getOptions } = require('./utils');
 
+const RECORD_TIMEOUT = 5000;
+
 let VALUES = {
   /*
   [model]: {
     [id]: {
       data,
+      record,
+      recordTimer,
+      presets,
     }
   }
 */
 };
 
 const cacheApi = {
-  set({ model, id, path, value }) {
-    let data = get(VALUES, `${model}.${id}.data`);
-
-    if (id === null || (path && data === undefined) || data === null) {
+  values({ model, id }, setValues) {
+    if (setValues !== undefined) {
+      for (let key in setValues) {
+        set(VALUES, `${model}.${id}.${key}`, setValues[key]);
+      }
       return;
     }
+    return get(VALUES, `${model}.${id}`, {});
+  },
+
+  preset(details) {
+    const { presets = [] } = this.values(details);
+    presets.push(details);
+    this.values(details, { presets });
+  },
+
+  set(details) {
+    let { model, id, path, value } = details;
+    let { data = {}, record, presets } = this.values(details);
+
+    if (id === null) {
+      return;
+    }
+
+    if (!record) {
+      return this.preset(details);
+    }
+
+    data = merge(record, data);
 
     const { useCamelCase } = getOptions();
     if (useCamelCase && value && typeof value === 'object') {
@@ -46,7 +74,7 @@ const cacheApi = {
       data = value;
     }
 
-    set(VALUES, `${model}.${id}.data`, data);
+    this.values(details, { data });
 
     // Make sure values have clean refs
     if (VALUES[model][id] !== undefined) {
@@ -55,25 +83,52 @@ const cacheApi = {
   },
 
   get(model, id) {
-    return get(VALUES, `${model}.${id}.data`);
+    const { data, recordTimer } = this.values({ model, id });
+    if (recordTimer) {
+      return data;
+    }
   },
 
-  getFetch(model, id, fetch) {
-    let value = this.get(model, id);
+  setRecord(record, details) {
+    let { recordTimer, presets } = this.values(details);
+
+    if (recordTimer) {
+      clearTimeout(recordTimer);
+    }
+
+    recordTimer = setTimeout(
+      () => {
+        this.values(details, { record: undefined, recordTimer: undefined });
+      },
+      RECORD_TIMEOUT,
+    );
+    this.values(details, { record, recordTimer });
+
+    if (presets) {
+      for (let preset of presets) {
+        this.set(preset);
+      }
+      this.values(details, { presets: undefined });
+    }
+
+    const result = this.get(details.model, details.id);
+
+    return result !== undefined ? result : record;
+  },
+
+  async getFetch(model, id, fetch) {
+    const value = this.get(model, id);
     if (value !== undefined) {
       return value;
     }
-    return fetch();
+    const record = await fetch();
+    return this.setRecord(record, { model, id });
   },
 
-  clear(model = undefined, id = undefined, path = undefined) {
+  clear(model = undefined, id = undefined) {
     if (model) {
       if (id) {
-        if (path) {
-          set(VALUES, `${model}.${id}.${path}`, undefined);
-        } else {
-          set(VALUES, `${model}.${id}`, undefined);
-        }
+        set(VALUES, `${model}.${id}`, undefined);
       } else {
         set(VALUES, model, undefined);
       }
