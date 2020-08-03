@@ -16,7 +16,7 @@ let VALUES = {
 };
 
 const cacheApi = {
-  values({ model, id }, setValues) {
+  values({ model, id }, setValues = undefined) {
     if (setValues !== undefined) {
       for (let key in setValues) {
         set(VALUES, `${model}.${id}.${key}`, setValues[key]);
@@ -40,7 +40,7 @@ const cacheApi = {
       return;
     }
 
-    if (!record) {
+    if (record === undefined) {
       return this.preset(details);
     }
 
@@ -53,13 +53,14 @@ const cacheApi = {
 
     let mergeData = {};
     if (value instanceof Array) {
-      let upData = { ...data };
+      let upData = { ...(data || {}) };
       set(upData, path || '', value);
       if (useCamelCase) {
         upData = toCamel(upData);
       }
       data = upData;
     } else if (path) {
+      data = data || {};
       set(data, path, value);
       // TODO: make sure this is the right approach
       // set(mergeData, path || '', value);
@@ -102,6 +103,8 @@ const cacheApi = {
       },
       RECORD_TIMEOUT,
     );
+
+    // Record has to be an empty object at minimum
     this.values(details, { record, recordTimer });
 
     if (presets) {

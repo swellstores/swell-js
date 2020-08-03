@@ -35,9 +35,10 @@ var VALUES = {
   */
 };
 var cacheApi = {
-  values: function values(_ref, setValues) {
+  values: function values(_ref) {
     var model = _ref.model,
         id = _ref.id;
+    var setValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
     if (setValues !== undefined) {
       for (var key in setValues) {
@@ -75,7 +76,7 @@ var cacheApi = {
       return;
     }
 
-    if (!record) {
+    if (record === undefined) {
       return this.preset(details);
     }
 
@@ -91,7 +92,7 @@ var cacheApi = {
     var mergeData = {};
 
     if (value instanceof Array) {
-      var upData = _objectSpread({}, data);
+      var upData = _objectSpread({}, data || {});
 
       _set(upData, path || '', value);
 
@@ -101,6 +102,8 @@ var cacheApi = {
 
       data = upData;
     } else if (path) {
+      data = data || {};
+
       _set(data, path, value); // TODO: make sure this is the right approach
       // set(mergeData, path || '', value);
       // if (useCamelCase) {
@@ -151,7 +154,8 @@ var cacheApi = {
         record: undefined,
         recordTimer: undefined
       });
-    }, RECORD_TIMEOUT);
+    }, RECORD_TIMEOUT); // Record has to be an empty object at minimum
+
     this.values(details, {
       record: record,
       recordTimer: recordTimer
