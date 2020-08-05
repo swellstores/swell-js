@@ -14,6 +14,7 @@ const cart = require('./cart');
 const account = require('./account');
 const products = require('./products');
 const categories = require('./categories');
+const attributes = require('./attributes');
 const subscriptions = require('./subscriptions');
 const content = require('./content');
 const settings = require('./settings');
@@ -76,6 +77,8 @@ const api = {
   products: products.methods(request, options),
 
   categories: categories.methods(request, options),
+
+  attributes: attributes.methods(request, options),
 
   subscriptions: subscriptions.methods(request, options),
 
