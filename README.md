@@ -41,6 +41,9 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 - [Categories](#categories)
   - [List categories](#list-categories)
   - [Get a category](#get-a-category)
+- [Attributes](#attributes)
+  - [List attributes](#list-attributes)
+  - [Get an attribute](#get-an-attribute)
 - [Shopping carts](#shopping-carts)
   - [Get a cart](#get-a-cart)
   - [Add an item](#add-an-item)
@@ -204,7 +207,7 @@ swell.settings.payments();
 
 #### List products
 
-_Returns all products, with offset pagination using `limit` and `skip`._
+_Returns all products, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.products.list({
@@ -215,7 +218,7 @@ await swell.products.list({
 
 #### List products + variants
 
-_Returns all products and their active variants, with offset pagination using `limit` and `skip`._
+_Returns all products and their active variants, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.products.list({
@@ -227,7 +230,7 @@ await swell.products.list({
 
 #### List products by category
 
-_Returns products in a specific category, with offset pagination using `limit` and `skip`._
+_Returns products in a specific category, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.products.list({
@@ -253,7 +256,7 @@ await swell.products.get('5c15505200c7d14d851e510f');
 
 Perform a full text search with a string. The search operation is performed using AND syntax, where all words must be present in at least one field of the product.
 
-_Returns products matching the search query string, with offset pagination using `limit` and `skip`._
+_Returns products matching the search query string, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.products.list({
@@ -280,7 +283,7 @@ await swell.products.variation(product, {
 
 #### List categories
 
-_Returns a list of product categories, with offset pagination using `limit` and `skip`._
+_Returns a list of product categories, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.categories.list({
@@ -299,6 +302,31 @@ await swell.categories.get('mens-shirts');
 
 // By ID
 await swell.categories.get('5c15505200c7d14d851e510g');
+```
+
+## Attributes
+
+#### List attributes
+
+_Returns a list of product attributes, with offset pagination using `limit` and `page`._
+
+```javascript
+await swell.attributes.list({
+  limit: 25,
+  page: 1,
+});
+```
+
+#### Get an attribute
+
+_Returns a single attribute._
+
+```javascript
+// By slug
+await swell.attributes.get('color');
+
+// By ID
+await swell.attributes.get('5c15505200c7d14d851e510g');
 ```
 
 ## Shopping carts
@@ -678,7 +706,7 @@ await swell.account.recover({
 
 Use to get a list of addresses on file for the account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
 
-_Returns all addresses, with offset pagination using `limit` and `skip`._
+_Returns all addresses, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.account.getAddresses();
@@ -717,7 +745,7 @@ await swell.account.deleteAddress('5c15505200c7d14d851e510f');
 
 Use to get a list of credit cards on file for the account. These are stored automatically when a non-guest user checks out and chooses to save their information for later.
 
-_Returns all addresses, with offset pagination using `limit` and `skip`._
+_Returns all addresses, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.account.getCards();
@@ -756,7 +784,7 @@ await swell.account.getOrders({
 
 Return a list of orders placed by a customer including shipments with tracking information.
 
-_Returns all orders, with offset pagination using `limit` and `skip`._
+_Returns all orders, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.account.getOrders({
@@ -772,7 +800,7 @@ Fetch and manage subscriptions associated with the logged in customer's account.
 
 Return a list of active and canceled subscriptions for an account.
 
-_Returns all subscriptions, with offset pagination using `limit` and `skip`._
+_Returns all subscriptions, with offset pagination using `limit` and `page`._
 
 ```javascript
 await swell.subscriptions.list();
