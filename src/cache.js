@@ -1,5 +1,7 @@
 const { get, set, merge, toCamel, getOptions } = require('./utils');
 
+const DEBUG = false; // true to enable debug logs
+
 const RECORD_TIMEOUT = 5000;
 
 let VALUES = {
@@ -15,8 +17,15 @@ let VALUES = {
 */
 };
 
+function debug(...args) {
+  if (DEBUG) {
+    console.log(...args);
+  }
+}
+
 const cacheApi = {
   values({ model, id }, setValues = undefined) {
+    debug('cache.values', ...arguments);
     if (setValues !== undefined) {
       for (let key in setValues) {
         set(VALUES, `${model}.${id}.${key}`, setValues[key]);
@@ -27,12 +36,14 @@ const cacheApi = {
   },
 
   preset(details) {
+    debug('cache.preset', ...arguments);
     const { presets = [] } = this.values(details);
     presets.push(details);
     this.values(details, { presets });
   },
 
   set(details) {
+    debug('cache.set', ...arguments);
     let { model, id, path, value } = details;
     let { data = {}, record, presets } = this.values(details);
 
@@ -61,13 +72,11 @@ const cacheApi = {
       data = upData;
     } else if (path) {
       data = data || {};
-      set(data, path, value);
-      // TODO: make sure this is the right approach
-      // set(mergeData, path || '', value);
-      // if (useCamelCase) {
-      //   mergeData = toCamel(mergeData);
-      // }
-      // data = merge(data, mergeData);
+      set(mergeData, path || '', value);
+      if (useCamelCase) {
+        mergeData = toCamel(mergeData);
+      }
+      data = merge(data, mergeData);
     } else if (value && typeof value === 'object') {
       data = data || {};
       data = merge(data, value);
@@ -84,25 +93,25 @@ const cacheApi = {
   },
 
   get(model, id) {
+    debug('cache.get', ...arguments);
     const { data, recordTimer } = this.values({ model, id });
+    debug('cache.get:data+recordTimer', ...arguments);
     if (recordTimer) {
       return data;
     }
   },
 
   setRecord(record, details) {
+    debug('cache.setRecord', ...arguments);
     let { recordTimer, presets } = this.values(details);
 
     if (recordTimer) {
       clearTimeout(recordTimer);
     }
 
-    recordTimer = setTimeout(
-      () => {
-        this.values(details, { record: undefined, recordTimer: undefined });
-      },
-      RECORD_TIMEOUT,
-    );
+    recordTimer = setTimeout(() => {
+      this.values(details, { record: undefined, recordTimer: undefined });
+    }, RECORD_TIMEOUT);
 
     // Record has to be an empty object at minimum
     this.values(details, { record, recordTimer });
@@ -120,6 +129,7 @@ const cacheApi = {
   },
 
   async getFetch(model, id, fetch) {
+    debug('cache.getFetch', ...arguments);
     const value = this.get(model, id);
     if (value !== undefined) {
       return value;
@@ -129,6 +139,7 @@ const cacheApi = {
   },
 
   clear(model = undefined, id = undefined) {
+    debug('cache.clear', ...arguments);
     if (model) {
       if (id) {
         set(VALUES, `${model}.${id}`, undefined);
