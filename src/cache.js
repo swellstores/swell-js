@@ -44,7 +44,7 @@ const cacheApi = {
       return this.preset(details);
     }
 
-    data = merge(record, data);
+    data = merge(record || {}, data);
 
     const { useCamelCase } = getOptions();
     if (useCamelCase && value && typeof value === 'object') {

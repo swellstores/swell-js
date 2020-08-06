@@ -80,7 +80,7 @@ var cacheApi = {
       return this.preset(details);
     }
 
-    data = merge(record, data);
+    data = merge(record || {}, data);
 
     var _getOptions = getOptions(),
         useCamelCase = _getOptions.useCamelCase;
