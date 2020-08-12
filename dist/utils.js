@@ -24,6 +24,8 @@ var find = require('lodash/find');
 
 var findIndex = require('lodash/findIndex');
 
+var camelCase = require('lodash/camelCase');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -90,6 +92,14 @@ function toCamel(obj) {
   }
 
   return normal;
+}
+
+function toCamelPath(str) {
+  if (typeof str === 'string') {
+    return str.split('.').map(camelCase).join('.');
+  }
+
+  return str;
 }
 
 function toSnake(obj) {
@@ -294,10 +304,12 @@ module.exports = {
   get: get,
   find: find,
   findIndex: findIndex,
+  camelCase: camelCase,
   merge: merge,
   setOptions: setOptions,
   getOptions: getOptions,
   toCamel: toCamel,
+  toCamelPath: toCamelPath,
   toSnake: toSnake,
   trimBoth: trimBoth,
   trimStart: trimStart,

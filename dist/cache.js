@@ -104,9 +104,7 @@ var cacheApi = {
       value = toCamel(value);
     }
 
-    var mergeData = {};
-
-    if (value instanceof Array) {
+    if (path || value instanceof Array) {
       var upData = _objectSpread({}, data || {});
 
       _set(upData, path || '', value);
@@ -116,16 +114,6 @@ var cacheApi = {
       }
 
       data = upData;
-    } else if (path) {
-      data = data || {};
-
-      _set(mergeData, path || '', value);
-
-      if (useCamelCase) {
-        mergeData = toCamel(mergeData);
-      }
-
-      data = merge(data, mergeData);
     } else if (value && (0, _typeof2["default"])(value) === 'object') {
       data = data || {};
       data = merge(data, value);

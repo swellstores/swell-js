@@ -62,21 +62,13 @@ const cacheApi = {
       value = toCamel(value);
     }
 
-    let mergeData = {};
-    if (value instanceof Array) {
+    if (path || value instanceof Array) {
       let upData = { ...(data || {}) };
       set(upData, path || '', value);
       if (useCamelCase) {
         upData = toCamel(upData);
       }
       data = upData;
-    } else if (path) {
-      data = data || {};
-      set(mergeData, path || '', value);
-      if (useCamelCase) {
-        mergeData = toCamel(mergeData);
-      }
-      data = merge(data, mergeData);
     } else if (value && typeof value === 'object') {
       data = data || {};
       data = merge(data, value);
