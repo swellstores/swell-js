@@ -1,11 +1,13 @@
-const { map, reduce, defaultMethods, toSnake, toCamel } = require('./utils');
+const { map, reduce, find, uniq, defaultMethods, toSnake, toCamel } = require('./utils');
 const cache = require('./cache');
 
 let OPTIONS;
+let listMethod;
 
 function methods(request, opt) {
   OPTIONS = opt;
   const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
+  listMethod = list;
   return {
     get: (id, ...args) => {
       return cache.getFetch('products', id, () => get(id, ...args));
@@ -13,7 +15,17 @@ function methods(request, opt) {
 
     list,
 
+    listFiltered,
+
     variation: calculateVariation,
+
+    categories: getCategories,
+
+    attributes: getAttributes,
+
+    priceRange: getPriceRange,
+
+    filters: getFilters,
   };
 }
 
@@ -149,6 +161,183 @@ function calculateVariation(input, options) {
     delete variation.orig_price;
   }
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
+}
+
+function listFiltered(filters = [], query = {}) {
+  const filterQuery = {
+    ...(query || {}),
+  };
+  if (filters instanceof Array) {
+    for (let filter of filters) {
+      if (!filter) continue;
+
+      switch (filter.id) {
+        case 'category':
+          const value = filter.value instanceof Array ? filter.value : [filter.value];
+          filterQuery.categories = value.map((val) => `+${val}`);
+          if (query && query.categories) {
+            const ex =
+              query.categories instanceof Array
+                ? query.categories
+                : String(query.categories).split(/[\s]*,[\s]*/);
+            filterQuery.categories = [...ex, ...filterQuery.categories];
+          }
+          break;
+
+        case 'price':
+          filterQuery.price = {
+            $gte: filter.value[0],
+            $lte: filter.value[1],
+          };
+          break;
+
+        default:
+          // attributes
+          filterQuery[`attributes.${filter.id}`] = { $in: filter.value };
+      }
+    }
+  }
+  return listMethod(filterQuery);
+}
+
+function getFilters(products, options = {}) {
+  const attributes =
+    (options.attributes || options.attributes === undefined) && getAttributes(products);
+  const categories =
+    (options.categories || options.categories === undefined) && getCategories(products);
+  const priceRange = (options.price || options.price === undefined) && getPriceRange(products);
+
+  let filters = [];
+
+  if (priceRange) {
+    filters.push({
+      id: 'price',
+      label: 'Price',
+      type: 'range',
+      options: [
+        {
+          value: priceRange.min,
+          label: priceRange.min, // TODO: formatting
+        },
+        {
+          value: priceRange.max,
+          label: priceRange.max, // TODO: formatting
+        },
+      ],
+      interval: priceRange.interval,
+    });
+  }
+
+  if (categories) {
+    filters.push({
+      id: 'category',
+      label: 'Category',
+      type: 'select',
+      options: categories.map((category) => ({
+        value: category.slug,
+        label: category.name,
+      })),
+    });
+  }
+
+  if (attributes) {
+    filters = [
+      ...filters,
+      ...reduce(
+        attributes,
+        (acc, attr) => [
+          ...acc,
+          ...(attr.id !== 'category' &&
+          attr.id !== 'price' &&
+          attr.values instanceof Array &&
+          attr.values.length > 0
+            ? [
+                {
+                  id: attr.id,
+                  label: attr.name,
+                  type: 'select',
+                  options: attr.values.map((value) => ({
+                    value,
+                    label: value,
+                  })),
+                },
+              ]
+            : []),
+        ],
+        [],
+      ),
+    ];
+  }
+
+  return filters;
+}
+
+function getCategories(products) {
+  const categories = [];
+  const collection = (products && products.results) || (products.id ? [products] : products);
+  if (collection instanceof Array) {
+    for (let product of collection) {
+      if (product.categories) {
+        for (let category of product.categories) {
+          if (!category) continue;
+          let ex = find(categories, { id: category.id });
+          if (!ex) {
+            categories.push(category);
+          }
+        }
+      }
+    }
+  }
+  return categories;
+}
+
+function getAttributes(products) {
+  const attributes = [];
+  const collection = (products && products.results) || (products.id ? [products] : products);
+  if (collection instanceof Array) {
+    for (let product of collection) {
+      if (product.attributes) {
+        for (let id in product.attributes) {
+          if (!product.attributes[id]) continue;
+          const value = product.attributes[id].value;
+          let attr = find(attributes, { id });
+          if (attr) {
+            attr.values = uniq([...attr.values, ...(value instanceof Array ? value : [value])]);
+          } else {
+            attributes.push({
+              ...product.attributes[id],
+              value: undefined,
+              values: [...(value instanceof Array ? value : [value])],
+            });
+          }
+        }
+      }
+    }
+  }
+  return attributes;
+}
+
+function getPriceRange(products) {
+  let min = 0;
+  let max = 0;
+  let interval = 0;
+  const collection = (products && products.results) || (products.id ? [products] : products);
+  if (collection instanceof Array) {
+    for (let product of collection) {
+      if (product.price > max) {
+        max = product.price;
+      }
+      if (min === 0 || product.price < min) {
+        min = product.price;
+      }
+    }
+  }
+  interval = Math.ceil((max - min) / 10) || 1;
+  return {
+    min,
+    max: max || 100,
+    interval: interval || 1,
+  };
 }
 
 module.exports = {

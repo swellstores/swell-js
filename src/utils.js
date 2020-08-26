@@ -1,6 +1,7 @@
 const qs = require('qs');
 const set = require('lodash/set');
 const get = require('lodash/get');
+const uniq = require('lodash/uniq');
 const find = require('lodash/find');
 const findIndex = require('lodash/findIndex');
 const camelCase = require('lodash/camelCase');
@@ -245,6 +246,7 @@ function buildParams(key, obj, add) {
 module.exports = {
   set,
   get,
+  uniq,
   find,
   findIndex,
   camelCase,

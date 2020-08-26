@@ -20,6 +20,8 @@ var set = require('lodash/set');
 
 var get = require('lodash/get');
 
+var uniq = require('lodash/uniq');
+
 var find = require('lodash/find');
 
 var findIndex = require('lodash/findIndex');
@@ -302,6 +304,7 @@ function buildParams(key, obj, add) {
 module.exports = {
   set: set,
   get: get,
+  uniq: uniq,
   find: find,
   findIndex: findIndex,
   camelCase: camelCase,

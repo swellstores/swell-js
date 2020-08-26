@@ -2,6 +2,8 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
@@ -13,6 +15,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var _require = require('./utils'),
     map = _require.map,
     reduce = _require.reduce,
+    find = _require.find,
+    uniq = _require.uniq,
     defaultMethods = _require.defaultMethods,
     toSnake = _require.toSnake,
     toCamel = _require.toCamel;
@@ -20,6 +24,7 @@ var _require = require('./utils'),
 var cache = require('./cache');
 
 var OPTIONS;
+var listMethod;
 
 function methods(request, opt) {
   OPTIONS = opt;
@@ -28,6 +33,7 @@ function methods(request, opt) {
       _get = _defaultMethods.get,
       list = _defaultMethods.list;
 
+  listMethod = list;
   return {
     get: function get(id) {
       for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -39,7 +45,12 @@ function methods(request, opt) {
       });
     },
     list: list,
-    variation: calculateVariation
+    listFiltered: listFiltered,
+    variation: calculateVariation,
+    categories: getCategories,
+    attributes: getAttributes,
+    priceRange: getPriceRange,
+    filters: getFilters
   };
 }
 
@@ -280,6 +291,290 @@ function calculateVariation(input, options) {
   }
 
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
+}
+
+function listFiltered() {
+  var filters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  var query = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  var filterQuery = _objectSpread({}, query || {});
+
+  if (filters instanceof Array) {
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+      for (var _iterator5 = filters[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        var filter = _step5.value;
+        if (!filter) continue;
+
+        switch (filter.id) {
+          case 'category':
+            var value = filter.value instanceof Array ? filter.value : [filter.value];
+            filterQuery.categories = value.map(function (val) {
+              return "+".concat(val);
+            });
+
+            if (query && query.categories) {
+              var ex = query.categories instanceof Array ? query.categories : String(query.categories).split(/[\s]*,[\s]*/);
+              filterQuery.categories = [].concat((0, _toConsumableArray2["default"])(ex), (0, _toConsumableArray2["default"])(filterQuery.categories));
+            }
+
+            break;
+
+          case 'price':
+            filterQuery.price = {
+              $gte: filter.value[0],
+              $lte: filter.value[1]
+            };
+            break;
+
+          default:
+            // attributes
+            filterQuery["attributes.".concat(filter.id)] = {
+              $in: filter.value
+            };
+        }
+      }
+    } catch (err) {
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+          _iterator5["return"]();
+        }
+      } finally {
+        if (_didIteratorError5) {
+          throw _iteratorError5;
+        }
+      }
+    }
+  }
+
+  return listMethod(filterQuery);
+}
+
+function getFilters(products) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var attributes = (options.attributes || options.attributes === undefined) && getAttributes(products);
+  var categories = (options.categories || options.categories === undefined) && getCategories(products);
+  var priceRange = (options.price || options.price === undefined) && getPriceRange(products);
+  var filters = [];
+
+  if (priceRange) {
+    filters.push({
+      id: 'price',
+      label: 'Price',
+      type: 'range',
+      options: [{
+        value: priceRange.min,
+        label: priceRange.min // TODO: formatting
+
+      }, {
+        value: priceRange.max,
+        label: priceRange.max // TODO: formatting
+
+      }],
+      interval: priceRange.interval
+    });
+  }
+
+  if (categories) {
+    filters.push({
+      id: 'category',
+      label: 'Category',
+      type: 'select',
+      options: categories.map(function (category) {
+        return {
+          value: category.slug,
+          label: category.name
+        };
+      })
+    });
+  }
+
+  if (attributes) {
+    filters = [].concat((0, _toConsumableArray2["default"])(filters), (0, _toConsumableArray2["default"])(reduce(attributes, function (acc, attr) {
+      return [].concat((0, _toConsumableArray2["default"])(acc), (0, _toConsumableArray2["default"])(attr.id !== 'category' && attr.id !== 'price' && attr.values instanceof Array && attr.values.length > 0 ? [{
+        id: attr.id,
+        label: attr.name,
+        type: 'select',
+        options: attr.values.map(function (value) {
+          return {
+            value: value,
+            label: value
+          };
+        })
+      }] : []));
+    }, [])));
+  }
+
+  return filters;
+}
+
+function getCategories(products) {
+  var categories = [];
+  var collection = products && products.results || (products.id ? [products] : products);
+
+  if (collection instanceof Array) {
+    var _iteratorNormalCompletion6 = true;
+    var _didIteratorError6 = false;
+    var _iteratorError6 = undefined;
+
+    try {
+      for (var _iterator6 = collection[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+        var product = _step6.value;
+
+        if (product.categories) {
+          var _iteratorNormalCompletion7 = true;
+          var _didIteratorError7 = false;
+          var _iteratorError7 = undefined;
+
+          try {
+            for (var _iterator7 = product.categories[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+              var category = _step7.value;
+              if (!category) continue;
+              var ex = find(categories, {
+                id: category.id
+              });
+
+              if (!ex) {
+                categories.push(category);
+              }
+            }
+          } catch (err) {
+            _didIteratorError7 = true;
+            _iteratorError7 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
+                _iterator7["return"]();
+              }
+            } finally {
+              if (_didIteratorError7) {
+                throw _iteratorError7;
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      _didIteratorError6 = true;
+      _iteratorError6 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
+          _iterator6["return"]();
+        }
+      } finally {
+        if (_didIteratorError6) {
+          throw _iteratorError6;
+        }
+      }
+    }
+  }
+
+  return categories;
+}
+
+function getAttributes(products) {
+  var attributes = [];
+  var collection = products && products.results || (products.id ? [products] : products);
+
+  if (collection instanceof Array) {
+    var _iteratorNormalCompletion8 = true;
+    var _didIteratorError8 = false;
+    var _iteratorError8 = undefined;
+
+    try {
+      for (var _iterator8 = collection[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+        var product = _step8.value;
+
+        if (product.attributes) {
+          for (var id in product.attributes) {
+            if (!product.attributes[id]) continue;
+            var value = product.attributes[id].value;
+            var attr = find(attributes, {
+              id: id
+            });
+
+            if (attr) {
+              attr.values = uniq([].concat((0, _toConsumableArray2["default"])(attr.values), (0, _toConsumableArray2["default"])(value instanceof Array ? value : [value])));
+            } else {
+              attributes.push(_objectSpread({}, product.attributes[id], {
+                value: undefined,
+                values: (0, _toConsumableArray2["default"])(value instanceof Array ? value : [value])
+              }));
+            }
+          }
+        }
+      }
+    } catch (err) {
+      _didIteratorError8 = true;
+      _iteratorError8 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
+          _iterator8["return"]();
+        }
+      } finally {
+        if (_didIteratorError8) {
+          throw _iteratorError8;
+        }
+      }
+    }
+  }
+
+  return attributes;
+}
+
+function getPriceRange(products) {
+  var min = 0;
+  var max = 0;
+  var interval = 0;
+  var collection = products && products.results || (products.id ? [products] : products);
+
+  if (collection instanceof Array) {
+    var _iteratorNormalCompletion9 = true;
+    var _didIteratorError9 = false;
+    var _iteratorError9 = undefined;
+
+    try {
+      for (var _iterator9 = collection[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+        var product = _step9.value;
+
+        if (product.price > max) {
+          max = product.price;
+        }
+
+        if (min === 0 || product.price < min) {
+          min = product.price;
+        }
+      }
+    } catch (err) {
+      _didIteratorError9 = true;
+      _iteratorError9 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion9 && _iterator9["return"] != null) {
+          _iterator9["return"]();
+        }
+      } finally {
+        if (_didIteratorError9) {
+          throw _iteratorError9;
+        }
+      }
+    }
+  }
+
+  interval = Math.ceil((max - min) / 10) || 1;
+  return {
+    min: min,
+    max: max || 100,
+    interval: interval || 1
+  };
 }
 
 module.exports = {
