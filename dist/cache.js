@@ -19,6 +19,7 @@ var _require = require('./utils'),
     _set = _require.set,
     merge = _require.merge,
     toCamel = _require.toCamel,
+    toCamelPath = _require.toCamelPath,
     getOptions = _require.getOptions;
 
 var DEBUG = false; // true to enable debug logs
@@ -107,11 +108,9 @@ var cacheApi = {
     if (path || value instanceof Array) {
       var upData = _objectSpread({}, data || {});
 
-      _set(upData, path || '', value);
+      var upPath = useCamelCase ? toCamelPath(path) : path;
 
-      if (useCamelCase) {
-        upData = toCamel(upData);
-      }
+      _set(upData, upPath || '', value);
 
       data = upData;
     } else if (value && (0, _typeof2["default"])(value) === 'object') {

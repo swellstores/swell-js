@@ -1,4 +1,4 @@
-const { get, set, merge, toCamel, getOptions } = require('./utils');
+const { get, set, merge, toCamel, toCamelPath, getOptions } = require('./utils');
 
 const DEBUG = false; // true to enable debug logs
 
@@ -64,10 +64,8 @@ const cacheApi = {
 
     if (path || value instanceof Array) {
       let upData = { ...(data || {}) };
-      set(upData, path || '', value);
-      if (useCamelCase) {
-        upData = toCamel(upData);
-      }
+      let upPath = useCamelCase ? toCamelPath(path) : path;
+      set(upData, upPath || '', value);
       data = upData;
     } else if (value && typeof value === 'object') {
       data = data || {};
