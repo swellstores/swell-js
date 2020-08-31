@@ -2,20 +2,16 @@ const { map, reduce, find, uniq, defaultMethods, toSnake, toCamel } = require('.
 const cache = require('./cache');
 
 let OPTIONS;
-let listMethod;
 
 function methods(request, opt) {
   OPTIONS = opt;
   const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
-  listMethod = list;
   return {
     get: (id, ...args) => {
       return cache.getFetch('products', id, () => get(id, ...args));
     },
 
     list,
-
-    listFiltered,
 
     variation: calculateVariation,
 
@@ -161,43 +157,6 @@ function calculateVariation(input, options) {
     delete variation.orig_price;
   }
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
-}
-
-function listFiltered(filters = [], query = {}) {
-  const filterQuery = {
-    ...(query || {}),
-  };
-  if (filters instanceof Array) {
-    for (let filter of filters) {
-      if (!filter) continue;
-
-      switch (filter.id) {
-        case 'category':
-          const value = filter.value instanceof Array ? filter.value : [filter.value];
-          filterQuery.categories = value.map((val) => `+${val}`);
-          if (query && query.categories) {
-            const ex =
-              query.categories instanceof Array
-                ? query.categories
-                : String(query.categories).split(/[\s]*,[\s]*/);
-            filterQuery.categories = [...ex, ...filterQuery.categories];
-          }
-          break;
-
-        case 'price':
-          filterQuery.price = {
-            $gte: filter.value[0],
-            $lte: filter.value[1],
-          };
-          break;
-
-        default:
-          // attributes
-          filterQuery[`attributes.${filter.id}`] = { $in: filter.value };
-      }
-    }
-  }
-  return listMethod(filterQuery);
 }
 
 function getFilters(products, options = {}) {
