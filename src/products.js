@@ -187,7 +187,7 @@ function getFilters(products, options = {}) {
     });
   }
 
-  if (categories) {
+  if (categories && categories.length > 0) {
     filters.push({
       id: 'category',
       label: 'Category',
@@ -199,7 +199,7 @@ function getFilters(products, options = {}) {
     });
   }
 
-  if (attributes) {
+  if (attributes && attributes.length > 0) {
     filters = [
       ...filters,
       ...reduce(
