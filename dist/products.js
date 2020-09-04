@@ -315,7 +315,7 @@ function getFilters(products) {
     });
   }
 
-  if (categories) {
+  if (categories && categories.length > 0) {
     filters.push({
       id: 'category',
       label: 'Category',
@@ -329,7 +329,7 @@ function getFilters(products) {
     });
   }
 
-  if (attributes) {
+  if (attributes && attributes.length > 0) {
     filters = [].concat((0, _toConsumableArray2["default"])(filters), (0, _toConsumableArray2["default"])(reduce(attributes, function (acc, attr) {
       return [].concat((0, _toConsumableArray2["default"])(acc), (0, _toConsumableArray2["default"])(attr.id !== 'category' && attr.id !== 'price' && attr.values instanceof Array && attr.values.length > 0 ? [{
         id: attr.id,
