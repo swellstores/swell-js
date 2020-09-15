@@ -277,25 +277,44 @@ function getAttributes(products) {
 }
 
 function getPriceRange(products) {
-  let min = 0;
-  let max = 0;
-  let interval = 0;
+  let min;
+  let max;
+  let interval;
   const collection = (products && products.results) || (products.id ? [products] : products);
   if (collection instanceof Array) {
     for (let product of collection) {
-      if (product.price > max) {
-        max = product.price;
+      if (max === undefined || product.price > max) {
+        max = Math.ceil(product.price);
       }
-      if (min === 0 || product.price < min) {
-        min = product.price;
+      if (min === undefined || product.price < min) {
+        min = Math.floor(product.price);
       }
     }
   }
+  if (min === max) {
+    return null;
+  }
   interval = Math.ceil((max - min) / 10) || 1;
+  if (interval > 1000) {
+    interval = 1000;
+  } else if (interval > 100) {
+    interval = 100;
+  } else if (interval > 10) {
+    interval = 10;
+  }
+  if (max % interval > 0) {
+    max = interval + max - (max % interval);
+  }
+  if (min % interval > 0) {
+    min = min - (min % interval);
+  }
+  while ((max - min) / interval % 1 > 0) {
+    max++;
+  }
   return {
     min,
-    max: max || 100,
-    interval: interval || 1,
+    max,
+    interval,
   };
 }
 
