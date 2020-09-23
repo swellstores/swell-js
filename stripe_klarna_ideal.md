@@ -2,7 +2,7 @@
 
 This guide describes how to integrate Klarna and iDEAL using Stripe sources with a custom checkout flow.
 
-Connect a Stripe account to Swell (Settings > Payments); open "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
+Start by connecting a Stripe account to Swell (Settings > Payments); open "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
 
 ### Using Stripe.js
 ​
@@ -29,7 +29,7 @@ const stripe = Stripe('pk_test_...');
 ```
 ​
 If loaded from a JS module:
-​
+
 
 ```js
 // Client side
@@ -71,9 +71,9 @@ ideal.mount('#stripe-ideal');
 
 There are several [options](https://stripe.com/docs/js/elements_object/create_element?type=idealBank) for customization.
 
-Important: following the above example, the element will be mounted in an HTML tag with the ID `stripe-ideal`. Make sure it exists on the page.
+Important: in the above example, the element will be mounted in an HTML tag with the ID `stripe-ideal`. Make sure it exists on the page.
 
-##### Create a payment method
+#### Create a payment method
 ​
 Once a customer enters all required information, it's necessary to [create a payment method](https://stripe.com/docs/js/payment_methods/create_payment_method):
 
@@ -224,3 +224,5 @@ await swell.cart.update({ billing });
 // Using Swell Node.js library
 await swell.put('/carts/<id>', { billing });
 ```
+
+For additional help, reach out to support@swell.store.
