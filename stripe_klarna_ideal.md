@@ -1,38 +1,38 @@
 # Stripe + Klarna & iDEAL integration
 
-This guide explains how to integrate Klarna and/or iDEAL using Stripe sources with a custom checkout flow.
+This guide describes how to integrate Klarna and iDEAL using Stripe sources with a custom checkout flow.
 
-Connect a Stripe accountto Swell (Settings > Payments), then see "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
+Connect a Stripe account to Swell (Settings > Payments); open "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
 
 ### Using Stripe.js
 ​
 [Include Stripe.js](https://stripe.com/docs/js/including) on the payment page of your site. This can be done in two ways:
 
-1. Load directly from `https://js.stripe.com`. To do this, you need to add a script to the page:
+1. Load directly from `https://js.stripe.com`.
 
   ```html
   <script src="https://js.stripe.com/v3/"></script>
   ```
 
-2. Use Stripe.js as a module. Stripe provide an [npm package](https://github.com/stripe/stripe-js) that makes it easier to load and use Stripe.js as a module.
+2. Stripe provides an [npm package](https://github.com/stripe/stripe-js) to load and use Stripe.js as a module.
 
 
 ### Initializing Stripe.js
 ​
-After loading Stripe, [initialize](https://stripe.com/docs/js/initializing) it with publishable key.
-​
-If the Stripe was loaded from a script:
+Once loaded, [initialize](https://stripe.com/docs/js/initializing) it with publishable key.
+
+If loaded from a script:
 
 ```js
-// client side
+// Client side
 const stripe = Stripe('pk_test_...');
 ```
 ​
-If the Stripe was loaded from the JS module:
+If loaded from a JS module:
 ​
 
 ```js
-// client side
+// Client side
 import { loadStripe } from '@stripe/stripe-js';
 const stripe = await loadStripe('pk_test_...');
 ```
@@ -42,7 +42,6 @@ const stripe = await loadStripe('pk_test_...');
 ​
 This library will be used to access the [Stripe API](https://stripe.com/docs/api) and create payment intents. To install the [npm package](https://www.npmjs.com/package/stripe):
 
-
 ```
 npm i --save stripe
 ```
@@ -50,19 +49,19 @@ npm i --save stripe
 Initialize Stripe with a secret key:
 
 ```js
-// server side
+// Server side
 const stripe = require('stripe')('sk_test_...');
 ```
-​
+
 
 ### iDEAL integration
 
-#### Creating iDEAL Stripe element
-​
-Create a UI element with Stripe elements.
+#### Create iDEAL element
+
+Using Stripe elements:
 
 ```js
-// client side
+// Client side
 const stripe = Stripe('pk_test_...');
 ​
 const elements = stripe.elements();
@@ -70,16 +69,16 @@ const ideal = elements.create('idealBank', options?);
 ideal.mount('#stripe-ideal');
 ```
 
-When creating an element, you may pass these [options](https://stripe.com/docs/js/elements_object/create_element?type=idealBank) for customization.
+There are several [options](https://stripe.com/docs/js/elements_object/create_element?type=idealBank) for customization.
 
 Important: following the above example, the element will be mounted in an HTML tag with the ID `stripe-ideal`. Make sure it exists on the page.
 
 ##### Create a payment method
 ​
-Once the customer enters all required information and clicks to submit the order, it's necessary to [create a payment method](https://stripe.com/docs/js/payment_methods/create_payment_method):
+Once a customer enters all required information, it's necessary to [create a payment method](https://stripe.com/docs/js/payment_methods/create_payment_method):
 
 ```js
-// client side
+// Client side
 const stripe = Stripe('pk_test_...');
 ​
 await stripe.createPaymentMethod({
@@ -91,7 +90,7 @@ await stripe.createPaymentMethod({
 });
 ```
 ​
-The above call returns:
+This call returns one of:
 
 - `result.paymentMethod`: a [PaymentMethod](https://stripe.com/docs/api/payment_methods) that was created successfully.
 - `result.error`: a server or client-side validation error. Refer to the [Stripe API reference](https://stripe.com/docs/api#errors) for all possible errors.
@@ -101,7 +100,7 @@ The above call returns:
 To create payment intent you must pass the payment method created earlier, along with `amount` and `return_url` to which the customer will be redirected after authorizing the payment:
 
 ```js
-// server side
+// Server side
 const stripe = require('stripe')('sk_test_...');
 ​
 await stripe.paymentIntents.create({
@@ -115,17 +114,17 @@ await stripe.paymentIntents.create({
 });
 ```
 
-The above call returns:
+This call returns one of:
 
 - `result.paymentIntent`: a [PaymentIntent](https://stripe.com/docs/api/payment_intents/object) that was created successfully.
 - `result.error`: a server or client-side validation error. Refer to the [Stripe API reference](https://stripe.com/docs/api#errors) for all possible errors.
 
 #### Payment authorization
 ​
-If the payment intent was created successfully, then you'll need to authorize the payment:
+If a payment intent was created successfully, authorize the payment:
 
 ```js
-// client side
+// Client side
 const stripe = Stripe('pk_test_...');
 ​
 await stripe.handleCardAction(paymentIntent.client_secret);
@@ -133,9 +132,9 @@ await stripe.handleCardAction(paymentIntent.client_secret);
 ​
 This method will redirect the customer to authorize payment. After authorization, the customer will be redirected back to your site at the address specified when creating the payment intent (`return_url`).
 
-#### Capturing payment and creating an order
+#### Capture payment and create an order
 ​
-When redirecting to your site, the URL will contain parameters with information about the payment:
+When redirecting to your site, the URL query will contain parameters with information about the payment:
 ​
 
 |Parameter name|Description|
@@ -145,7 +144,7 @@ When redirecting to your site, the URL will contain parameters with information 
 |payment_intent_client_secret|A [client secret](https://stripe.com/docs/api/payment_intents/object#payment_intent_object-client_secret) related to the `PaymentIntent` object|
 
 
-Finally, add the relevant payment details to a Cart or Order:
+Finally, add the relevant payment details to a Swell cart or order:
 
 ```js
 const billing = {
@@ -168,9 +167,7 @@ await swell.put('/carts/<id>', { billing });
 
 ### Klarna integration
 ​
-To make a Klarna payment, create a [Source object](https://stripe.com/docs/api/sources). Klarna does not require using Stripe elements.
-
-#### Create a source object
+To make a Klarna payment, create a [source object](https://stripe.com/docs/api/sources). Klarna does not require using Stripe elements.
 
 ```js
 // Client side
@@ -198,11 +195,11 @@ See [Stripe docs](https://stripe.com/docs/sources/klarna#create-source) for more
 
 #### Payment authorization
 ​
-If the source was created successfully, then redirect the customer to the URL address returned in the source object (`source.redirect.url`). After authorization, customer will be redirected back to your site at the address specified when creating the source (`return_url`).
+If the source was created successfully, redirect the customer to the URL address returned in the source object (`source.redirect.url`). After authorization, the customer will be redirected back to your site at the address specified when creating the source (`return_url`).
 
 ##### Capture payment
 ​
-When redirecting to your site, the URL will contain parameters with information about the payment:
+When redirecting to your site, the URL query will contain parameters with information about the payment:
 ​
 
 |Parameter name|Description|
@@ -211,7 +208,7 @@ When redirecting to your site, the URL will contain parameters with information 
 |source|Unique identifier for the `Source`|
 
 
-Finally, add the relevant payment details to a Cart or Order:
+Finally, add the relevant payment details to a Swell cart or order:
 
 ```js
 const billing = {
