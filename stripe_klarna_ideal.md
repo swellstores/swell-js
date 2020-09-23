@@ -1,11 +1,11 @@
-## Stripe + Klarna & iDEAL integration
+# Stripe + Klarna & iDEAL integration
 
 This guide explains how to integrate Klarna and/or iDEAL using Stripe sources with a custom checkout flow.
 
 ​
 Connect a Stripe accountto Swell (Settings > Payments), then see "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
 ​
-#####  Using Stripe.js
+###  Using Stripe.js
 ​
 [Include Stripe.js](https://stripe.com/docs/js/including) on the payment page of your site. This can be done in two ways:
 ​
@@ -15,7 +15,7 @@ Connect a Stripe accountto Swell (Settings > Payments), then see "Advanced optio
 ```
 2. Use Stripe.js as a module. Stripe provide an [npm package](https://github.com/stripe/stripe-js) that makes it easier to load and use Stripe.js as a module.
 ​
-##### Initializing Stripe.js
+### Initializing Stripe.js
 ​
 After loading Stripe, [initialize](https://stripe.com/docs/js/initializing) it with publishable key.
 ​
@@ -33,7 +33,7 @@ import {loadStripe} from '@stripe/stripe-js';
 const stripe = await loadStripe('pk_test_...');
 ```
 ​
-##### Install Stripe server-side library
+### Install Stripe server-side library
 ​
 This library will be used to access the [Stripe API](https://stripe.com/docs/api) and create payment intents. To install the [npm package](https://www.npmjs.com/package/stripe):
 ​
@@ -49,9 +49,9 @@ const stripe = require('stripe')('sk_test_...');
 ```
 
 ​
-#### iDEAL integration
+### iDEAL integration
 ​
-##### Creating iDEAL Stripe element
+#### Creating iDEAL Stripe element
 ​
 Create a UI element with Stripe elements.
 ​
@@ -89,7 +89,7 @@ The above call returns:
 -   `result.paymentMethod`: a  [PaymentMethod](https://stripe.com/docs/api/payment_methods) that was created successfully.
 -   `result.error`: a server or client-side validation error. Refer to the  [Stripe API reference](https://stripe.com/docs/api#errors) for all possible errors.
 ​
-##### Create a payment intent
+#### Create a payment intent
 ​
 To create payment intent you must pass the payment method created earlier, along with `amount` and `return_url` to which the customer will be redirected after authorizing the payment:
 ​
@@ -112,7 +112,7 @@ The above call returns:
 -   `result.paymentIntent`: a  [PaymentIntent](https://stripe.com/docs/api/payment_intents/object) that was created successfully.
 -   `result.error`: a server or client-side validation error. Refer to the  [Stripe API reference](https://stripe.com/docs/api#errors) for all possible errors.
 ​
-##### Payment authorization
+#### Payment authorization
 ​
 If the payment intent was created successfully, then you'll need to authorize the payment:
 ​
@@ -125,7 +125,7 @@ await stripe.handleCardAction(paymentIntent.client_secret);
 ​
 This method will redirect the customer to authorize payment. After authorization, the customer will be redirected back to your site at the address specified when creating the payment intent (`return_url`).
 ​
-##### Capturing payment and creating an order
+#### Capturing payment and creating an order
 ​
 When redirecting to your site, the URL will contain parameters with information about the payment:
 ​
@@ -157,11 +157,11 @@ await swell.cart.update({ billing })
 await swell.put('/carts/<id>', { billing });
 ```
 ​
-#### Klarna integration
+### Klarna integration
 ​
 To make a Klarna payment, create a [Source object](https://stripe.com/docs/api/sources). Klarna does not require using Stripe elements.
 ​
-##### Create a source object
+#### Create a source object
 
 ​
 ```js
@@ -188,7 +188,7 @@ await stripe.createSource({
 ​
 See [Stripe docs](https://stripe.com/docs/sources/klarna#create-source) for more details on creating a source object.
 ​
-##### Payment authorization
+#### Payment authorization
 ​
 If the source was created successfully, then redirect the customer to the URL address returned in the source object (`source.redirect.url`). After authorization, customer will be redirected back to your site at the address specified when creating the source (`return_url`).
 ​
@@ -201,6 +201,7 @@ When redirecting to your site, the URL will contain parameters with information 
 |redirect_status|Authorization status (`succeeded`, `canceled` or `failed`)|
 |source|Unique identifier for the `Source`|
 ​
+
 Finally, add the relevant payment details to a Cart or Order:
 ​
 ```js
