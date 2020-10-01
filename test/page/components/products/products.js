@@ -238,7 +238,7 @@ class Products extends React.Component {
     return (
       <div className={classes.root}>
         {renderProducts()}
-        {pages && (
+        {pages > 0 && (
           <Pagination
             count={pages}
             page={page}
@@ -258,7 +258,4 @@ const mapStateToProps = ({ api }) => ({
   api,
 });
 
-export default compose(
-  connect(mapStateToProps),
-  withStyles(styles),
-)(Products);
+export default compose(connect(mapStateToProps), withStyles(styles))(Products);

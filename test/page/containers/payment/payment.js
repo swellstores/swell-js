@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
 import { isEqual, isEmpty, map, find } from 'lodash';
@@ -19,6 +18,7 @@ import flashActions from '../../actions/flash';
 import Products from '../../components/products';
 import BraintreePayPal from './braintree-paypal';
 import Stripe from './stripe';
+import StripeIDeal from './stripe-ideal';
 import Info from '../../components/info';
 
 const styles = {
@@ -61,6 +61,7 @@ class Payment extends React.Component {
       onAddProduct: this.onAddProduct.bind(this),
       onRemoveItem: this.onRemoveItem.bind(this),
       onOrderSubmit: this.onOrderSubmit.bind(this),
+      onCartUpdate: this.onCartUpdate.bind(this),
       onError: this.onError.bind(this),
     };
   }
@@ -99,9 +100,21 @@ class Payment extends React.Component {
     this.props.removeItem(itemId);
   }
 
+  async onCartUpdate(values) {
+    try {
+      await this.props.updateCart(values);
+    } catch (err) {
+      this.onError(err.message);
+    }
+  }
+
   async onOrderSubmit() {
-    const order = await this.props.submitOrder();
-    this.setState({ order });
+    try {
+      const order = await this.props.submitOrder();
+      this.setState({ order });
+    } catch (err) {
+      this.onError(err.message);
+    }
   }
 
   onError(message) {
@@ -109,18 +122,23 @@ class Payment extends React.Component {
   }
 
   renderGateway() {
-    const { gateway, warning, user } = this.props;
-    const { onOrderSubmit, onError } = this.state;
-
-    if (!user) {
-      warning('User is not logged');
-    }
+    const { gateway, cart } = this.props;
+    const { onOrderSubmit, onCartUpdate, onError } = this.state;
 
     switch (gateway) {
       case 'braintree-paypal':
         return <BraintreePayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'stripe':
         return <Stripe onOrderSubmit={onOrderSubmit} onError={onError} />;
+      case 'stripe-ideal':
+        return (
+          <StripeIDeal
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
       case 'square':
         return <Typography variant="h4">Coming soon</Typography>;
       case 'braintree':
@@ -230,6 +248,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   removeItem: (itemId) => {
     dispatch(cartActions.removeItem(itemId));
+  },
+  updateCart: (values) => {
+    dispatch(cartActions.update(values));
   },
   submitOrder: async () => {
     return await dispatch(cartActions.submitOrder());

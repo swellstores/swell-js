@@ -4,6 +4,7 @@ export default (state = null, action) => {
     case 'ADD_ITEM':
     case 'REMOVE_ITEM':
     case 'SUBMIT_ORDER':
+    case 'UPDATE_CART':
       return action.payload;
     default:
       return state;

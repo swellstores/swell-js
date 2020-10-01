@@ -102,7 +102,14 @@ class Sidebar extends React.Component {
       {
         text: 'Payment',
         icon: <Payment />,
-        menu: ['Braintree-PayPal', 'Stripe', 'Square', 'Braintree'],
+        menu: [
+          'Braintree-PayPal',
+          'Stripe',
+          'Stripe-iDEAL',
+          'Stripe-Klarna',
+          'Square',
+          'Braintree',
+        ],
       },
     ].map((item, index) =>
       item.menu ? this.getMenuListItem(item, index) : this.getListItem(item, index),
