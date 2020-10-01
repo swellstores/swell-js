@@ -31,7 +31,7 @@ function merge(x, y, opt = {}) {
     return destination;
   }
   return deepmerge(x, y, {
-    arrayMerge
+    arrayMerge,
   });
 }
 
