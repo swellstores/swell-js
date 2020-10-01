@@ -1,8 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
-import { isEqual } from 'lodash';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AppBar,
@@ -13,13 +11,10 @@ import {
   DialogContent,
   DialogActions,
   DialogTitle,
-  Typography,
-  Divider,
   Tooltip,
 } from '@material-ui/core';
 import { MenuOpen, Store, Person } from '@material-ui/icons';
 import config from '../../config';
-import api from '../../actions/api';
 
 const styles = {
   appBar: {

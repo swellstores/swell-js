@@ -19,6 +19,7 @@ import Products from '../../components/products';
 import BraintreePayPal from './braintree-paypal';
 import Stripe from './stripe';
 import StripeIDeal from './stripe-ideal';
+import StripeKlarna from './stripe-klarna';
 import Info from '../../components/info';
 
 const styles = {
@@ -117,8 +118,12 @@ class Payment extends React.Component {
     }
   }
 
-  onError(message) {
-    this.props.error(message);
+  onError(error) {
+    if (!error) {
+      return;
+    }
+
+    return typeof error === 'string' ? this.props.error(error) : this.props.error(error.message);
   }
 
   renderGateway() {
@@ -133,6 +138,15 @@ class Payment extends React.Component {
       case 'stripe-ideal':
         return (
           <StripeIDeal
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'stripe-klarna':
+        return (
+          <StripeKlarna
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}
