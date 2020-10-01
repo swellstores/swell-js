@@ -116,9 +116,18 @@ function setKlarnaBillingShipping(source, data) {
     };
   }
 
-  source.klarna = { ...source.klarna, ...fillValues(billingNameFieldsMap, data.billing) };
+  source.klarna = {
+    ...source.klarna,
+    ...fillValues(
+      billingNameFieldsMap,
+      data.billing || get(data, 'account.billing') || data.shipping,
+    ),
+  };
   const billing = fillValues(billingFieldsMap, data.account);
-  const billingAddress = fillValues(addressFieldsMap, data.billing);
+  const billingAddress = fillValues(
+    addressFieldsMap,
+    data.billing || get(data, 'account.billing') || data.shipping,
+  );
   if (billing || billingAddress) {
     source.owner = {
       ...(billing ? billing : {}),

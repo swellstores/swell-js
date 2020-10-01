@@ -3,7 +3,7 @@ const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
-const { createIDealPaymentMethod } = require('./utils/stripe');
+const { createIDealPaymentMethod, createKlarnaSource } = require('./utils/stripe');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -35,7 +35,7 @@ function methods(request) {
       await render(request, cart, payMethods, this.params);
     },
 
-    async tokenize() {
+    async tokenize(params) {
       const cart = await cartApi.methods(request).get();
       if (!cart) {
         throw new Error('Cart not found');
@@ -44,7 +44,7 @@ function methods(request) {
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
-      return await paymentTokenize(request, this.params, payMethods, cart);
+      return await paymentTokenize(request, params || this.params, payMethods, cart);
     },
 
     async createIntent(data) {
@@ -263,7 +263,8 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 
 async function paymentTokenize(request, params, payMethods, cart) {
   const onError = (error) => {
-    const errorHandler = get(params, 'card.onError') || get(params, 'ideal.onError');
+    const errorHandler =
+      get(params, 'card.onError') || get(params, 'ideal.onError') || get(params, 'klarna.onError');
     if (isFunction(errorHandler)) {
       return errorHandler(error);
     }
@@ -271,7 +272,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
   };
 
   if (!params) {
-    return;
+    return onError({ message: 'Tokenization parameters not passed' });
   }
   if (params.card && payMethods.card) {
     if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
@@ -302,7 +303,12 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
     }
   } else if (params.ideal && payMethods.ideal) {
-    if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
+    if (
+      payMethods.card &&
+      payMethods.card.gateway === 'stripe' &&
+      CARD_ELEMENTS.stripe &&
+      API.stripe
+    ) {
       const { error, paymentMethod } = await createIDealPaymentMethod(
         API.stripe,
         CARD_ELEMENTS.stripe,
@@ -349,6 +355,32 @@ async function paymentTokenize(request, params, payMethods, cart) {
           (await API.stripe.handleCardAction(intent.client_secret))
         );
       }
+    }
+  } else if (params.klarna && payMethods.klarna) {
+    if (payMethods.card && payMethods.card.gateway === 'stripe') {
+      if (!window.Stripe) {
+        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+      }
+      const { publishable_key: publishableKey } = payMethods.card;
+      const stripe = window.Stripe(publishableKey);
+      const settings = await settingsApi.methods(request).get();
+
+      const { error, source } = await createKlarnaSource(stripe, {
+        ...cart,
+        settings: settings.store,
+      });
+
+      return error
+        ? onError(error)
+        : cartApi
+            .methods(request)
+            .update({
+              billing: {
+                method: 'klarna',
+              },
+            })
+            .then(() => window.location.replace(source.redirect.url))
+            .catch((err) => onError(err));
     }
   }
 }
