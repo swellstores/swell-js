@@ -1,6 +1,9 @@
+const get = require('lodash/get');
+const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
+const { createIDealPaymentMethod } = require('./utils/stripe');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -33,25 +36,39 @@ function methods(request) {
     },
 
     async tokenize() {
+      const cart = await cartApi.methods(request).get();
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
       const payMethods = await settingsApi.methods(request).payments();
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
-      return await paymentTokenize(request, this.params, payMethods);
+      return await paymentTokenize(request, this.params, payMethods, cart);
     },
 
     async createIntent(data) {
       const intent = await vaultRequest('post', '/intent', data);
-      if (intent.error) {
-        throw new Error(intent.error);
+      if (intent.errors) {
+        const param = Object.keys(intent.errors)[0];
+        const err = new Error(intent.errors[param].message || 'Unknown error');
+        err.code = 'vault_error';
+        err.status = 402;
+        err.param = param;
+        throw err;
       }
       return intent;
     },
 
     async updateIntent(data) {
       const intent = await vaultRequest('put', '/intent', data);
-      if (intent.error) {
-        throw new Error(intent.error);
+      if (intent.errors) {
+        const param = Object.keys(intent.errors)[0];
+        const err = new Error(intent.errors[param].message || 'Unknown error');
+        err.code = 'vault_error';
+        err.status = 402;
+        err.param = param;
+        throw err;
       }
       return intent;
     },
@@ -72,6 +89,22 @@ async function render(request, cart, payMethods, params) {
         );
       }
       // TODO: implement braintree elements
+    } else if (payMethods.card.gateway === 'stripe') {
+      if (!window.Stripe) {
+        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+      }
+      await stripeElements(request, payMethods, params);
+    }
+  }
+  if (params.ideal) {
+    if (!payMethods.card) {
+      console.error(
+        `Payment element error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.`,
+      );
+    } else if (!payMethods.ideal) {
+      console.error(
+        `Payment element error: iDEAL payments are disabled. See Payment settings in the Swell dashboard for details.`,
+      );
     } else if (payMethods.card.gateway === 'stripe') {
       if (!window.Stripe) {
         await loadScript('stripe-js', 'https://js.stripe.com/v3/');
@@ -139,21 +172,31 @@ const loadScript = async (id, src) => {
 };
 
 async function stripeElements(request, payMethods, params) {
-  const { public_key: publicKey } = payMethods.card;
-  const stripe = window.Stripe(publicKey);
+  const { publishable_key: publishableKey } = payMethods.card;
+  const stripe = window.Stripe(publishableKey);
   const elements = stripe.elements();
   const createElement = (type) => {
-    const elementParams = params.card[type] || {};
+    const elementParams = get(params, `card[${type}]`) || params.card || params.ideal;
     const elementOptions = elementParams.options || {};
     const element = elements.create(type, elementOptions);
     element.mount(elementParams.elementId || `#${type}-element`);
-    if (type === 'card' || type === 'cardNumber') {
+
+    elementParams.onChange && element.on('change', elementParams.onChange);
+    elementParams.onReady && element.on('ready', elementParams.onReady);
+    elementParams.onFocus && element.on('focus', elementParams.onFocus);
+    elementParams.onBlur && element.on('blur', elementParams.onBlur);
+    elementParams.onEscape && element.on('escape', elementParams.onEscape);
+    elementParams.onClick && element.on('click', elementParams.onClick);
+
+    if (type === 'card' || type === 'cardNumber' || type === 'idealBank') {
       CARD_ELEMENTS.stripe = element;
     }
   };
   API.stripe = stripe;
 
-  if (params.card.separateElements) {
+  if (params.ideal) {
+    createElement('idealBank');
+  } else if (params.card.separateElements) {
     createElement('cardNumber');
     createElement('cardExpiry');
     createElement('cardCvc');
@@ -218,10 +261,11 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
     );
 }
 
-async function paymentTokenize(request, params, payMethods) {
+async function paymentTokenize(request, params, payMethods, cart) {
   const onError = (error) => {
-    if (isFunction(params.card.onError)) {
-      return params.card.onError(error);
+    const errorHandler = get(params, 'card.onError') || get(params, 'ideal.onError');
+    if (isFunction(errorHandler)) {
+      return errorHandler(error);
     }
     throw new Error(error.message);
   };
@@ -234,8 +278,7 @@ async function paymentTokenize(request, params, payMethods) {
       const stripe = API.stripe;
       const stripeToken = await stripe
         .createToken(CARD_ELEMENTS.stripe)
-        .then(({ token }) => token)
-        .catch((error) => onError(error));
+        .then(({ error, token }) => (error ? onError(error) : token));
 
       if (stripeToken) {
         await cartApi
@@ -256,6 +299,55 @@ async function paymentTokenize(request, params, payMethods) {
           })
           .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
           .catch((err) => onError(err));
+      }
+    }
+  } else if (params.ideal && payMethods.ideal) {
+    if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
+      const { error, paymentMethod } = await createIDealPaymentMethod(
+        API.stripe,
+        CARD_ELEMENTS.stripe,
+        cart.billing,
+      );
+
+      if (error) {
+        return onError(error);
+      }
+
+      const amount = get(cart, 'grand_total', 0) * 100;
+      const currency = toLower(get(cart, 'currency', 'eur'));
+      const intent = await methods(request)
+        .createIntent({
+          gateway: 'stripe',
+          intent: {
+            payment_method: paymentMethod.id,
+            amount,
+            currency,
+            payment_method_types: 'ideal',
+            confirmation_method: 'manual',
+            confirm: true,
+            return_url: window.location.href,
+          },
+        })
+        .catch((err) => onError(err));
+
+      if (intent) {
+        await cartApi
+          .methods(request)
+          .update({
+            billing: {
+              method: 'ideal',
+              ideal: {
+                token: paymentMethod.id,
+              },
+              stripe_payment_intent: intent,
+            },
+          })
+          .catch((err) => onError(err));
+
+        return (
+          intent.status === 'requires_action' &&
+          (await API.stripe.handleCardAction(intent.client_secret))
+        );
       }
     }
   }
