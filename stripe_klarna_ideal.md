@@ -154,7 +154,6 @@ const billing = {
   },
   stripe_payment_intent: {
     id: '<payment_intent_id>',
-    status: 'requires_confirmation',
   },
 };
 
