@@ -345,13 +345,16 @@ async function paymentTokenize(request, params, payMethods, cart) {
               ideal: {
                 token: paymentMethod.id,
               },
-              stripe_payment_intent: intent,
+              stripe_payment_intent: {
+                ...intent,
+                status: undefined,
+              },
             },
           })
           .catch((err) => onError(err));
 
         return (
-          intent.status === 'requires_action' &&
+          (intent.status === 'requires_action' || intent.status === 'requires_source_action') &&
           (await API.stripe.handleCardAction(intent.client_secret))
         );
       }
