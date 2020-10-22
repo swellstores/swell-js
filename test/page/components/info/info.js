@@ -5,6 +5,9 @@ import { withStyles } from '@material-ui/core/styles';
 import { Typography, Card } from '@material-ui/core';
 
 const styles = {
+  root: {
+    margin: 10,
+  },
   card: {
     padding: 10,
     width: '95%',
@@ -31,7 +34,7 @@ class Info extends React.Component {
           {map(source, (field, key) => (
             <Typography key={key} component={'span'} variant={'body2'}>
               {key}:{' '}
-              {field === null
+              {!field
                 ? 'null'
                 : isPlainObject(field) || isArray(field)
                 ? this.renderCard(field)
@@ -47,10 +50,10 @@ class Info extends React.Component {
     const { title, source, classes } = this.props;
 
     return (
-      <>
+      <div className={classes.root}>
         {source && title && <Typography classes={{ root: classes.title }}>{title}</Typography>}
         {this.renderCard(source)}
-      </>
+      </div>
     );
   }
 }

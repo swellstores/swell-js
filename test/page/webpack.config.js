@@ -1,8 +1,8 @@
-var path = require('path');
-var webpack = require('webpack');
-var InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var env = require('./env');
+const path = require('path');
+const webpack = require('webpack');
+const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const env = require('./env');
 
 console.log('Environment', env.stringified);
 
@@ -18,6 +18,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js)$/,
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -33,6 +34,9 @@ module.exports = {
     historyApiFallback: true,
   },
   mode: 'development',
+  resolve: {
+    extensions: ['.js'],
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'test/page/index.html',

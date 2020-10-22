@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { isEqual } from 'lodash';
 import api from '../actions/api';

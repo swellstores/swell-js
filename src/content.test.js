@@ -28,7 +28,9 @@ describe('content', () => {
       await api.content.get('pages', 'slug');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/content/pages/slug`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/content/pages/slug?$preview=false`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -36,7 +38,9 @@ describe('content', () => {
       await api.content.get('pages', 'slug', { query: 1 });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/content/pages/slug?query=1`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/content/pages/slug?$preview=false&query=1`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });

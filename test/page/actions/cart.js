@@ -32,6 +32,17 @@ export default {
     };
   },
 
+  update(values) {
+    return async (dispatch, getState) => {
+      const { api } = getState();
+      const cart = await api.cart.update(values);
+      dispatch({
+        type: 'UPDATE_CART',
+        payload: cart,
+      });
+    };
+  },
+
   submitOrder() {
     return async (dispatch, getState) => {
       dispatch({

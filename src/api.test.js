@@ -9,6 +9,7 @@ describe('api', () => {
     it('should call init() for backward compatibility', () => {
       api.auth('test1', 'pk_test1');
       expect(api.options).toEqual({
+        previewContent: false,
         store: 'test1',
         key: 'pk_test1',
         timeout: 20000,
@@ -23,6 +24,7 @@ describe('api', () => {
     it('should set options', () => {
       api.init('test1', 'pk_test1');
       expect(api.options).toEqual({
+        previewContent: false,
         store: 'test1',
         key: 'pk_test1',
         timeout: 20000,
@@ -37,6 +39,7 @@ describe('api', () => {
         url: 'https://www.test2.com',
       });
       expect(api.options).toEqual({
+        previewContent: false,
         store: 'test2',
         key: 'pk_test2',
         timeout: 20000,

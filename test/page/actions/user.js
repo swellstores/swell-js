@@ -1,6 +1,17 @@
 import config from '../config';
 
 export default {
+  fetch() {
+    return async (dispatch, getState) => {
+      const { api } = getState();
+      const user = await api.account.get();
+      dispatch({
+        type: 'USER_FETCH',
+        payload: user,
+      });
+    };
+  },
+
   login({ email = config.email, password = config.password }) {
     return async (dispatch, getState) => {
       const { api } = getState();

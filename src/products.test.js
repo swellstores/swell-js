@@ -38,7 +38,7 @@ describe('products', () => {
   let methods;
   beforeEach(() => {
     mockRequest.mockReset();
-    methods = products.methods(mockRequest);
+    methods = products.methods(mockRequest, {});
   });
 
   describe('methods', () => {
@@ -57,7 +57,10 @@ describe('products', () => {
     });
 
     it('should return product with variant values', () => {
-      const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
+      const options = [
+        { id: 'x', value: '1' },
+        { id: 'y', value: '2' },
+      ];
       const variation = methods.variation(mockProductWithOptions, options);
 
       expect(variation).toEqual({
@@ -118,7 +121,10 @@ describe('products', () => {
       });
 
       it('should return product with variant values', () => {
-        const options = [{ id: 'x', value: '1' }, { id: 'y', value: '2' }];
+        const options = [
+          { id: 'x', value: '1' },
+          { id: 'y', value: '2' },
+        ];
         const variation = methods.variation(mockProductWithPricing, options);
 
         expect(variation).toEqual({
