@@ -19,12 +19,19 @@ const billingFieldsMap = {
   phone: 'phone',
 };
 
-function getBillingDetails(billing) {
+function getBillingDetails(data) {
+  const { account = {}, billing, shipping } = data;
+  const billingData = {
+    ...account.shipping,
+    ...account.billing,
+    ...shipping,
+    ...billing,
+  };
   const fillValues = (fieldsMap) =>
     reduce(
       fieldsMap,
       (acc, value, key) => {
-        const billingValue = billing[value];
+        const billingValue = billingData[value];
         if (billingValue) {
           acc[key] = billingValue;
         }
@@ -170,8 +177,8 @@ function setBancontactOwner(source, data) {
   };
 }
 
-async function createPaymentMethod(stripe, cardElement, billing = {}) {
-  const billingDetails = getBillingDetails(billing);
+async function createPaymentMethod(stripe, cardElement, cart) {
+  const billingDetails = getBillingDetails(cart);
   const { error, paymentMethod } = await stripe.createPaymentMethod({
     type: 'card',
     card: cardElement,

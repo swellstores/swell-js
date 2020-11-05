@@ -1,9 +1,11 @@
 const get = require('lodash/get');
 const toLower = require('lodash/toLower');
+const pick = require('lodash/pick');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
 const {
+  createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,
   createBancontactSource,
@@ -284,29 +286,47 @@ async function paymentTokenize(request, params, payMethods, cart) {
   if (params.card && payMethods.card) {
     if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
       const stripe = API.stripe;
-      const stripeToken = await stripe
-        .createToken(CARD_ELEMENTS.stripe)
-        .then(({ error, token }) => (error ? onError(error) : token));
+      const paymentMethod = await createPaymentMethod(stripe, CARD_ELEMENTS.stripe, cart);
 
-      if (stripeToken) {
-        await cartApi
-          .methods(request)
-          .update({
-            billing: {
-              card: {
-                token: stripeToken.id,
-                last4: stripeToken.card.last4,
-                exp_month: stripeToken.card.exp_month,
-                exp_year: stripeToken.card.exp_year,
-                brand: stripeToken.card.brand,
-                address_check: stripeToken.card.address_line1_check,
-                cvc_check: stripeToken.card.cvc_check,
-                zip_check: stripeToken.card.address_zip_check,
-              },
-            },
-          })
-          .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
-          .catch((err) => onError(err));
+      if (paymentMethod.error) {
+        return onError(paymentMethod.error);
+      }
+
+      const amount = get(cart, 'grand_total', 0) * 100;
+      const currency = toLower(get(cart, 'currency', 'usd'));
+      const stripeCustomer = get(cart, 'account.stripe_customer');
+      const intent = await methods(request)
+        .createIntent({
+          gateway: 'stripe',
+          intent: {
+            payment_method: paymentMethod.token,
+            amount,
+            currency,
+            capture_method: 'manual',
+            setup_future_usage: 'off_session',
+            ...(stripeCustomer ? { customer: stripeCustomer } : {}),
+          },
+        })
+        .catch((err) => onError(err));
+
+      if (intent && intent.status === 'requires_confirmation') {
+        const { paymentIntent, error } = await stripe.confirmCardPayment(intent.client_secret);
+        return error
+          ? onError(error)
+          : await cartApi
+              .methods(request)
+              .update({
+                billing: {
+                  method: 'card',
+                  card: paymentMethod,
+                  stripe_payment_intent: {
+                    ...pick(paymentIntent, ['id', 'amount', 'client_secret']),
+                    status: undefined,
+                  },
+                },
+              })
+              .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
+              .catch((err) => onError(err));
       }
     }
   } else if (params.ideal && payMethods.ideal) {
