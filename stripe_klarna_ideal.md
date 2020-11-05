@@ -1,8 +1,8 @@
-# Stripe + Klarna & iDEAL integration
+# Stripe + Klarna, iDEAL & Bancontact integration
 
-This guide describes how to integrate Klarna and iDEAL using Stripe sources with a custom checkout flow.
+This guide describes how to integrate Klarna, iDEAL and Bancontact using Stripe sources with a custom checkout flow.
 
-Start by connecting a Stripe account to Swell (Settings > Payments); open "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL`.
+Start by connecting a Stripe account to Swell (Settings > Payments); open "Advanced options" under Stripe settings and check `Enable Klarna` / `Enable iDEAL` / `Enable Bancontact`.
 
 ### Using Stripe.js
 ​
@@ -213,6 +213,61 @@ Finally, add the relevant payment details to a Swell cart or order:
 const billing = {
   method: 'klarna',
   klarna: {
+    source: '<source_id>',
+  },
+};
+
+// Using Swell JS library
+await swell.cart.update({ billing });
+
+// Using Swell Node.js library
+await swell.put('/carts/<id>', { billing });
+```
+
+### Bancontact integration
+​
+To make a Bancontact payment, create a [source object](https://stripe.com/docs/api/sources). Bancontact does not require using Stripe elements.
+
+```js
+// Client side
+const stripe = Stripe('pk_test_...');
+​
+await stripe.createSource({
+  type: 'bancontact',
+  amount: '<amount>',
+  currency: 'eur', // Bancontact must always use Euros
+  owner: {
+    name: '<name>',
+  },
+  redirect: {
+    return_url: '<return_url>',
+  },
+ });
+```
+​
+See [Stripe docs](https://stripe.com/docs/sources/bancontact#create-source) for more details on creating a source object.
+
+#### Payment authorization
+​
+If the source was created successfully, redirect the customer to the URL address returned in the source object (`source.redirect.url`). After authorization, the customer will be redirected back to your site at the address specified when creating the source (`return_url`).
+
+##### Capture payment
+​
+When redirecting to your site, the URL query will contain parameters with information about the payment:
+​
+
+|Parameter name|Description|
+|--|--|
+|redirect_status|Authorization status (`succeeded` or `failed`)|
+|source|Unique identifier for the `Source`|
+
+
+Finally, add the relevant payment details to a Swell cart or order:
+
+```js
+const billing = {
+  method: 'bancontact',
+  bancontact: {
     source: '<source_id>',
   },
 };
