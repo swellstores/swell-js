@@ -20,6 +20,7 @@ import BraintreePayPal from './braintree-paypal';
 import Stripe from './stripe';
 import StripeIDeal from './stripe-ideal';
 import StripeKlarna from './stripe-klarna';
+import StripeBancontact from './stripe-bancontact';
 import Info from '../../components/info';
 
 const styles = {
@@ -147,6 +148,15 @@ class Payment extends React.Component {
       case 'stripe-klarna':
         return (
           <StripeKlarna
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'stripe-bancontact':
+        return (
+          <StripeBancontact
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}

@@ -136,6 +136,40 @@ function setKlarnaBillingShipping(source, data) {
   }
 }
 
+function setBancontactOwner(source, data) {
+  const fillValues = (fieldsMap, data) =>
+    reduce(
+      fieldsMap,
+      (acc, srcKey, destKey) => {
+        const value = data[srcKey];
+        if (value) {
+          acc[destKey] = value;
+        }
+        return acc;
+      },
+      {},
+    );
+  const { account = {}, billing, shipping } = data;
+  const billingData = {
+    ...account.shipping,
+    ...account.billing,
+    ...shipping,
+    ...billing,
+  };
+  const billingAddress = fillValues(addressFieldsMap, billingData);
+
+  source.owner = {
+    email: account.email,
+    name: billingData.name || account.name,
+    ...(billingData.phone
+      ? { phone: billingData.phone }
+      : account.phone
+      ? { phone: account.phone }
+      : {}),
+    ...(!isEmpty(billingAddress) ? { address: billingAddress } : {}),
+  };
+}
+
 async function createPaymentMethod(stripe, cardElement, billing = {}) {
   const billingDetails = getBillingDetails(billing);
   const { error, paymentMethod } = await stripe.createPaymentMethod({
@@ -166,7 +200,7 @@ async function createIDealPaymentMethod(stripe, element, billing = {}) {
   });
 }
 
-async function createKlarnaSource(stripe, cart, billing) {
+async function createKlarnaSource(stripe, cart) {
   const sourceObject = {
     type: 'klarna',
     flow: 'redirect',
@@ -183,7 +217,21 @@ async function createKlarnaSource(stripe, cart, billing) {
       return_url: window.location.href,
     },
   };
-  setKlarnaBillingShipping(sourceObject, { ...cart, billing });
+  setKlarnaBillingShipping(sourceObject, cart);
+
+  return await stripe.createSource(sourceObject);
+}
+
+async function createBancontactSource(stripe, cart) {
+  const sourceObject = {
+    type: 'bancontact',
+    amount: Math.round(get(cart, 'grand_total', 0) * 100),
+    currency: toLower(get(cart, 'currency', 'eur')),
+    redirect: {
+      return_url: window.location.href,
+    },
+  };
+  setBancontactOwner(sourceObject, cart);
 
   return await stripe.createSource(sourceObject);
 }
@@ -192,4 +240,5 @@ module.exports = {
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,
+  createBancontactSource,
 };

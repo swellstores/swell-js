@@ -3,7 +3,11 @@ const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
-const { createIDealPaymentMethod, createKlarnaSource } = require('./utils/stripe');
+const {
+  createIDealPaymentMethod,
+  createKlarnaSource,
+  createBancontactSource,
+} = require('./utils/stripe');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -264,7 +268,10 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 async function paymentTokenize(request, params, payMethods, cart) {
   const onError = (error) => {
     const errorHandler =
-      get(params, 'card.onError') || get(params, 'ideal.onError') || get(params, 'klarna.onError');
+      get(params, 'card.onError') ||
+      get(params, 'ideal.onError') ||
+      get(params, 'klarna.onError') ||
+      get(params, 'bancontact.onError');
     if (isFunction(errorHandler)) {
       return errorHandler(error);
     }
@@ -380,6 +387,28 @@ async function paymentTokenize(request, params, payMethods, cart) {
             .update({
               billing: {
                 method: 'klarna',
+              },
+            })
+            .then(() => window.location.replace(source.redirect.url))
+            .catch((err) => onError(err));
+    }
+  } else if (params.bancontact && payMethods.bancontact) {
+    if (payMethods.card && payMethods.card.gateway === 'stripe') {
+      if (!window.Stripe) {
+        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+      }
+      const { publishable_key: publishableKey } = payMethods.card;
+      const stripe = window.Stripe(publishableKey);
+
+      const { error, source } = await createBancontactSource(stripe, cart);
+
+      return error
+        ? onError(error)
+        : cartApi
+            .methods(request)
+            .update({
+              billing: {
+                method: 'bancontact',
               },
             })
             .then(() => window.location.replace(source.redirect.url))
