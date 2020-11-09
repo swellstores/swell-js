@@ -19,12 +19,19 @@ const billingFieldsMap = {
   phone: 'phone',
 };
 
-function getBillingDetails(billing) {
+function getBillingDetails(data) {
+  const { account = {}, billing, shipping } = data;
+  const billingData = {
+    ...account.shipping,
+    ...account.billing,
+    ...shipping,
+    ...billing,
+  };
   const fillValues = (fieldsMap) =>
     reduce(
       fieldsMap,
       (acc, value, key) => {
-        const billingValue = billing[value];
+        const billingValue = billingData[value];
         if (billingValue) {
           acc[key] = billingValue;
         }
@@ -136,8 +143,42 @@ function setKlarnaBillingShipping(source, data) {
   }
 }
 
-async function createPaymentMethod(stripe, cardElement, billing = {}) {
-  const billingDetails = getBillingDetails(billing);
+function setBancontactOwner(source, data) {
+  const fillValues = (fieldsMap, data) =>
+    reduce(
+      fieldsMap,
+      (acc, srcKey, destKey) => {
+        const value = data[srcKey];
+        if (value) {
+          acc[destKey] = value;
+        }
+        return acc;
+      },
+      {},
+    );
+  const { account = {}, billing, shipping } = data;
+  const billingData = {
+    ...account.shipping,
+    ...account.billing,
+    ...shipping,
+    ...billing,
+  };
+  const billingAddress = fillValues(addressFieldsMap, billingData);
+
+  source.owner = {
+    email: account.email,
+    name: billingData.name || account.name,
+    ...(billingData.phone
+      ? { phone: billingData.phone }
+      : account.phone
+      ? { phone: account.phone }
+      : {}),
+    ...(!isEmpty(billingAddress) ? { address: billingAddress } : {}),
+  };
+}
+
+async function createPaymentMethod(stripe, cardElement, cart) {
+  const billingDetails = getBillingDetails(cart);
   const { error, paymentMethod } = await stripe.createPaymentMethod({
     type: 'card',
     card: cardElement,
@@ -166,7 +207,7 @@ async function createIDealPaymentMethod(stripe, element, billing = {}) {
   });
 }
 
-async function createKlarnaSource(stripe, cart, billing) {
+async function createKlarnaSource(stripe, cart) {
   const sourceObject = {
     type: 'klarna',
     flow: 'redirect',
@@ -183,7 +224,21 @@ async function createKlarnaSource(stripe, cart, billing) {
       return_url: window.location.href,
     },
   };
-  setKlarnaBillingShipping(sourceObject, { ...cart, billing });
+  setKlarnaBillingShipping(sourceObject, cart);
+
+  return await stripe.createSource(sourceObject);
+}
+
+async function createBancontactSource(stripe, cart) {
+  const sourceObject = {
+    type: 'bancontact',
+    amount: Math.round(get(cart, 'grand_total', 0) * 100),
+    currency: toLower(get(cart, 'currency', 'eur')),
+    redirect: {
+      return_url: window.location.href,
+    },
+  };
+  setBancontactOwner(sourceObject, cart);
 
   return await stripe.createSource(sourceObject);
 }
@@ -192,4 +247,5 @@ module.exports = {
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,
+  createBancontactSource,
 };
