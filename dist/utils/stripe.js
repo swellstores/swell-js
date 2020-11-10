@@ -37,10 +37,17 @@ var billingFieldsMap = {
   phone: 'phone'
 };
 
-function getBillingDetails(billing) {
+function getBillingDetails(data) {
+  var _data$account = data.account,
+      account = _data$account === void 0 ? {} : _data$account,
+      billing = data.billing,
+      shipping = data.shipping;
+
+  var billingData = _objectSpread({}, account.shipping, {}, account.billing, {}, shipping, {}, billing);
+
   var fillValues = function fillValues(fieldsMap) {
     return reduce(fieldsMap, function (acc, value, key) {
-      var billingValue = billing[value];
+      var billingValue = billingData[value];
 
       if (billingValue) {
         acc[key] = billingValue;
@@ -146,26 +153,53 @@ function setKlarnaBillingShipping(source, data) {
   }
 }
 
-function createPaymentMethod(_x, _x2) {
+function setBancontactOwner(source, data) {
+  var fillValues = function fillValues(fieldsMap, data) {
+    return reduce(fieldsMap, function (acc, srcKey, destKey) {
+      var value = data[srcKey];
+
+      if (value) {
+        acc[destKey] = value;
+      }
+
+      return acc;
+    }, {});
+  };
+
+  var _data$account2 = data.account,
+      account = _data$account2 === void 0 ? {} : _data$account2,
+      billing = data.billing,
+      shipping = data.shipping;
+
+  var billingData = _objectSpread({}, account.shipping, {}, account.billing, {}, shipping, {}, billing);
+
+  var billingAddress = fillValues(addressFieldsMap, billingData);
+  source.owner = _objectSpread({
+    email: account.email,
+    name: billingData.name || account.name
+  }, billingData.phone ? {
+    phone: billingData.phone
+  } : account.phone ? {
+    phone: account.phone
+  } : {}, {}, !isEmpty(billingAddress) ? {
+    address: billingAddress
+  } : {});
+}
+
+function createPaymentMethod(_x, _x2, _x3) {
   return _createPaymentMethod.apply(this, arguments);
 }
 
 function _createPaymentMethod() {
-  _createPaymentMethod = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(stripe, cardElement) {
-    var billing,
-        billingDetails,
-        _ref,
-        error,
-        paymentMethod,
-        _args = arguments;
+  _createPaymentMethod = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(stripe, cardElement, cart) {
+    var billingDetails, _ref, error, paymentMethod;
 
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            billing = _args.length > 2 && _args[2] !== undefined ? _args[2] : {};
-            billingDetails = getBillingDetails(billing);
-            _context.next = 4;
+            billingDetails = getBillingDetails(cart);
+            _context.next = 3;
             return stripe.createPaymentMethod(_objectSpread({
               type: 'card',
               card: cardElement
@@ -173,7 +207,7 @@ function _createPaymentMethod() {
               billing_details: billingDetails
             } : {}));
 
-          case 4:
+          case 3:
             _ref = _context.sent;
             error = _ref.error;
             paymentMethod = _ref.paymentMethod;
@@ -190,7 +224,7 @@ function _createPaymentMethod() {
               zip_check: paymentMethod.card.checks.address_zip_check
             });
 
-          case 8:
+          case 7:
           case "end":
             return _context.stop();
         }
@@ -200,7 +234,7 @@ function _createPaymentMethod() {
   return _createPaymentMethod.apply(this, arguments);
 }
 
-function createIDealPaymentMethod(_x3, _x4) {
+function createIDealPaymentMethod(_x4, _x5) {
   return _createIDealPaymentMethod.apply(this, arguments);
 }
 
@@ -236,12 +270,12 @@ function _createIDealPaymentMethod() {
   return _createIDealPaymentMethod.apply(this, arguments);
 }
 
-function createKlarnaSource(_x5, _x6, _x7) {
+function createKlarnaSource(_x6, _x7) {
   return _createKlarnaSource.apply(this, arguments);
 }
 
 function _createKlarnaSource() {
-  _createKlarnaSource = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(stripe, cart, billing) {
+  _createKlarnaSource = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(stripe, cart) {
     var sourceObject;
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
@@ -263,9 +297,7 @@ function _createKlarnaSource() {
                 return_url: window.location.href
               }
             };
-            setKlarnaBillingShipping(sourceObject, _objectSpread({}, cart, {
-              billing: billing
-            }));
+            setKlarnaBillingShipping(sourceObject, cart);
             _context3.next = 4;
             return stripe.createSource(sourceObject);
 
@@ -282,8 +314,45 @@ function _createKlarnaSource() {
   return _createKlarnaSource.apply(this, arguments);
 }
 
+function createBancontactSource(_x8, _x9) {
+  return _createBancontactSource.apply(this, arguments);
+}
+
+function _createBancontactSource() {
+  _createBancontactSource = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(stripe, cart) {
+    var sourceObject;
+    return _regenerator["default"].wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            sourceObject = {
+              type: 'bancontact',
+              amount: Math.round(get(cart, 'grand_total', 0) * 100),
+              currency: toLower(get(cart, 'currency', 'eur')),
+              redirect: {
+                return_url: window.location.href
+              }
+            };
+            setBancontactOwner(sourceObject, cart);
+            _context4.next = 4;
+            return stripe.createSource(sourceObject);
+
+          case 4:
+            return _context4.abrupt("return", _context4.sent);
+
+          case 5:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4);
+  }));
+  return _createBancontactSource.apply(this, arguments);
+}
+
 module.exports = {
   createPaymentMethod: createPaymentMethod,
   createIDealPaymentMethod: createIDealPaymentMethod,
-  createKlarnaSource: createKlarnaSource
+  createKlarnaSource: createKlarnaSource,
+  createBancontactSource: createBancontactSource
 };

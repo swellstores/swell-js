@@ -16,6 +16,8 @@ var get = require('lodash/get');
 
 var toLower = require('lodash/toLower');
 
+var pick = require('lodash/pick');
+
 var cartApi = require('./cart');
 
 var settingsApi = require('./settings');
@@ -25,8 +27,10 @@ var _require = require('./utils'),
     vaultRequest = _require.vaultRequest;
 
 var _require2 = require('./utils/stripe'),
+    createPaymentMethod = _require2.createPaymentMethod,
     createIDealPaymentMethod = _require2.createIDealPaymentMethod,
-    createKlarnaSource = _require2.createKlarnaSource;
+    createKlarnaSource = _require2.createKlarnaSource,
+    createBancontactSource = _require2.createBancontactSource;
 
 var LOADING_SCRIPTS = {};
 var CARD_ELEMENTS = {};
@@ -612,14 +616,14 @@ function paymentTokenize(_x18, _x19, _x20, _x21) {
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(request, params, payMethods, cart) {
-    var onError, stripe, stripeToken, _ref4, error, paymentMethod, amount, currency, intent, publishableKey, _stripe, settings, _ref5, _error, source;
+    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _ref3, paymentIntent, error, _ref4, _error, _paymentMethod, _amount, _currency, _intent, publishableKey, _stripe, settings, _ref5, _error2, source, _publishableKey, _stripe2, _ref6, _error3, _source;
 
     return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
           case 0:
             onError = function onError(error) {
-              var errorHandler = get(params, 'card.onError') || get(params, 'ideal.onError') || get(params, 'klarna.onError');
+              var errorHandler = get(params, 'card.onError') || get(params, 'ideal.onError') || get(params, 'klarna.onError') || get(params, 'bancontact.onError');
 
               if (isFunction(errorHandler)) {
                 return errorHandler(error);
@@ -639,44 +643,83 @@ function _paymentTokenize() {
 
           case 3:
             if (!(params.card && payMethods.card)) {
-              _context10.next = 14;
+              _context10.next = 33;
               break;
             }
 
             if (!(payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe)) {
-              _context10.next = 12;
+              _context10.next = 31;
               break;
             }
 
             stripe = API.stripe;
             _context10.next = 8;
-            return stripe.createToken(CARD_ELEMENTS.stripe).then(function (_ref3) {
-              var error = _ref3.error,
-                  token = _ref3.token;
-              return error ? onError(error) : token;
-            });
+            return createPaymentMethod(stripe, CARD_ELEMENTS.stripe, cart);
 
           case 8:
-            stripeToken = _context10.sent;
+            paymentMethod = _context10.sent;
 
-            if (!stripeToken) {
-              _context10.next = 12;
+            if (!paymentMethod.error) {
+              _context10.next = 11;
               break;
             }
 
-            _context10.next = 12;
+            return _context10.abrupt("return", onError(paymentMethod.error));
+
+          case 11:
+            amount = get(cart, 'grand_total', 0) * 100;
+            currency = toLower(get(cart, 'currency', 'usd'));
+            stripeCustomer = get(cart, 'account.stripe_customer');
+            _context10.next = 16;
+            return methods(request).createIntent({
+              gateway: 'stripe',
+              intent: _objectSpread({
+                payment_method: paymentMethod.token,
+                amount: amount,
+                currency: currency,
+                capture_method: 'manual',
+                setup_future_usage: 'off_session'
+              }, stripeCustomer ? {
+                customer: stripeCustomer
+              } : {})
+            })["catch"](function (err) {
+              return onError(err);
+            });
+
+          case 16:
+            intent = _context10.sent;
+
+            if (!(intent && intent.status === 'requires_confirmation')) {
+              _context10.next = 31;
+              break;
+            }
+
+            _context10.next = 20;
+            return stripe.confirmCardPayment(intent.client_secret);
+
+          case 20:
+            _ref3 = _context10.sent;
+            paymentIntent = _ref3.paymentIntent;
+            error = _ref3.error;
+
+            if (!error) {
+              _context10.next = 27;
+              break;
+            }
+
+            _context10.t0 = onError(error);
+            _context10.next = 30;
+            break;
+
+          case 27:
+            _context10.next = 29;
             return cartApi.methods(request).update({
               billing: {
-                card: {
-                  token: stripeToken.id,
-                  last4: stripeToken.card.last4,
-                  exp_month: stripeToken.card.exp_month,
-                  exp_year: stripeToken.card.exp_year,
-                  brand: stripeToken.card.brand,
-                  address_check: stripeToken.card.address_line1_check,
-                  cvc_check: stripeToken.card.cvc_check,
-                  zip_check: stripeToken.card.address_zip_check
-                }
+                method: 'card',
+                card: paymentMethod,
+                stripe_payment_intent: _objectSpread({}, pick(paymentIntent, ['id', 'amount', 'client_secret']), {
+                  status: undefined
+                })
               }
             }).then(function () {
               return isFunction(params.card.onSuccess) && params.card.onSuccess();
@@ -684,46 +727,52 @@ function _paymentTokenize() {
               return onError(err);
             });
 
-          case 12:
-            _context10.next = 55;
+          case 29:
+            _context10.t0 = _context10.sent;
+
+          case 30:
+            return _context10.abrupt("return", _context10.t0);
+
+          case 31:
+            _context10.next = 89;
             break;
 
-          case 14:
+          case 33:
             if (!(params.ideal && payMethods.ideal)) {
-              _context10.next = 39;
+              _context10.next = 58;
               break;
             }
 
             if (!(payMethods.card && payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe)) {
-              _context10.next = 37;
+              _context10.next = 56;
               break;
             }
 
-            _context10.next = 18;
+            _context10.next = 37;
             return createIDealPaymentMethod(API.stripe, CARD_ELEMENTS.stripe, cart.billing);
 
-          case 18:
+          case 37:
             _ref4 = _context10.sent;
-            error = _ref4.error;
-            paymentMethod = _ref4.paymentMethod;
+            _error = _ref4.error;
+            _paymentMethod = _ref4.paymentMethod;
 
-            if (!error) {
-              _context10.next = 23;
+            if (!_error) {
+              _context10.next = 42;
               break;
             }
 
-            return _context10.abrupt("return", onError(error));
+            return _context10.abrupt("return", onError(_error));
 
-          case 23:
-            amount = get(cart, 'grand_total', 0) * 100;
-            currency = toLower(get(cart, 'currency', 'eur'));
-            _context10.next = 27;
+          case 42:
+            _amount = get(cart, 'grand_total', 0) * 100;
+            _currency = toLower(get(cart, 'currency', 'eur'));
+            _context10.next = 46;
             return methods(request).createIntent({
               gateway: 'stripe',
               intent: {
-                payment_method: paymentMethod.id,
-                amount: amount,
-                currency: currency,
+                payment_method: _paymentMethod.id,
+                amount: _amount,
+                currency: _currency,
                 payment_method_types: 'ideal',
                 confirmation_method: 'manual',
                 confirm: true,
@@ -733,22 +782,22 @@ function _paymentTokenize() {
               return onError(err);
             });
 
-          case 27:
-            intent = _context10.sent;
+          case 46:
+            _intent = _context10.sent;
 
-            if (!intent) {
-              _context10.next = 37;
+            if (!_intent) {
+              _context10.next = 56;
               break;
             }
 
-            _context10.next = 31;
+            _context10.next = 50;
             return cartApi.methods(request).update({
               billing: {
                 method: 'ideal',
                 ideal: {
-                  token: paymentMethod.id
+                  token: _paymentMethod.id
                 },
-                stripe_payment_intent: _objectSpread({}, intent, {
+                stripe_payment_intent: _objectSpread({}, _intent, {
                   status: undefined
                 })
               }
@@ -756,64 +805,64 @@ function _paymentTokenize() {
               return onError(err);
             });
 
-          case 31:
-            _context10.t0 = intent.status === 'requires_action' || intent.status === 'requires_source_action';
+          case 50:
+            _context10.t1 = _intent.status === 'requires_action' || _intent.status === 'requires_source_action';
 
-            if (!_context10.t0) {
-              _context10.next = 36;
+            if (!_context10.t1) {
+              _context10.next = 55;
               break;
             }
 
-            _context10.next = 35;
-            return API.stripe.handleCardAction(intent.client_secret);
+            _context10.next = 54;
+            return API.stripe.handleCardAction(_intent.client_secret);
 
-          case 35:
-            _context10.t0 = _context10.sent;
+          case 54:
+            _context10.t1 = _context10.sent;
 
-          case 36:
-            return _context10.abrupt("return", _context10.t0);
+          case 55:
+            return _context10.abrupt("return", _context10.t1);
 
-          case 37:
-            _context10.next = 55;
+          case 56:
+            _context10.next = 89;
             break;
 
-          case 39:
+          case 58:
             if (!(params.klarna && payMethods.klarna)) {
-              _context10.next = 55;
+              _context10.next = 76;
               break;
             }
 
             if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
-              _context10.next = 55;
+              _context10.next = 74;
               break;
             }
 
             if (window.Stripe) {
-              _context10.next = 44;
+              _context10.next = 63;
               break;
             }
 
-            _context10.next = 44;
+            _context10.next = 63;
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
-          case 44:
+          case 63:
             publishableKey = payMethods.card.publishable_key;
             _stripe = window.Stripe(publishableKey);
-            _context10.next = 48;
+            _context10.next = 67;
             return settingsApi.methods(request).get();
 
-          case 48:
+          case 67:
             settings = _context10.sent;
-            _context10.next = 51;
+            _context10.next = 70;
             return createKlarnaSource(_stripe, _objectSpread({}, cart, {
               settings: settings.store
             }));
 
-          case 51:
+          case 70:
             _ref5 = _context10.sent;
-            _error = _ref5.error;
+            _error2 = _ref5.error;
             source = _ref5.source;
-            return _context10.abrupt("return", _error ? onError(_error) : cartApi.methods(request).update({
+            return _context10.abrupt("return", _error2 ? onError(_error2) : cartApi.methods(request).update({
               billing: {
                 method: 'klarna'
               }
@@ -823,7 +872,50 @@ function _paymentTokenize() {
               return onError(err);
             }));
 
-          case 55:
+          case 74:
+            _context10.next = 89;
+            break;
+
+          case 76:
+            if (!(params.bancontact && payMethods.bancontact)) {
+              _context10.next = 89;
+              break;
+            }
+
+            if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
+              _context10.next = 89;
+              break;
+            }
+
+            if (window.Stripe) {
+              _context10.next = 81;
+              break;
+            }
+
+            _context10.next = 81;
+            return loadScript('stripe-js', 'https://js.stripe.com/v3/');
+
+          case 81:
+            _publishableKey = payMethods.card.publishable_key;
+            _stripe2 = window.Stripe(_publishableKey);
+            _context10.next = 85;
+            return createBancontactSource(_stripe2, cart);
+
+          case 85:
+            _ref6 = _context10.sent;
+            _error3 = _ref6.error;
+            _source = _ref6.source;
+            return _context10.abrupt("return", _error3 ? onError(_error3) : cartApi.methods(request).update({
+              billing: {
+                method: 'bancontact'
+              }
+            }).then(function () {
+              return window.location.replace(_source.redirect.url);
+            })["catch"](function (err) {
+              return onError(err);
+            }));
+
+          case 89:
           case "end":
             return _context10.stop();
         }
