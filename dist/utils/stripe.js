@@ -85,7 +85,7 @@ function getKlarnaItems(cart) {
       type: 'tax',
       description: 'Taxes',
       currency: currency,
-      amount: toNumber(tax) * 100
+      amount: Math.round(toNumber(tax) * 100)
     });
   }
 
@@ -97,7 +97,7 @@ function getKlarnaItems(cart) {
       type: 'shipping',
       description: shipping.service_name,
       currency: currency,
-      amount: toNumber(shippingTotal) * 100
+      amount: Math.round(toNumber(shippingTotal) * 100)
     });
   }
 
