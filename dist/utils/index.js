@@ -28,6 +28,8 @@ var findIndex = require('lodash/findIndex');
 
 var camelCase = require('lodash/camelCase');
 
+var snakeCase = require('lodash/snakeCase');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -117,13 +119,18 @@ function toSnake(obj) {
 
     return acc;
   }, {}) : null;
-  var normal = normalizeKeys(objCopy, 'snake');
+  var normal = normalizeKeys(objCopy, keyToSnake);
 
   if (reserved) {
     return _objectSpread({}, normal, {}, reserved);
   }
 
   return normal;
+}
+
+function keyToSnake(key) {
+  // Numbers not prefixed with _
+  return snakeCase(key).replace(/\_([0-9])/g, '$1');
 }
 
 function trimBoth(str) {
