@@ -83,8 +83,17 @@ describe('account', () => {
     });
   });
 
-  describe('getAddresses', () => {
+  describe('listAddresses', () => {
     it('should make request to GET /account/addresses', async () => {
+      await api.account.listAddresses();
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+    });
+
+    // Deprecated method
+    it('should make request to GET /account/addresses (deprecated)', async () => {
       await api.account.getAddresses();
 
       expect(fetch.mock.calls.length).toEqual(1);
@@ -119,8 +128,17 @@ describe('account', () => {
     });
   });
 
-  describe('getCards', () => {
+  describe('listCards', () => {
     it('should make request to GET /account/cards', async () => {
+      await api.account.listCards();
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+    });
+
+    // Deprecated method
+    it('should make request to GET /account/cards (deprecated)', async () => {
       await api.account.getCards();
 
       expect(fetch.mock.calls.length).toEqual(1);
@@ -153,9 +171,9 @@ describe('account', () => {
     });
   });
 
-  describe('getOrders', () => {
+  describe('listOrders', () => {
     it('should make request to GET /account/orders', async () => {
-      await api.account.getOrders();
+      await api.account.listOrders();
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders`);
@@ -163,10 +181,31 @@ describe('account', () => {
     });
 
     it('should make request to GET /account/orders?page=2', async () => {
-      await api.account.getOrders({ page: 2 });
+      await api.account.listOrders({ page: 2 });
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders?page=2`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+    });
+
+    // Deprecated method
+    it('should make request to GET /account/orders (deprecated)', async () => {
+      await api.account.getOrders();
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+    });
+  });
+
+  describe('getOrder', () => {
+    it('should make request to GET /account/orders/id', async () => {
+      await api.account.getOrder('12345');
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/orders/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });

@@ -65,7 +65,18 @@ function methods(request) {
 
     getOrder(id) {
       return request('get', `/account/orders/${id}`);
-    }
+    },
+
+    // Deprecated methods
+    getAddresses(query) {
+      return request('get', '/account/addresses', query);
+    },
+    getCards(query) {
+      return request('get', '/account/cards', query);
+    },
+    getOrders(query) {
+      return request('get', `/account/orders`, query);
+    },
   };
 }
 
