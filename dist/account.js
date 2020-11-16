@@ -68,7 +68,7 @@ function methods(request) {
     recover: function recover(data) {
       return request('post', '/account/recover', data);
     },
-    getAddresses: function getAddresses(query) {
+    listAddresses: function listAddresses(query) {
       return request('get', '/account/addresses', query);
     },
     createAddress: function createAddress(data) {
@@ -77,7 +77,7 @@ function methods(request) {
     deleteAddress: function deleteAddress(id) {
       return request('delete', "/account/addresses/".concat(id));
     },
-    getCards: function getCards(query) {
+    listCards: function listCards(query) {
       return request('get', '/account/cards', query);
     },
     createCard: function createCard(data) {
@@ -85,6 +85,19 @@ function methods(request) {
     },
     deleteCard: function deleteCard(id) {
       return request('delete', "/account/cards/".concat(id));
+    },
+    listOrders: function listOrders(query) {
+      return request('get', "/account/orders", query);
+    },
+    getOrder: function getOrder(id) {
+      return request('get', "/account/orders/".concat(id));
+    },
+    // Deprecated methods
+    getAddresses: function getAddresses(query) {
+      return request('get', '/account/addresses', query);
+    },
+    getCards: function getCards(query) {
+      return request('get', '/account/cards', query);
     },
     getOrders: function getOrders(query) {
       return request('get', "/account/orders", query);
