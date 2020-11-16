@@ -35,7 +35,7 @@ function methods(request) {
       return request('post', '/account/recover', data);
     },
 
-    getAddresses(query) {
+    listAddresses(query) {
       return request('get', '/account/addresses', query);
     },
 
@@ -47,7 +47,7 @@ function methods(request) {
       return request('delete', `/account/addresses/${id}`);
     },
 
-    getCards(query) {
+    listCards(query) {
       return request('get', '/account/cards', query);
     },
 
@@ -59,9 +59,13 @@ function methods(request) {
       return request('delete', `/account/cards/${id}`);
     },
 
-    getOrders(query) {
+    listOrders(query) {
       return request('get', `/account/orders`, query);
     },
+
+    getOrder(id) {
+      return request('get', `/account/orders/${id}`);
+    }
   };
 }
 
