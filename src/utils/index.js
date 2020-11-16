@@ -5,6 +5,7 @@ const uniq = require('lodash/uniq');
 const find = require('lodash/find');
 const findIndex = require('lodash/findIndex');
 const camelCase = require('lodash/camelCase');
+const snakeCase = require('lodash/snakeCase');
 const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
@@ -86,11 +87,16 @@ function toSnake(obj) {
         return acc;
       }, {})
     : null;
-  const normal = normalizeKeys(objCopy, 'snake');
+  const normal = normalizeKeys(objCopy, keyToSnake);
   if (reserved) {
     return { ...normal, ...reserved };
   }
   return normal;
+}
+
+function keyToSnake(key) {
+  // Numbers not prefixed with _
+  return snakeCase(key).replace(/\_([0-9])/g, '$1');
 }
 
 function trimBoth(str) {
