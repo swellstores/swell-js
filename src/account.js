@@ -43,6 +43,10 @@ function methods(request) {
       return request('post', '/account/addresses', data);
     },
 
+    updateAddress(id, data) {
+      return request('put', `/account/addresses/${id}`, data);
+    },
+
     deleteAddress(id) {
       return request('delete', `/account/addresses/${id}`);
     },
@@ -53,6 +57,10 @@ function methods(request) {
 
     createCard(data) {
       return request('post', '/account/cards', data);
+    },
+
+    updateCard(id, data) {
+      return request('put', `/account/cards/${id}`, data);
     },
 
     deleteCard(id) {

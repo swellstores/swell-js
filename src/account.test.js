@@ -116,6 +116,20 @@ describe('account', () => {
     });
   });
 
+  describe('updateAddress', () => {
+    it('should make request to PUT /account/addresses/id', async () => {
+      await api.account.updateAddress('123', { address1: 'Test street' });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses/123`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ address1: 'Test street' }),
+      );
+    });
+  });
+
   describe('deleteAddress', () => {
     it('should make request to DELETE /account/addresses/id', async () => {
       await api.account.deleteAddress('12345');
@@ -154,6 +168,20 @@ describe('account', () => {
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards`);
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ token: 'tok_test' }),
+      );
+    });
+  });
+
+  describe('updateCard', () => {
+    it('should make request to PUT /account/cards/id', async () => {
+      await api.account.updateCard('123', { token: 'tok_test' });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards/123`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
         JSON.stringify({ token: 'tok_test' }),

@@ -74,6 +74,9 @@ function methods(request) {
     createAddress: function createAddress(data) {
       return request('post', '/account/addresses', data);
     },
+    updateAddress: function updateAddress(id, data) {
+      return request('put', "/account/addresses/".concat(id), data);
+    },
     deleteAddress: function deleteAddress(id) {
       return request('delete', "/account/addresses/".concat(id));
     },
@@ -82,6 +85,9 @@ function methods(request) {
     },
     createCard: function createCard(data) {
       return request('post', '/account/cards', data);
+    },
+    updateCard: function updateCard(id, data) {
+      return request('put', "/account/cards/".concat(id), data);
     },
     deleteCard: function deleteCard(id) {
       return request('delete', "/account/cards/".concat(id));
