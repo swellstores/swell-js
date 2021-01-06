@@ -20,6 +20,9 @@ const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
 
+const nodeBtoa = string => Buffer.from(string).toString('base64')
+const base64Encode = typeof btoa !== 'undefined' ? btoa : nodeBtoa
+
 require('isomorphic-fetch');
 
 const options = {
@@ -123,7 +126,7 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   const session = getCookie('swell-session');
   const reqHeaders = {
     'Content-Type': 'application/json',
-    Authorization: `Basic ${Buffer.from(String(allOptions.key)).toString('base64')}`,
+    Authorization: `Basic ${base64Encode(String(allOptions.key))}`,
     ...(session ? { 'X-Session': session } : {}),
   };
 
