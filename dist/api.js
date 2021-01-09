@@ -27,7 +27,8 @@ var _require2 = require('./utils'),
     trimBoth = _require2.trimBoth,
     trimStart = _require2.trimStart,
     trimEnd = _require2.trimEnd,
-    stringifyQuery = _require2.stringifyQuery;
+    stringifyQuery = _require2.stringifyQuery,
+    base64Encode = _require2.base64Encode;
 
 var cache = require('./cache');
 
@@ -164,7 +165,7 @@ function _request() {
             session = getCookie('swell-session');
             reqHeaders = _objectSpread({
               'Content-Type': 'application/json',
-              Authorization: "Basic ".concat(Buffer.from(String(allOptions.key)).toString('base64'))
+              Authorization: "Basic ".concat(base64Encode(String(allOptions.key)))
             }, session ? {
               'X-Session': session
             } : {});

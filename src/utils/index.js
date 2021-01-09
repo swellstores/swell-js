@@ -249,6 +249,13 @@ function buildParams(key, obj, add) {
   }
 }
 
+function base64Encode(string) {
+  if (typeof btoa !== 'undefined') {
+    return btoa(string);
+  }
+  return Buffer.from(string).toString('base64');
+}
+
 module.exports = {
   set,
   get,
@@ -270,6 +277,7 @@ module.exports = {
   isFunction,
   map,
   reduce,
+  base64Encode,
   defaultMethods,
   vaultRequest,
 };

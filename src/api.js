@@ -8,6 +8,7 @@ const {
   trimStart,
   trimEnd,
   stringifyQuery,
+  base64Encode,
 } = require('./utils');
 const cache = require('./cache');
 const cart = require('./cart');
@@ -19,9 +20,6 @@ const subscriptions = require('./subscriptions');
 const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
-
-const nodeBtoa = string => Buffer.from(string).toString('base64')
-const base64Encode = typeof btoa !== 'undefined' ? btoa : nodeBtoa
 
 require('isomorphic-fetch');
 
