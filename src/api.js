@@ -19,6 +19,7 @@ const subscriptions = require('./subscriptions');
 const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
+const currency = require('./currency');
 
 require('isomorphic-fetch');
 
@@ -87,6 +88,8 @@ const api = {
   settings: settings.methods(request, options),
 
   payment: payment.methods(request, options),
+  
+  currency: currency.methods(request, options),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
