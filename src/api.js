@@ -43,6 +43,7 @@ const api = {
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
+    options.api = api;
     setOptions(options);
   },
 
@@ -88,7 +89,7 @@ const api = {
   settings: settings.methods(request, options),
 
   payment: payment.methods(request, options),
-  
+
   currency: currency.methods(request, options),
 };
 

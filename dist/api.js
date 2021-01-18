@@ -49,6 +49,8 @@ var settings = require('./settings');
 
 var payment = require('./payment');
 
+var currency = require('./currency');
+
 require('isomorphic-fetch');
 
 var options = {
@@ -98,7 +100,8 @@ var api = {
   subscriptions: subscriptions.methods(request, options),
   content: content.methods(request, options),
   settings: settings.methods(request, options),
-  payment: payment.methods(request, options)
+  payment: payment.methods(request, options),
+  currency: currency.methods(request, options, api)
 };
 
 function request(_x, _x2) {

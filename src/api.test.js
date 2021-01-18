@@ -16,6 +16,7 @@ describe('api', () => {
         url: 'https://test1.swell.store',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
+        api: api.options.api,
       });
     });
   });
@@ -31,6 +32,7 @@ describe('api', () => {
         url: 'https://test1.swell.store',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
+        api: api.options.api,
       });
     });
 
@@ -46,6 +48,7 @@ describe('api', () => {
         url: 'https://www.test2.com',
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
+        api: api.options.api,
       });
     });
   });
