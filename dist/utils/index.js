@@ -30,6 +30,8 @@ var camelCase = require('lodash/camelCase');
 
 var snakeCase = require('lodash/snakeCase');
 
+var cloneDeep = require('lodash/cloneDeep');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -323,6 +325,7 @@ module.exports = {
   find: find,
   findIndex: findIndex,
   camelCase: camelCase,
+  cloneDeep: cloneDeep,
   merge: merge,
   setOptions: setOptions,
   getOptions: getOptions,

@@ -6,6 +6,7 @@ const find = require('lodash/find');
 const findIndex = require('lodash/findIndex');
 const camelCase = require('lodash/camelCase');
 const snakeCase = require('lodash/snakeCase');
+const cloneDeep = require('lodash/cloneDeep');
 const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
@@ -263,6 +264,7 @@ module.exports = {
   find,
   findIndex,
   camelCase,
+  cloneDeep,
   merge,
   setOptions,
   getOptions,

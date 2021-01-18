@@ -12,8 +12,11 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-var _require = require('./products'),
-    cleanProductOptions = _require.cleanProductOptions;
+var _require = require('./utils'),
+    cloneDeep = _require.cloneDeep;
+
+var _require2 = require('./products'),
+    cleanProductOptions = _require2.cleanProductOptions;
 
 function methods(request, options) {
   return {
@@ -157,7 +160,7 @@ function methods(request, options) {
     },
     getItemData: function getItemData(item) {
       var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var result = item;
+      var result = cloneDeep(item);
 
       if (typeof item === 'string') {
         result = _objectSpread({}, data || {}, {
@@ -177,7 +180,9 @@ function methods(request, options) {
     updateItem: function updateItem(id, item) {
       return this.requestStateChange('put', "/cart/items/".concat(id), this.getItemData(item));
     },
-    setItems: function setItems(items) {
+    setItems: function setItems(input) {
+      var items = input;
+
       if (items && items.map) {
         items = items.map(this.getItemData);
       }
@@ -190,9 +195,13 @@ function methods(request, options) {
     recover: function recover(checkoutId) {
       return this.requestStateChange('put', "/cart/recover/".concat(checkoutId));
     },
-    update: function update(data) {
+    update: function update(input) {
+      var data = input;
+
       if (data.items && data.items.map) {
-        data.items = data.items.map(this.getItemData);
+        data = _objectSpread({}, data, {
+          items: data.items.map(this.getItemData)
+        });
       }
 
       return this.requestStateChange('put', "/cart", data);

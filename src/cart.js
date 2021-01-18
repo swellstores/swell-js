@@ -1,3 +1,4 @@
+const { cloneDeep } = require('./utils');
 const { cleanProductOptions } = require('./products');
 
 function methods(request, options) {
@@ -53,7 +54,7 @@ function methods(request, options) {
     },
 
     getItemData(item, data = {}) {
-      let result = item;
+      let result = cloneDeep(item);
       if (typeof item === 'string') {
         result = {
           ...(data || {}),
@@ -74,7 +75,8 @@ function methods(request, options) {
       return this.requestStateChange('put', `/cart/items/${id}`, this.getItemData(item));
     },
 
-    setItems(items) {
+    setItems(input) {
+      let items = input;
       if (items && items.map) {
         items = items.map(this.getItemData);
       }
@@ -89,9 +91,13 @@ function methods(request, options) {
       return this.requestStateChange('put', `/cart/recover/${checkoutId}`);
     },
 
-    update(data) {
+    update(input) {
+      let data = input;
       if (data.items && data.items.map) {
-        data.items = data.items.map(this.getItemData);
+        data = {
+          ...data,
+          items: data.items.map(this.getItemData),
+        };
       }
       return this.requestStateChange('put', `/cart`, data);
     },

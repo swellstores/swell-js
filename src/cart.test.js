@@ -60,6 +60,21 @@ describe('cart', () => {
       );
     });
 
+    it('should not mutate input item request to POST /cart/items with clean options', async () => {
+      const item = { product_id: '123', options: [ { name: 'Size', value: '1 cup' } ] };
+      await api.cart.addItem(item);
+
+      expect(item).toEqual({ product_id: '123', options: [ { name: 'Size', value: '1 cup' } ] });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ product_id: '123', options: [{ id: 'Size', value: '1 cup' }] }),
+      );
+    });
+
     it('should wait until the first request/response before making subsequent calls', async () => {
       fetch
         .mockResponseOnce(
