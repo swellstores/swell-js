@@ -160,7 +160,7 @@ function methods(request, options) {
       var result = item;
 
       if (typeof item === 'string') {
-        result = _objectSpread({}, data || {}, {
+        result = _objectSpread(_objectSpread({}, data || {}), {}, {
           product_id: item
         });
       }
