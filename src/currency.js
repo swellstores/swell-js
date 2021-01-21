@@ -19,6 +19,9 @@ function methods(request, opt) {
     },
 
     selected() {
+      if (this.code) {
+        return this.code;
+      }
       const storeCurrency = opt.api.settings.get('store.currency');
       const cookieCurrency = getCookie('swell-currency');
       return cookieCurrency || storeCurrency;
@@ -77,7 +80,9 @@ function methods(request, opt) {
       let formatter;
       try {
         formatter =
-          formatCode === code && formatLocale === this.locale && formatDecimals === decimals
+          formatCode === this.state.code &&
+          formatLocale === this.locale &&
+          formatDecimals === this.state.decimals
             ? this.formatter
             : new Intl.NumberFormat(formatLocale, {
                 style: 'currency',

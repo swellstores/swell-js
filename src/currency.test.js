@@ -76,7 +76,6 @@ describe('products', () => {
 
       expect(api.currency.code).toEqual('USD');
       expect(api.currency.state).toEqual(mockSettingState.store.currencies[1]);
-      expect(api.settings.state.session.currency).toEqual('USD');
     });
   });
 
@@ -120,7 +119,7 @@ describe('products', () => {
     it('should format currency value by code', async () => {
       const formatted = api.currency.format(1, { code: 'USD' });
 
-      expect(formatted).toEqual('$1.00');
+      expect(formatted).toEqual('$0.77');
     });
 
     it('should format currency value by locale', async () => {

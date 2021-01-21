@@ -56,6 +56,10 @@ function methods(request, opt) {
       return select;
     }(),
     selected: function selected() {
+      if (this.code) {
+        return this.code;
+      }
+
       var storeCurrency = opt.api.settings.get('store.currency');
       var cookieCurrency = getCookie('swell-currency');
       return cookieCurrency || storeCurrency;
@@ -122,7 +126,7 @@ function methods(request, opt) {
       var formatter;
 
       try {
-        formatter = formatCode === code && formatLocale === this.locale && formatDecimals === decimals ? this.formatter : new Intl.NumberFormat(formatLocale, {
+        formatter = formatCode === this.state.code && formatLocale === this.locale && formatDecimals === this.state.decimals ? this.formatter : new Intl.NumberFormat(formatLocale, {
           style: 'currency',
           currency: formatCode,
           currencyDisplay: 'symbol',
