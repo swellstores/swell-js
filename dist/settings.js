@@ -18,10 +18,12 @@ function methods(request, opt) {
     state: null,
     menuState: null,
     paymentState: null,
+    sessionState: null,
     refresh: function refresh() {
       this.state = null;
       this.menuState = null;
       this.paymentState = null;
+      this.sessionState = null;
       return this.get();
     },
     getState: function getState(uri, stateName) {
@@ -115,9 +117,17 @@ function methods(request, opt) {
         def: def
       });
     },
+    session: function session() {
+      var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      return this.getState('/session', 'sessionState', {
+        id: id,
+        def: def
+      });
+    },
     load: function () {
       var _load = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-        var _ref4, settings, menus, payments;
+        var _yield$request, settings, menus, payments, session;
 
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -128,27 +138,29 @@ function methods(request, opt) {
                 return request('get', '/settings/all');
 
               case 3:
-                _ref4 = _context.sent;
-                settings = _ref4.settings;
-                menus = _ref4.menus;
-                payments = _ref4.payments;
+                _yield$request = _context.sent;
+                settings = _yield$request.settings;
+                menus = _yield$request.menus;
+                payments = _yield$request.payments;
+                session = _yield$request.session;
                 this.state = settings;
                 this.menuState = menus;
                 this.paymentState = payments;
-                _context.next = 15;
+                this.sessionState = session;
+                _context.next = 17;
                 break;
 
-              case 12:
-                _context.prev = 12;
+              case 14:
+                _context.prev = 14;
                 _context.t0 = _context["catch"](0);
                 console.error("Swell: unable to loading settings (".concat(_context.t0, ")"));
 
-              case 15:
+              case 17:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 12]]);
+        }, _callee, this, [[0, 14]]);
       }));
 
       function load() {

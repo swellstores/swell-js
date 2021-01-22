@@ -50,6 +50,8 @@ var settings = require('./settings');
 
 var payment = require('./payment');
 
+var currency = require('./currency');
+
 require('isomorphic-fetch');
 
 var options = {
@@ -71,6 +73,7 @@ var api = {
     options.timeout = opt.timeout && parseInt(opt.timeout, 10) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
+    options.api = api;
     setOptions(options);
   },
   // Backward compatibility
@@ -99,7 +102,8 @@ var api = {
   subscriptions: subscriptions.methods(request, options),
   content: content.methods(request, options),
   settings: settings.methods(request, options),
-  payment: payment.methods(request, options)
+  payment: payment.methods(request, options),
+  currency: currency.methods(request, options)
 };
 
 function request(_x, _x2) {
@@ -146,7 +150,7 @@ function _request() {
               reqData = data;
             }
 
-            allOptions = _objectSpread({}, options, {}, opt);
+            allOptions = _objectSpread(_objectSpread({}, options), opt);
             baseUrl = "".concat(allOptions.url).concat(allOptions.base || '', "/api");
             reqUrl = allOptions.fullUrl || "".concat(baseUrl, "/").concat(trimBoth(reqUrl));
             reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;

@@ -20,6 +20,7 @@ const subscriptions = require('./subscriptions');
 const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
+const currency = require('./currency');
 
 require('isomorphic-fetch');
 
@@ -43,6 +44,7 @@ const api = {
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
+    options.api = api;
     setOptions(options);
   },
 
@@ -88,6 +90,8 @@ const api = {
   settings: settings.methods(request, options),
 
   payment: payment.methods(request, options),
+
+  currency: currency.methods(request, options),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {

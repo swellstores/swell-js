@@ -5,11 +5,13 @@ function methods(request, opt) {
     state: null,
     menuState: null,
     paymentState: null,
+    sessionState: null,
 
     refresh() {
       this.state = null;
       this.menuState = null;
       this.paymentState = null;
+      this.sessionState = null;
       return this.get();
     },
 
@@ -65,12 +67,17 @@ function methods(request, opt) {
       return this.getState('/settings/payments', 'paymentState', { id, def });
     },
 
+    session(id = undefined, def = undefined) {
+      return this.getState('/session', 'sessionState', { id, def });
+    },
+
     async load() {
       try {
-        const { settings, menus, payments } = await request('get', '/settings/all');
+        const { settings, menus, payments, session } = await request('get', '/settings/all');
         this.state = settings;
         this.menuState = menus;
         this.paymentState = payments;
+        this.sessionState = session;
       } catch (err) {
         console.error(`Swell: unable to loading settings (${err})`);
       }

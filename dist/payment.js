@@ -616,7 +616,7 @@ function paymentTokenize(_x18, _x19, _x20, _x21) {
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(request, params, payMethods, cart) {
-    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _ref3, paymentIntent, error, _ref4, _error, _paymentMethod, _amount, _currency, _intent, publishableKey, _stripe, settings, _ref5, _error2, source, _publishableKey, _stripe2, _ref6, _error3, _source;
+    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _yield$createIDealPay, _error, _paymentMethod, _amount, _currency, _intent, publishableKey, _stripe, settings, _yield$createKlarnaSo, _error2, source, _publishableKey, _stripe2, _yield$createBanconta, _error3, _source;
 
     return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
@@ -698,9 +698,9 @@ function _paymentTokenize() {
             return stripe.confirmCardPayment(intent.client_secret);
 
           case 20:
-            _ref3 = _context10.sent;
-            paymentIntent = _ref3.paymentIntent;
-            error = _ref3.error;
+            _yield$stripe$confirm = _context10.sent;
+            paymentIntent = _yield$stripe$confirm.paymentIntent;
+            error = _yield$stripe$confirm.error;
 
             if (!error) {
               _context10.next = 27;
@@ -717,7 +717,7 @@ function _paymentTokenize() {
               billing: {
                 method: 'card',
                 card: paymentMethod,
-                stripe_payment_intent: _objectSpread({}, pick(paymentIntent, ['id', 'amount', 'client_secret']), {
+                stripe_payment_intent: _objectSpread(_objectSpread({}, pick(paymentIntent, ['id', 'amount', 'client_secret'])), {}, {
                   status: undefined
                 })
               }
@@ -752,9 +752,9 @@ function _paymentTokenize() {
             return createIDealPaymentMethod(API.stripe, CARD_ELEMENTS.stripe, cart.billing);
 
           case 37:
-            _ref4 = _context10.sent;
-            _error = _ref4.error;
-            _paymentMethod = _ref4.paymentMethod;
+            _yield$createIDealPay = _context10.sent;
+            _error = _yield$createIDealPay.error;
+            _paymentMethod = _yield$createIDealPay.paymentMethod;
 
             if (!_error) {
               _context10.next = 42;
@@ -797,7 +797,7 @@ function _paymentTokenize() {
                 ideal: {
                   token: _paymentMethod.id
                 },
-                stripe_payment_intent: _objectSpread({}, _intent, {
+                stripe_payment_intent: _objectSpread(_objectSpread({}, _intent), {}, {
                   status: undefined
                 })
               }
@@ -854,14 +854,14 @@ function _paymentTokenize() {
           case 67:
             settings = _context10.sent;
             _context10.next = 70;
-            return createKlarnaSource(_stripe, _objectSpread({}, cart, {
+            return createKlarnaSource(_stripe, _objectSpread(_objectSpread({}, cart), {}, {
               settings: settings.store
             }));
 
           case 70:
-            _ref5 = _context10.sent;
-            _error2 = _ref5.error;
-            source = _ref5.source;
+            _yield$createKlarnaSo = _context10.sent;
+            _error2 = _yield$createKlarnaSo.error;
+            source = _yield$createKlarnaSo.source;
             return _context10.abrupt("return", _error2 ? onError(_error2) : cartApi.methods(request).update({
               billing: {
                 method: 'klarna'
@@ -902,9 +902,9 @@ function _paymentTokenize() {
             return createBancontactSource(_stripe2, cart);
 
           case 85:
-            _ref6 = _context10.sent;
-            _error3 = _ref6.error;
-            _source = _ref6.source;
+            _yield$createBanconta = _context10.sent;
+            _error3 = _yield$createBanconta.error;
+            _source = _yield$createBanconta.source;
             return _context10.abrupt("return", _error3 ? onError(_error3) : cartApi.methods(request).update({
               billing: {
                 method: 'bancontact'

@@ -43,7 +43,7 @@ function getBillingDetails(data) {
       billing = data.billing,
       shipping = data.shipping;
 
-  var billingData = _objectSpread({}, account.shipping, {}, account.billing, {}, shipping, {}, billing);
+  var billingData = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, account.shipping), account.billing), shipping), billing);
 
   var fillValues = function fillValues(fieldsMap) {
     return reduce(fieldsMap, function (acc, value, key) {
@@ -61,7 +61,7 @@ function getBillingDetails(data) {
 
   if (!isEmpty(billingDetails)) {
     var address = fillValues(addressFieldsMap);
-    return _objectSpread({}, billingDetails, {}, !isEmpty(address) ? {
+    return _objectSpread(_objectSpread({}, billingDetails), !isEmpty(address) ? {
       address: address
     } : {});
   }
@@ -132,22 +132,22 @@ function setKlarnaBillingShipping(source, data) {
     }, {});
   };
 
-  source.klarna = _objectSpread({}, source.klarna, {}, fillValues(shippingNameFieldsMap, data.shipping));
+  source.klarna = _objectSpread(_objectSpread({}, source.klarna), fillValues(shippingNameFieldsMap, data.shipping));
   var shipping = fillValues(shippingFieldsMap, data.shipping);
   var shippingAddress = fillValues(addressFieldsMap, data.shipping);
 
   if (shipping || shippingAddress) {
-    source.source_order.shipping = _objectSpread({}, shipping ? shipping : {}, {}, shippingAddress ? {
+    source.source_order.shipping = _objectSpread(_objectSpread({}, shipping ? shipping : {}), shippingAddress ? {
       address: shippingAddress
     } : {});
   }
 
-  source.klarna = _objectSpread({}, source.klarna, {}, fillValues(billingNameFieldsMap, data.billing || get(data, 'account.billing') || data.shipping));
+  source.klarna = _objectSpread(_objectSpread({}, source.klarna), fillValues(billingNameFieldsMap, data.billing || get(data, 'account.billing') || data.shipping));
   var billing = fillValues(billingFieldsMap, data.account);
   var billingAddress = fillValues(addressFieldsMap, data.billing || get(data, 'account.billing') || data.shipping);
 
   if (billing || billingAddress) {
-    source.owner = _objectSpread({}, billing ? billing : {}, {}, billingAddress ? {
+    source.owner = _objectSpread(_objectSpread({}, billing ? billing : {}), billingAddress ? {
       address: billingAddress
     } : {});
   }
@@ -171,17 +171,17 @@ function setBancontactOwner(source, data) {
       billing = data.billing,
       shipping = data.shipping;
 
-  var billingData = _objectSpread({}, account.shipping, {}, account.billing, {}, shipping, {}, billing);
+  var billingData = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, account.shipping), account.billing), shipping), billing);
 
   var billingAddress = fillValues(addressFieldsMap, billingData);
-  source.owner = _objectSpread({
+  source.owner = _objectSpread(_objectSpread({
     email: account.email,
     name: billingData.name || account.name
   }, billingData.phone ? {
     phone: billingData.phone
   } : account.phone ? {
     phone: account.phone
-  } : {}, {}, !isEmpty(billingAddress) ? {
+  } : {}), !isEmpty(billingAddress) ? {
     address: billingAddress
   } : {});
 }
@@ -192,7 +192,7 @@ function createPaymentMethod(_x, _x2, _x3) {
 
 function _createPaymentMethod() {
   _createPaymentMethod = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(stripe, cardElement, cart) {
-    var billingDetails, _ref, error, paymentMethod;
+    var billingDetails, _yield$stripe$createP, error, paymentMethod;
 
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
@@ -208,9 +208,9 @@ function _createPaymentMethod() {
             } : {}));
 
           case 3:
-            _ref = _context.sent;
-            error = _ref.error;
-            paymentMethod = _ref.paymentMethod;
+            _yield$stripe$createP = _context.sent;
+            error = _yield$stripe$createP.error;
+            paymentMethod = _yield$stripe$createP.paymentMethod;
             return _context.abrupt("return", error ? {
               error: error
             } : {

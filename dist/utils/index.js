@@ -86,7 +86,7 @@ function toCamel(obj) {
     if (key[0] === '$') {
       var value = obj[key];
       delete obj[key];
-      return _objectSpread({}, acc, (0, _defineProperty2["default"])({}, key, value));
+      return _objectSpread(_objectSpread({}, acc), {}, (0, _defineProperty2["default"])({}, key, value));
     }
 
     return acc;
@@ -94,7 +94,7 @@ function toCamel(obj) {
   var normal = normalizeKeys(obj, 'camel');
 
   if (reserved) {
-    return _objectSpread({}, normal, {}, reserved);
+    return _objectSpread(_objectSpread({}, normal), reserved);
   }
 
   return normal;
@@ -116,7 +116,7 @@ function toSnake(obj) {
     if (key[0] === '$') {
       var value = objCopy[key];
       delete objCopy[key];
-      return _objectSpread({}, acc, (0, _defineProperty2["default"])({}, key, value));
+      return _objectSpread(_objectSpread({}, acc), {}, (0, _defineProperty2["default"])({}, key, value));
     }
 
     return acc;
@@ -124,7 +124,7 @@ function toSnake(obj) {
   var normal = normalizeKeys(objCopy, keyToSnake);
 
   if (reserved) {
-    return _objectSpread({}, normal, {}, reserved);
+    return _objectSpread(_objectSpread({}, normal), reserved);
   }
 
   return normal;
