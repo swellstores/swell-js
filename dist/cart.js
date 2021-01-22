@@ -199,7 +199,7 @@ function methods(request, options) {
       var data = input;
 
       if (data.items && data.items.map) {
-        data = _objectSpread({}, data, {
+        data = _objectSpread(_objectSpread({}, data), {}, {
           items: data.items.map(this.getItemData)
         });
       }
