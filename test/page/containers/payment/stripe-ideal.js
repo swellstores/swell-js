@@ -53,9 +53,11 @@ class StripeIDeal extends React.Component {
         return onCartUpdate({
           billing: {
             ...cart.billing,
-            stripe_payment_intent: {
-              ...cart.billing.stripe_payment_intent,
-              status: 'requires_confirmation',
+            intent: {
+              stripe: {
+                ...get(cart, 'billing.intent.stripe', {}),
+                status: 'requires_confirmation',
+              }
             },
           },
         });
@@ -93,14 +95,14 @@ class StripeIDeal extends React.Component {
   }
 
   isTokinized(cart) {
-    return get(cart, 'billing.stripe_payment_intent.status') === 'requires_confirmation';
+    return get(cart, 'billing.intent.stripe.status') === 'requires_confirmation';
   }
 
   render() {
     const {
       classes,
       onOrderSubmit,
-      cart: { billing: { method, ideal, stripe_payment_intent } = {} },
+      cart: { billing: { method, ideal, intent } = {} },
     } = this.props;
     const { bankSelected, tokenized } = this.state;
 
@@ -111,7 +113,7 @@ class StripeIDeal extends React.Component {
             {!tokenized ? (
               <div id="idealBank-element" className={classes.input} />
             ) : (
-              <Info title="Billing" source={{ method, ideal, stripe_payment_intent }} />
+              <Info title="Billing" source={{ method, ideal, intent }} />
             )}
             <div className={classes.submitContainer}>
               {!tokenized ? (

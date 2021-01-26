@@ -152,8 +152,10 @@ const billing = {
   ideal: {
     token: '<payment_method_id>',
   },
-  stripe_payment_intent: {
-    id: '<payment_intent_id>',
+  intent: {
+    stripe: {
+      id: '<payment_intent_id>',
+    }
   },
 };
 
