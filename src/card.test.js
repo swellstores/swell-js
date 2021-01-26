@@ -1,7 +1,7 @@
 global.fetch = require('jest-fetch-mock');
 global.window = {};
 
-const api = require('./api');
+import api from './api';
 
 let VAULT_RESPONSE;
 

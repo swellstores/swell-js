@@ -1,29 +1,28 @@
-const card = require('./card');
-const { getCookie, setCookie } = require('./cookie');
-const {
+import 'isomorphic-fetch';
+import card from './card';
+import { getCookie, setCookie } from './cookie';
+import  {
   setOptions,
   toCamel,
   toSnake,
   trimBoth,
   trimStart,
-  trimEnd,
+  trimEnd, 
   stringifyQuery,
   base64Encode,
-} = require('./utils');
-const cache = require('./cache');
-const cart = require('./cart');
-const account = require('./account');
-const products = require('./products');
-const categories = require('./categories');
-const attributes = require('./attributes');
-const subscriptions = require('./subscriptions');
-const content = require('./content');
-const settings = require('./settings');
-const payment = require('./payment');
-const locale = require('./locale');
-const currency = require('./currency');
-
-require('isomorphic-fetch');
+} from './utils';
+import cache from './cache';
+import cart from './cart';
+import account from './account'
+import { default as products } from './products';
+import categories from './categories';
+import attributes from './attributes';
+import subscriptions from './subscriptions';
+import content from './content';
+import settings from './settings';
+import payment from './payment';
+import currency from './currency';
+import locale from './locale';
 
 const options = {
   store: null,
@@ -77,27 +76,27 @@ const api = {
 
   card,
 
-  cart: cart.methods(request, options),
+  cart: cart(request, options),
 
-  account: account.methods(request, options),
+  account: account(request, options),
 
-  products: products.methods(request, options),
+  products: products(request, options),
 
-  categories: categories.methods(request, options),
+  categories: categories(request, options),
 
-  attributes: attributes.methods(request, options),
+  attributes: attributes(request, options),
 
-  subscriptions: subscriptions.methods(request, options),
+  subscriptions: subscriptions(request, options),
 
-  content: content.methods(request, options),
+  content: content(request, options),
 
-  settings: settings.methods(request, options),
+  settings: settings(request, options),
 
-  payment: payment.methods(request, options),
+  payment: payment(request, options),
 
-  locale: locale.methods(request, options),
+  locale: locale(request, options),
 
-  currency: currency.methods(request, options),
+  currency: currency(request, options),
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
@@ -179,4 +178,4 @@ if (typeof window !== 'undefined') {
   };
 }
 
-module.exports = api;
+export default api;

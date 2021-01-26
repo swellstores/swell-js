@@ -88,6 +88,4 @@ function methods(request) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

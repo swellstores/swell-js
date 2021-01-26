@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('settings', () => {
   beforeEach(() => {

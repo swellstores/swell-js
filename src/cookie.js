@@ -1,4 +1,4 @@
-const { isServer } = require('./utils');
+import { isServer } from './utils';
 
 function getCookie(name) {
   if (isServer()) {
@@ -43,7 +43,7 @@ function setCookie(name, value, options = {}) {
   document.cookie = updatedCookie;
 }
 
-module.exports = {
+export {
   getCookie,
   setCookie,
 };

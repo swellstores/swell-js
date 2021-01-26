@@ -1,8 +1,8 @@
 global.fetch = require('jest-fetch-mock');
 global.window = {};
 
-const api = require('./api');
-const utils = require('./utils');
+import api from './api';
+import { vaultRequest, stringifyQuery, toCamel, toSnake } from './utils';
 
 describe('utils', () => {
   let script;
@@ -31,7 +31,7 @@ describe('utils', () => {
   describe('init', () => {
     describe('vaultRequest', () => {
       it('should make a fetch request with vaultUrl', async () => {
-        await utils.vaultRequest('post', '/tokens');
+        await vaultRequest('post', '/tokens');
 
         expect(script.src).toEqual(
           'https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=swell_vault_response_1&%24data=&%24key=pk_test',
@@ -42,7 +42,7 @@ describe('utils', () => {
 
   describe('toCamel', () => {
     it('should preserve $ prefixed keys', () => {
-      const obj = utils.toCamel({ $cache: true, other_stuff: true });
+      const obj = toCamel({ $cache: true, other_stuff: true });
       expect(obj).toEqual({
         $cache: true,
         otherStuff: true,
@@ -50,14 +50,14 @@ describe('utils', () => {
     });
 
     it('should not break arrays', () => {
-      const obj = utils.toCamel([{ quantity_value: 1 }]);
+      const obj = toCamel([{ quantity_value: 1 }]);
       expect(obj).toEqual([{ quantityValue: 1 }])
     });
   });
 
   describe('toSnake', () => {
     it('should preserve $ prefixed keys', () => {
-      const obj = utils.toSnake({ $cache: true, otherStuff: true });
+      const obj = toSnake({ $cache: true, otherStuff: true });
       expect(obj).toEqual({
         $cache: true,
         other_stuff: true,
@@ -65,23 +65,23 @@ describe('utils', () => {
     });
 
     it('should not break arrays', () => {
-      const obj = utils.toSnake([{ quantityValue: 1 }]);
+      const obj = toSnake([{ quantityValue: 1 }]);
       expect(obj).toEqual([{ quantity_value: 1 }])
     });
 
     it('should handle _[num] correctly', () => {
-      const obj1 = utils.toSnake([{ address1: 1 }]);
+      const obj1 = toSnake([{ address1: 1 }]);
       expect(obj1).toEqual([{ address1: 1 }])
-      const obj2 = utils.toSnake([{ address1Test: 1 }]);
+      const obj2 = toSnake([{ address1Test: 1 }]);
       expect(obj2).toEqual([{ address1_test: 1 }])
-      const obj3 = utils.toSnake([{ address1Test2: 1 }]);
+      const obj3 = toSnake([{ address1Test2: 1 }]);
       expect(obj3).toEqual([{ address1_test2: 1 }])
     });
   });
 
   describe('stringifyQuery', () => {
     it('should preserve $ prefixed keys', () => {
-      const str = utils.stringifyQuery({ $cache: true, other_stuff: true });
+      const str = stringifyQuery({ $cache: true, other_stuff: true });
       expect(str).toEqual('$cache=true&other_stuff=true')
     });
   });

@@ -1,4 +1,4 @@
-const { get, set, merge, toCamel, toCamelPath, getOptions } = require('./utils');
+import { get, set, merge, toCamel, toCamelPath, getOptions } from './utils';
 
 const DEBUG = false; // true to enable debug logs
 
@@ -142,4 +142,4 @@ const cacheApi = {
   },
 };
 
-module.exports = cacheApi;
+export default cacheApi;

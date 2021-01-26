@@ -1,4 +1,4 @@
-const products = require('./products');
+import products from './products';
 
 const mockRequest = jest.fn();
 const mockProductWithOptions = {
@@ -38,7 +38,7 @@ describe('products', () => {
   let methods;
   beforeEach(() => {
     mockRequest.mockReset();
-    methods = products.methods(mockRequest, {});
+    methods = products(mockRequest, {});
   });
 
   describe('methods', () => {

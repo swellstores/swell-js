@@ -1,9 +1,9 @@
-const reduce = require('lodash/reduce');
-const isEmpty = require('lodash/isEmpty');
-const get = require('lodash/get');
-const toLower = require('lodash/toLower');
-const map = require('lodash/map');
-const toNumber = require('lodash/toNumber');
+import reduce from 'lodash/reduce';
+import isEmpty from 'lodash/isEmpty';
+import get from 'lodash/get';
+import toLower from 'lodash/toLower';
+import map from 'lodash/map';
+import toNumber from 'lodash/toNumber';
 
 const addressFieldsMap = {
   city: 'city',
@@ -243,7 +243,7 @@ async function createBancontactSource(stripe, cart) {
   return await stripe.createSource(sourceObject);
 }
 
-module.exports = {
+export {
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,

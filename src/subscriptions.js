@@ -1,4 +1,4 @@
-const { cleanProductOptions } = require('./products');
+import { cleanProductOptions } from './products';
 
 function methods(request) {
   return {
@@ -50,6 +50,4 @@ function methods(request) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

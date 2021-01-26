@@ -1,4 +1,4 @@
-const { vaultRequest, toSnake } = require('./utils');
+import { vaultRequest, toSnake } from './utils';
 
 const cardApi = {
   async createToken(data) {
@@ -138,4 +138,4 @@ const cardApi = {
   },
 };
 
-module.exports = cardApi;
+export default cardApi;

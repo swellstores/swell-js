@@ -1,14 +1,14 @@
-const qs = require('qs');
-const set = require('lodash/set');
-const get = require('lodash/get');
-const uniq = require('lodash/uniq');
-const find = require('lodash/find');
-const findIndex = require('lodash/findIndex');
-const camelCase = require('lodash/camelCase');
-const snakeCase = require('lodash/snakeCase');
-const cloneDeep = require('lodash/cloneDeep');
-const deepmerge = require('deepmerge');
-const { normalizeKeys } = require('object-keys-normalizer');
+import { stringify } from 'qs';
+import set from 'lodash/set';
+import get from 'lodash/get';
+import uniq from 'lodash/uniq';
+import find from 'lodash/find';
+import findIndex from 'lodash/findIndex';
+import camelCase from 'lodash/camelCase';
+import snakeCase from 'lodash/snakeCase';
+import cloneDeep from 'lodash/cloneDeep';
+import deepmerge from 'deepmerge';
+import { normalizeKeys } from 'object-keys-normalizer';
 
 let options = {};
 
@@ -113,7 +113,7 @@ function trimEnd(str) {
 }
 
 function stringifyQuery(str) {
-  return qs.stringify(str, {
+  return stringify(str, {
     depth: 10,
     encode: false,
   });
@@ -257,7 +257,7 @@ function base64Encode(string) {
   return Buffer.from(string).toString('base64');
 }
 
-module.exports = {
+export {
   set,
   get,
   uniq,

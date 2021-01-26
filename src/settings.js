@@ -1,4 +1,4 @@
-const { get, find, set, merge, toCamel, isObject, cloneDeep } = require('./utils');
+import { get, find, set, merge, toCamel, isObject, cloneDeep } from './utils';
 
 function methods(request, opt) {
   return {
@@ -229,6 +229,4 @@ function decodeLocaleValue(locale, values, key, configs) {
   }
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

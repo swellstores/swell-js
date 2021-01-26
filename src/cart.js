@@ -1,5 +1,5 @@
-const { cloneDeep } = require('./utils');
-const { cleanProductOptions } = require('./products');
+import { cloneDeep } from './utils';
+import { cleanProductOptions } from './products';
 
 function methods(request, options) {
   return {
@@ -151,6 +151,4 @@ function methods(request, options) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;
