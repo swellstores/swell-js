@@ -16,8 +16,6 @@ var get = require('lodash/get');
 
 var toLower = require('lodash/toLower');
 
-var pick = require('lodash/pick');
-
 var cartApi = require('./cart');
 
 var settingsApi = require('./settings');
@@ -717,9 +715,11 @@ function _paymentTokenize() {
               billing: {
                 method: 'card',
                 card: paymentMethod,
-                stripe_payment_intent: _objectSpread(_objectSpread({}, pick(paymentIntent, ['id', 'amount', 'client_secret'])), {}, {
-                  status: undefined
-                })
+                intent: {
+                  stripe: {
+                    id: paymentIntent.id
+                  }
+                }
               }
             }).then(function () {
               return isFunction(params.card.onSuccess) && params.card.onSuccess();
@@ -797,9 +797,11 @@ function _paymentTokenize() {
                 ideal: {
                   token: _paymentMethod.id
                 },
-                stripe_payment_intent: _objectSpread(_objectSpread({}, _intent), {}, {
-                  status: undefined
-                })
+                intent: {
+                  stripe: {
+                    id: _intent.id
+                  }
+                }
               }
             })["catch"](function (err) {
               return onError(err);
