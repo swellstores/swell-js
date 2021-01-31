@@ -4,6 +4,7 @@ const get = require('lodash/get');
 const toLower = require('lodash/toLower');
 const map = require('lodash/map');
 const toNumber = require('lodash/toNumber');
+const { amountByCurrency } = require('./payment');
 
 const addressFieldsMap = {
   city: 'city',
@@ -208,11 +209,12 @@ async function createIDealPaymentMethod(stripe, element, billing = {}) {
 }
 
 async function createKlarnaSource(stripe, cart) {
+  const currency = get(cart, 'currency', 'EUR');
   const sourceObject = {
     type: 'klarna',
     flow: 'redirect',
-    amount: Math.round(get(cart, 'grand_total', 0) * 100),
-    currency: toLower(get(cart, 'currency', 'eur')),
+    amount: amountByCurrency(currency, get(cart, 'grand_total', 0)),
+    currency: toLower(currency),
     klarna: {
       product: 'payment',
       purchase_country: get(cart, 'settings.country', 'DE'),
@@ -230,10 +232,11 @@ async function createKlarnaSource(stripe, cart) {
 }
 
 async function createBancontactSource(stripe, cart) {
+  const currency = get(cart, 'currency', 'EUR');
   const sourceObject = {
     type: 'bancontact',
-    amount: Math.round(get(cart, 'grand_total', 0) * 100),
-    currency: toLower(get(cart, 'currency', 'eur')),
+    amount: amountByCurrency(currency, get(cart, 'grand_total', 0)),
+    currency: toLower(currency),
     redirect: {
       return_url: window.location.href,
     },

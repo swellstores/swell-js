@@ -3,6 +3,7 @@ const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
 const { isFunction, vaultRequest } = require('./utils');
+const { amountByCurrency } = require('./utils/payment');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -267,6 +268,11 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 }
 
 async function paymentTokenize(request, params, payMethods, cart) {
+  const isCardMethod = params.card && payMethods.card;
+  const isIDealMethod = params.ideal && payMethods.ideal;
+  const isKlarnaMethod = params.klarna && payMethods.klarna;
+  const isBancontactMethod = params.bancontact && payMethods.bancontact;
+  const isStripeCardGateway = payMethods.card && payMethods.card.gateway === 'stripe';
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -282,154 +288,166 @@ async function paymentTokenize(request, params, payMethods, cart) {
   if (!params) {
     return onError({ message: 'Tokenization parameters not passed' });
   }
-  if (params.card && payMethods.card) {
-    if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
-      const stripe = API.stripe;
-      const paymentMethod = await createPaymentMethod(stripe, CARD_ELEMENTS.stripe, cart);
 
-      if (paymentMethod.error) {
-        return onError(paymentMethod.error);
-      }
-
-      const amount = get(cart, 'grand_total', 0) * 100;
-      const currency = toLower(get(cart, 'currency', 'usd'));
-      const stripeCustomer = get(cart, 'account.stripe_customer');
-      const intent = await methods(request)
-        .createIntent({
-          gateway: 'stripe',
-          intent: {
-            payment_method: paymentMethod.token,
-            amount,
-            currency,
-            capture_method: 'manual',
-            setup_future_usage: 'off_session',
-            ...(stripeCustomer ? { customer: stripeCustomer } : {}),
-          },
-        })
-        .catch((err) => onError(err));
-
-      if (intent && intent.status === 'requires_confirmation') {
-        const { paymentIntent, error } = await stripe.confirmCardPayment(intent.client_secret);
-        return error
-          ? onError(error)
-          : await cartApi
-              .methods(request)
-              .update({
-                billing: {
-                  method: 'card',
-                  card: paymentMethod,
-                  intent: {
-                    stripe: { id: paymentIntent.id },
-                  },
-                },
-              })
-              .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
-              .catch((err) => onError(err));
-      }
+  if (isCardMethod) {
+    if (isStripeCardGateway && CARD_ELEMENTS.stripe && API.stripe) {
+      return tokenizeStripeCard(request, params, payMethods, cart, onError);
     }
-  } else if (params.ideal && payMethods.ideal) {
-    if (
-      payMethods.card &&
-      payMethods.card.gateway === 'stripe' &&
-      CARD_ELEMENTS.stripe &&
-      API.stripe
-    ) {
-      const { error, paymentMethod } = await createIDealPaymentMethod(
-        API.stripe,
-        CARD_ELEMENTS.stripe,
-        cart.billing,
-      );
+  } else if (isIDealMethod) {
+    if (isStripeCardGateway && CARD_ELEMENTS.stripe && API.stripe) {
+      return tokenizeStripeIDeal(request, params, payMethods, cart, onError);
+    }
+  } else if (isKlarnaMethod) {
+    if (isStripeCardGateway) {
+      return tokenizeStripeKlarna(request, params, payMethods, cart, onError);
+    }
+  } else if (isBancontactMethod) {
+    if (isStripeCardGateway) {
+      return tokenizeStripeBancontact(request, params, payMethods, cart, onError);
+    }
+  }
+}
 
-      if (error) {
-        return onError(error);
-      }
+async function tokenizeStripeCard(request, params, payMethods, cart, onError) {
+  const stripe = API.stripe;
+  const paymentMethod = await createPaymentMethod(stripe, CARD_ELEMENTS.stripe, cart);
 
-      const amount = get(cart, 'grand_total', 0) * 100;
-      const currency = toLower(get(cart, 'currency', 'eur'));
-      const intent = await methods(request)
-        .createIntent({
-          gateway: 'stripe',
-          intent: {
-            payment_method: paymentMethod.id,
-            amount,
-            currency,
-            payment_method_types: 'ideal',
-            confirmation_method: 'manual',
-            confirm: true,
-            return_url: window.location.href,
-          },
-        })
-        .catch((err) => onError(err));
+  if (paymentMethod.error) {
+    return onError(paymentMethod.error);
+  }
 
-      if (intent) {
-        await cartApi
+  const currency = get(cart, 'currency', 'USD');
+  const amount = amountByCurrency(currency, get(cart, 'grand_total', 0));
+  const stripeCustomer = get(cart, 'account.stripe_customer');
+  const intent = await methods(request)
+    .createIntent({
+      gateway: 'stripe',
+      intent: {
+        payment_method: paymentMethod.token,
+        amount,
+        currency: toLower(currency),
+        capture_method: 'manual',
+        setup_future_usage: 'off_session',
+        ...(stripeCustomer ? { customer: stripeCustomer } : {}),
+      },
+    })
+    .catch((err) => onError(err));
+
+  if (intent && intent.status === 'requires_confirmation') {
+    const { paymentIntent, error } = await stripe.confirmCardPayment(intent.client_secret);
+    return error
+      ? onError(error)
+      : await cartApi
           .methods(request)
           .update({
             billing: {
-              method: 'ideal',
-              ideal: {
-                token: paymentMethod.id,
+              method: 'card',
+              card: paymentMethod,
+              intent: {
+                stripe: { id: paymentIntent.id },
               },
-              intent: { stripe: { id: intent.id } },
             },
           })
+          .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
           .catch((err) => onError(err));
-
-        return (
-          (intent.status === 'requires_action' || intent.status === 'requires_source_action') &&
-          (await API.stripe.handleCardAction(intent.client_secret))
-        );
-      }
-    }
-  } else if (params.klarna && payMethods.klarna) {
-    if (payMethods.card && payMethods.card.gateway === 'stripe') {
-      if (!window.Stripe) {
-        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
-      }
-      const { publishable_key: publishableKey } = payMethods.card;
-      const stripe = window.Stripe(publishableKey);
-      const settings = await settingsApi.methods(request).get();
-
-      const { error, source } = await createKlarnaSource(stripe, {
-        ...cart,
-        settings: settings.store,
-      });
-
-      return error
-        ? onError(error)
-        : cartApi
-            .methods(request)
-            .update({
-              billing: {
-                method: 'klarna',
-              },
-            })
-            .then(() => window.location.replace(source.redirect.url))
-            .catch((err) => onError(err));
-    }
-  } else if (params.bancontact && payMethods.bancontact) {
-    if (payMethods.card && payMethods.card.gateway === 'stripe') {
-      if (!window.Stripe) {
-        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
-      }
-      const { publishable_key: publishableKey } = payMethods.card;
-      const stripe = window.Stripe(publishableKey);
-
-      const { error, source } = await createBancontactSource(stripe, cart);
-
-      return error
-        ? onError(error)
-        : cartApi
-            .methods(request)
-            .update({
-              billing: {
-                method: 'bancontact',
-              },
-            })
-            .then(() => window.location.replace(source.redirect.url))
-            .catch((err) => onError(err));
-    }
   }
+}
+
+async function tokenizeStripeIDeal(request, params, payMethods, cart, onError) {
+  const { error, paymentMethod } = await createIDealPaymentMethod(
+    API.stripe,
+    CARD_ELEMENTS.stripe,
+    cart.billing,
+  );
+
+  if (error) {
+    return onError(error);
+  }
+
+  const currency = get(cart, 'currency', 'EUR');
+  const amount = amountByCurrency(currency, get(cart, 'grand_total', 0));
+  const intent = await methods(request)
+    .createIntent({
+      gateway: 'stripe',
+      intent: {
+        payment_method: paymentMethod.id,
+        amount,
+        currency: toLower(currency),
+        payment_method_types: 'ideal',
+        confirmation_method: 'manual',
+        confirm: true,
+        return_url: window.location.href,
+      },
+    })
+    .catch((err) => onError(err));
+
+  if (intent) {
+    await cartApi
+      .methods(request)
+      .update({
+        billing: {
+          method: 'ideal',
+          ideal: {
+            token: paymentMethod.id,
+          },
+          intent: { stripe: { id: intent.id } },
+        },
+      })
+      .catch((err) => onError(err));
+
+    return (
+      (intent.status === 'requires_action' || intent.status === 'requires_source_action') &&
+      (await API.stripe.handleCardAction(intent.client_secret))
+    );
+  }
+}
+
+async function tokenizeStripeKlarna(request, params, payMethods, cart, onError) {
+  if (!window.Stripe) {
+    await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+  }
+  const { publishable_key: publishableKey } = payMethods.card;
+  const stripe = window.Stripe(publishableKey);
+  const settings = await settingsApi.methods(request).get();
+
+  const { error, source } = await createKlarnaSource(stripe, {
+    ...cart,
+    settings: settings.store,
+  });
+
+  return error
+    ? onError(error)
+    : cartApi
+        .methods(request)
+        .update({
+          billing: {
+            method: 'klarna',
+          },
+        })
+        .then(() => window.location.replace(source.redirect.url))
+        .catch((err) => onError(err));
+}
+
+async function tokenizeStripeBancontact(request, params, payMethods, cart, onError) {
+  if (!window.Stripe) {
+    await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+  }
+  const { publishable_key: publishableKey } = payMethods.card;
+  const stripe = window.Stripe(publishableKey);
+
+  const { error, source } = await createBancontactSource(stripe, cart);
+
+  return error
+    ? onError(error)
+    : cartApi
+        .methods(request)
+        .update({
+          billing: {
+            method: 'bancontact',
+          },
+        })
+        .then(() => window.location.replace(source.redirect.url))
+        .catch((err) => onError(err));
 }
 
 module.exports = {
