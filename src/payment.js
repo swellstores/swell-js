@@ -10,6 +10,7 @@ const {
   createKlarnaSource,
   createBancontactSource,
 } = require('./utils/stripe');
+const { getPaymentPageData } = require('./utils/saferpay');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -273,6 +274,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
   const isKlarnaMethod = params.klarna && payMethods.klarna;
   const isBancontactMethod = params.bancontact && payMethods.bancontact;
   const isStripeCardGateway = payMethods.card && payMethods.card.gateway === 'stripe';
+  const isSaferpayCardGateway = payMethods.card && payMethods.card.gateway === 'saferpay';
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -292,6 +294,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
   if (isCardMethod) {
     if (isStripeCardGateway && CARD_ELEMENTS.stripe && API.stripe) {
       return tokenizeStripeCard(request, params, payMethods, cart, onError);
+    } else if (isSaferpayCardGateway) {
+      return tokenizeSaferpayCard(request, params, payMethods, cart, onError);
     }
   } else if (isIDealMethod) {
     if (isStripeCardGateway && CARD_ELEMENTS.stripe && API.stripe) {
@@ -448,6 +452,31 @@ async function tokenizeStripeBancontact(request, params, payMethods, cart, onErr
         })
         .then(() => window.location.replace(source.redirect.url))
         .catch((err) => onError(err));
+}
+
+async function tokenizeSaferpayCard(request, params, payMethods, cart, onError) {
+  const intent = await methods(request)
+    .createIntent({
+      gateway: 'saferpay',
+      intent: params.card.intent || getPaymentPageData(cart),
+    })
+    .catch((err) => onError(err));
+
+  if (intent) {
+    await cartApi
+      .methods(request)
+      .update({
+        billing: {
+          intent: {
+            saferpay: {
+              token: intent.token,
+            },
+          },
+        },
+      })
+      .then(() => window.location.replace(intent.redirect_url))
+      .catch((err) => onError(err));
+  }
 }
 
 module.exports = {

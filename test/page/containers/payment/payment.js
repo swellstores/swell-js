@@ -21,6 +21,7 @@ import Stripe from './stripe';
 import StripeIDeal from './stripe-ideal';
 import StripeKlarna from './stripe-klarna';
 import StripeBancontact from './stripe-bancontact';
+import Saferpay from './saferpay';
 import Info from '../../components/info';
 
 const styles = {
@@ -64,6 +65,7 @@ class Payment extends React.Component {
       onRemoveItem: this.onRemoveItem.bind(this),
       onOrderSubmit: this.onOrderSubmit.bind(this),
       onCartUpdate: this.onCartUpdate.bind(this),
+      onUpdateIntent: this.onUpdateIntent.bind(this),
       onError: this.onError.bind(this),
     };
   }
@@ -119,6 +121,15 @@ class Payment extends React.Component {
     }
   }
 
+  async onUpdateIntent(data) {
+    const { api } = this.props;
+    try {
+      return await api.payment.updateIntent(data);
+    } catch (err) {
+      this.onError(err);
+    }
+  }
+
   onError(error) {
     if (!error) {
       return;
@@ -129,7 +140,7 @@ class Payment extends React.Component {
 
   renderGateway() {
     const { gateway, cart } = this.props;
-    const { onOrderSubmit, onCartUpdate, onError } = this.state;
+    const { onOrderSubmit, onCartUpdate, onUpdateIntent, onError } = this.state;
 
     switch (gateway) {
       case 'braintree-paypal':
@@ -160,6 +171,16 @@ class Payment extends React.Component {
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'saferpay':
+        return (
+          <Saferpay
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onUpdateIntent={onUpdateIntent}
             onError={onError}
           />
         );
