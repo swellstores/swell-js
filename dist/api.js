@@ -50,6 +50,8 @@ var settings = require('./settings');
 
 var payment = require('./payment');
 
+var locale = require('./locale');
+
 var currency = require('./currency');
 
 require('isomorphic-fetch');
@@ -73,6 +75,9 @@ var api = {
     options.timeout = opt.timeout && parseInt(opt.timeout, 10) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
+    options.session = opt.session;
+    options.locale = opt.locale;
+    options.currency = opt.currency;
     options.api = api;
     setOptions(options);
   },
@@ -103,6 +108,7 @@ var api = {
   content: content.methods(request, options),
   settings: settings.methods(request, options),
   payment: payment.methods(request, options),
+  locale: locale.methods(request, options),
   currency: currency.methods(request, options)
 };
 
@@ -126,6 +132,8 @@ function _request() {
         _reqUrl$split2,
         fullQuery,
         session,
+        locale,
+        currency,
         reqHeaders,
         response,
         responseSession,
@@ -166,14 +174,20 @@ function _request() {
               reqBody = JSON.stringify(reqData);
             }
 
-            session = getCookie('swell-session');
-            reqHeaders = _objectSpread({
+            session = allOptions.session || getCookie('swell-session');
+            locale = allOptions.locale || getCookie('swell-locale');
+            currency = allOptions.currency || getCookie('swell-currency');
+            reqHeaders = _objectSpread(_objectSpread(_objectSpread({
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(base64Encode(String(allOptions.key)))
             }, session ? {
               'X-Session': session
+            } : {}), locale ? {
+              'X-Locale': locale
+            } : {}), currency ? {
+              'X-Currency': currency
             } : {});
-            _context.next = 16;
+            _context.next = 18;
             return fetch(reqUrl, {
               method: reqMethod,
               headers: reqHeaders,
@@ -182,7 +196,7 @@ function _request() {
               mode: 'cors'
             });
 
-          case 16:
+          case 18:
             response = _context.sent;
             responseSession = response.headers.get('X-Session');
 
@@ -190,14 +204,14 @@ function _request() {
               setCookie('swell-session', responseSession);
             }
 
-            _context.next = 21;
+            _context.next = 23;
             return response.json();
 
-          case 21:
+          case 23:
             result = _context.sent;
 
             if (!(result && result.error)) {
-              _context.next = 30;
+              _context.next = 32;
               break;
             }
 
@@ -207,9 +221,9 @@ function _request() {
             err.param = result.error.param;
             throw err;
 
-          case 30:
+          case 32:
             if (response.ok) {
-              _context.next = 34;
+              _context.next = 36;
               break;
             }
 
@@ -217,10 +231,10 @@ function _request() {
             _err.code = 'connection_error';
             throw _err;
 
-          case 34:
+          case 36:
             return _context.abrupt("return", options.useCamelCase ? toCamel(result) : result);
 
-          case 35:
+          case 37:
           case "end":
             return _context.stop();
         }
