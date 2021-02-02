@@ -91,7 +91,8 @@ function findVariantWithOptionValueIds(product, ids) {
       for (const variant of variants) {
         let matched = true;
         for (const valueId of ids) {
-          if (variant.option_value_ids && variant.option_value_ids.indexOf(valueId) === -1) {
+          const variantObj = toSnake(variant);
+          if (variantObj.option_value_ids && variantObj.option_value_ids.indexOf(valueId) === -1) {
             matched = false;
             break;
           }

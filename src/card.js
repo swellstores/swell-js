@@ -1,14 +1,15 @@
-const { vaultRequest } = require('./utils');
+const { vaultRequest, toSnake } = require('./utils');
 
 const cardApi = {
-  async createToken(card) {
+  async createToken(data) {
     let error = null;
     let code = null;
     let param = null;
-    if (!card) {
+    if (!data) {
       error = 'Card details are missing in `swell.card.createToken(card)`';
       param = '';
     }
+    const card = toSnake(data);
     if (!card.nonce) {
       if (!this.validateNumber(card.number)) {
         error = 'Card number appears to be invalid';

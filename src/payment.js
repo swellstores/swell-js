@@ -2,7 +2,7 @@ const get = require('lodash/get');
 const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
-const { isFunction, vaultRequest, toCamel } = require('./utils');
+const { isFunction, vaultRequest, toSnake } = require('./utils');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -29,11 +29,11 @@ function methods(request) {
 
     async createElements(elementParams) {
       this.params = elementParams || {};
-      const cart = await cartApi.methods(request).get();
+      const cart = toSnake(await cartApi.methods(request).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = await settingsApi.methods(request).payments();
+      const payMethods = toSnake(await settingsApi.methods(request).payments());
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -41,11 +41,11 @@ function methods(request) {
     },
 
     async tokenize(params) {
-      const cart = await cartApi.methods(request).get();
+      const cart = toSnake(await cartApi.methods(request).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = await settingsApi.methods(request).payments();
+      const payMethods = toSnake(await settingsApi.methods(request).payments());
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -177,8 +177,8 @@ const loadScript = async (id, src) => {
 };
 
 async function stripeElements(request, payMethods, params) {
-  const { publishableKey } = toCamel(payMethods.card);
-  const stripe = window.Stripe(publishableKey);
+  const { publishable_key } = payMethods.card;
+  const stripe = window.Stripe(publishable_key);
   const elements = stripe.elements();
   const createElement = (type) => {
     const elementParams = get(params, `card[${type}]`) || params.card || params.ideal;
@@ -386,9 +386,9 @@ async function paymentTokenize(request, params, payMethods, cart) {
       if (!window.Stripe) {
         await loadScript('stripe-js', 'https://js.stripe.com/v3/');
       }
-      const { publishableKey } = toCamel(payMethods.card);
-      const stripe = window.Stripe(publishableKey);
-      const settings = await settingsApi.methods(request).get();
+      const { publishable_key } = payMethods.card;
+      const stripe = window.Stripe(publishable_key);
+      const settings = toSnake(await settingsApi.methods(request).get());
 
       const { error, source } = await createKlarnaSource(stripe, {
         ...cart,
@@ -412,8 +412,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
       if (!window.Stripe) {
         await loadScript('stripe-js', 'https://js.stripe.com/v3/');
       }
-      const { publishableKey } = toCamel(payMethods.card);
-      const stripe = window.Stripe(publishableKey);
+      const { publishable_key } = payMethods.card;
+      const stripe = window.Stripe(publishable_key);
 
       const { error, source } = await createBancontactSource(stripe, cart);
 

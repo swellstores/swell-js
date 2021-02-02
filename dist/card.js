@@ -7,12 +7,13 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _require = require('./utils'),
-    vaultRequest = _require.vaultRequest;
+    vaultRequest = _require.vaultRequest,
+    toSnake = _require.toSnake;
 
 var cardApi = {
   createToken: function () {
-    var _createToken = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(card) {
-      var error, code, param, exp, err, result, _param, _err;
+    var _createToken = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(data) {
+      var error, code, param, card, exp, err, result, _param, _err;
 
       return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
@@ -22,10 +23,12 @@ var cardApi = {
               code = null;
               param = null;
 
-              if (!card) {
+              if (!data) {
                 error = 'Card details are missing in `swell.card.createToken(card)`';
                 param = '';
               }
+
+              card = toSnake(data);
 
               if (!card.nonce) {
                 if (!this.validateNumber(card.number)) {
@@ -54,7 +57,7 @@ var cardApi = {
               }
 
               if (!error) {
-                _context.next = 11;
+                _context.next = 12;
                 break;
               }
 
@@ -64,15 +67,15 @@ var cardApi = {
               err.param = param;
               throw err;
 
-            case 11:
-              _context.next = 13;
+            case 12:
+              _context.next = 14;
               return vaultRequest('post', '/tokens', card);
 
-            case 13:
+            case 14:
               result = _context.sent;
 
               if (!result.errors) {
-                _context.next = 21;
+                _context.next = 22;
                 break;
               }
 
@@ -83,10 +86,10 @@ var cardApi = {
               _err.param = _param;
               throw _err;
 
-            case 21:
+            case 22:
               return _context.abrupt("return", result);
 
-            case 22:
+            case 23:
             case "end":
               return _context.stop();
           }

@@ -23,7 +23,7 @@ var settingsApi = require('./settings');
 var _require = require('./utils'),
     isFunction = _require.isFunction,
     vaultRequest = _require.vaultRequest,
-    toCamel = _require.toCamel;
+    toSnake = _require.toSnake;
 
 var _require2 = require('./utils/stripe'),
     createPaymentMethod = _require2.createPaymentMethod,
@@ -83,38 +83,42 @@ function methods(request) {
             switch (_context2.prev = _context2.next) {
               case 0:
                 this.params = elementParams || {};
-                _context2.next = 3;
+                _context2.t0 = toSnake;
+                _context2.next = 4;
                 return cartApi.methods(request).get();
 
-              case 3:
-                cart = _context2.sent;
+              case 4:
+                _context2.t1 = _context2.sent;
+                cart = (0, _context2.t0)(_context2.t1);
 
                 if (cart) {
-                  _context2.next = 6;
+                  _context2.next = 8;
                   break;
                 }
 
                 throw new Error('Cart not found');
 
-              case 6:
-                _context2.next = 8;
+              case 8:
+                _context2.t2 = toSnake;
+                _context2.next = 11;
                 return settingsApi.methods(request).payments();
 
-              case 8:
-                payMethods = _context2.sent;
+              case 11:
+                _context2.t3 = _context2.sent;
+                payMethods = (0, _context2.t2)(_context2.t3);
 
                 if (!payMethods.error) {
-                  _context2.next = 11;
+                  _context2.next = 15;
                   break;
                 }
 
                 throw new Error(payMethods.error);
 
-              case 11:
-                _context2.next = 13;
+              case 15:
+                _context2.next = 17;
                 return render(request, cart, payMethods, this.params);
 
-              case 13:
+              case 17:
               case "end":
                 return _context2.stop();
             }
@@ -135,41 +139,45 @@ function methods(request) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                _context3.next = 2;
+                _context3.t0 = toSnake;
+                _context3.next = 3;
                 return cartApi.methods(request).get();
 
-              case 2:
-                cart = _context3.sent;
+              case 3:
+                _context3.t1 = _context3.sent;
+                cart = (0, _context3.t0)(_context3.t1);
 
                 if (cart) {
-                  _context3.next = 5;
+                  _context3.next = 7;
                   break;
                 }
 
                 throw new Error('Cart not found');
 
-              case 5:
-                _context3.next = 7;
+              case 7:
+                _context3.t2 = toSnake;
+                _context3.next = 10;
                 return settingsApi.methods(request).payments();
 
-              case 7:
-                payMethods = _context3.sent;
+              case 10:
+                _context3.t3 = _context3.sent;
+                payMethods = (0, _context3.t2)(_context3.t3);
 
                 if (!payMethods.error) {
-                  _context3.next = 10;
+                  _context3.next = 14;
                   break;
                 }
 
                 throw new Error(payMethods.error);
 
-              case 10:
-                _context3.next = 12;
+              case 14:
+                _context3.next = 16;
                 return paymentTokenize(request, params || this.params, payMethods, cart);
 
-              case 12:
+              case 16:
                 return _context3.abrupt("return", _context3.sent);
 
-              case 13:
+              case 17:
               case "end":
                 return _context3.stop();
             }
@@ -475,14 +483,13 @@ function stripeElements(_x11, _x12, _x13) {
 
 function _stripeElements() {
   _stripeElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(request, payMethods, params) {
-    var _toCamel, publishableKey, stripe, elements, createElement;
-
+    var publishable_key, stripe, elements, createElement;
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
         switch (_context8.prev = _context8.next) {
           case 0:
-            _toCamel = toCamel(payMethods.card), publishableKey = _toCamel.publishableKey;
-            stripe = window.Stripe(publishableKey);
+            publishable_key = payMethods.card.publishable_key;
+            stripe = window.Stripe(publishable_key);
             elements = stripe.elements();
 
             createElement = function createElement(type) {
@@ -616,7 +623,7 @@ function paymentTokenize(_x18, _x19, _x20, _x21) {
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(request, params, payMethods, cart) {
-    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _yield$createIDealPay, _error, _paymentMethod, _amount, _currency, _intent, _toCamel2, publishableKey, _stripe, settings, _yield$createKlarnaSo, _error2, source, _toCamel3, _publishableKey, _stripe2, _yield$createBanconta, _error3, _source;
+    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _yield$createIDealPay, _error, _paymentMethod, _amount, _currency, _intent, publishable_key, _stripe, settings, _yield$createKlarnaSo, _error2, source, _publishable_key, _stripe2, _yield$createBanconta, _error3, _source;
 
     return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
@@ -736,7 +743,7 @@ function _paymentTokenize() {
             return _context10.abrupt("return", _context10.t0);
 
           case 31:
-            _context10.next = 89;
+            _context10.next = 91;
             break;
 
           case 33:
@@ -827,17 +834,17 @@ function _paymentTokenize() {
             return _context10.abrupt("return", _context10.t1);
 
           case 56:
-            _context10.next = 89;
+            _context10.next = 91;
             break;
 
           case 58:
             if (!(params.klarna && payMethods.klarna)) {
-              _context10.next = 76;
+              _context10.next = 78;
               break;
             }
 
             if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
-              _context10.next = 74;
+              _context10.next = 76;
               break;
             }
 
@@ -850,19 +857,21 @@ function _paymentTokenize() {
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
           case 63:
-            _toCamel2 = toCamel(payMethods.card), publishableKey = _toCamel2.publishableKey;
-            _stripe = window.Stripe(publishableKey);
-            _context10.next = 67;
+            publishable_key = payMethods.card.publishable_key;
+            _stripe = window.Stripe(publishable_key);
+            _context10.t2 = toSnake;
+            _context10.next = 68;
             return settingsApi.methods(request).get();
 
-          case 67:
-            settings = _context10.sent;
-            _context10.next = 70;
+          case 68:
+            _context10.t3 = _context10.sent;
+            settings = (0, _context10.t2)(_context10.t3);
+            _context10.next = 72;
             return createKlarnaSource(_stripe, _objectSpread(_objectSpread({}, cart), {}, {
               settings: settings.store
             }));
 
-          case 70:
+          case 72:
             _yield$createKlarnaSo = _context10.sent;
             _error2 = _yield$createKlarnaSo.error;
             source = _yield$createKlarnaSo.source;
@@ -876,36 +885,36 @@ function _paymentTokenize() {
               return onError(err);
             }));
 
-          case 74:
-            _context10.next = 89;
+          case 76:
+            _context10.next = 91;
             break;
 
-          case 76:
+          case 78:
             if (!(params.bancontact && payMethods.bancontact)) {
-              _context10.next = 89;
+              _context10.next = 91;
               break;
             }
 
             if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
-              _context10.next = 89;
+              _context10.next = 91;
               break;
             }
 
             if (window.Stripe) {
-              _context10.next = 81;
+              _context10.next = 83;
               break;
             }
 
-            _context10.next = 81;
+            _context10.next = 83;
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
-          case 81:
-            _toCamel3 = toCamel(payMethods.card), _publishableKey = _toCamel3.publishableKey;
-            _stripe2 = window.Stripe(_publishableKey);
-            _context10.next = 85;
+          case 83:
+            _publishable_key = payMethods.card.publishable_key;
+            _stripe2 = window.Stripe(_publishable_key);
+            _context10.next = 87;
             return createBancontactSource(_stripe2, cart);
 
-          case 85:
+          case 87:
             _yield$createBanconta = _context10.sent;
             _error3 = _yield$createBanconta.error;
             _source = _yield$createBanconta.source;
@@ -919,7 +928,7 @@ function _paymentTokenize() {
               return onError(err);
             }));
 
-          case 89:
+          case 91:
           case "end":
             return _context10.stop();
         }
