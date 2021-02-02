@@ -2,7 +2,7 @@ const get = require('lodash/get');
 const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
-const { isFunction, vaultRequest } = require('./utils');
+const { isFunction, vaultRequest, toCamel } = require('./utils');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -177,7 +177,7 @@ const loadScript = async (id, src) => {
 };
 
 async function stripeElements(request, payMethods, params) {
-  const { publishable_key: publishableKey } = payMethods.card;
+  const { publishableKey } = toCamel(payMethods.card);
   const stripe = window.Stripe(publishableKey);
   const elements = stripe.elements();
   const createElement = (type) => {
@@ -386,7 +386,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       if (!window.Stripe) {
         await loadScript('stripe-js', 'https://js.stripe.com/v3/');
       }
-      const { publishable_key: publishableKey } = payMethods.card;
+      const { publishableKey } = toCamel(payMethods.card);
       const stripe = window.Stripe(publishableKey);
       const settings = await settingsApi.methods(request).get();
 
@@ -412,7 +412,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       if (!window.Stripe) {
         await loadScript('stripe-js', 'https://js.stripe.com/v3/');
       }
-      const { publishable_key: publishableKey } = payMethods.card;
+      const { publishableKey } = toCamel(payMethods.card);
       const stripe = window.Stripe(publishableKey);
 
       const { error, source } = await createBancontactSource(stripe, cart);
