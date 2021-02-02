@@ -22,7 +22,8 @@ var settingsApi = require('./settings');
 
 var _require = require('./utils'),
     isFunction = _require.isFunction,
-    vaultRequest = _require.vaultRequest;
+    vaultRequest = _require.vaultRequest,
+    toCamel = _require.toCamel;
 
 var _require2 = require('./utils/stripe'),
     createPaymentMethod = _require2.createPaymentMethod,
@@ -474,12 +475,13 @@ function stripeElements(_x11, _x12, _x13) {
 
 function _stripeElements() {
   _stripeElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(request, payMethods, params) {
-    var publishableKey, stripe, elements, createElement;
+    var _toCamel, publishableKey, stripe, elements, createElement;
+
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
         switch (_context8.prev = _context8.next) {
           case 0:
-            publishableKey = payMethods.card.publishable_key;
+            _toCamel = toCamel(payMethods.card), publishableKey = _toCamel.publishableKey;
             stripe = window.Stripe(publishableKey);
             elements = stripe.elements();
 
@@ -614,7 +616,7 @@ function paymentTokenize(_x18, _x19, _x20, _x21) {
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(request, params, payMethods, cart) {
-    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _yield$createIDealPay, _error, _paymentMethod, _amount, _currency, _intent, publishableKey, _stripe, settings, _yield$createKlarnaSo, _error2, source, _publishableKey, _stripe2, _yield$createBanconta, _error3, _source;
+    var onError, stripe, paymentMethod, amount, currency, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _yield$createIDealPay, _error, _paymentMethod, _amount, _currency, _intent, _toCamel2, publishableKey, _stripe, settings, _yield$createKlarnaSo, _error2, source, _toCamel3, _publishableKey, _stripe2, _yield$createBanconta, _error3, _source;
 
     return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
@@ -848,7 +850,7 @@ function _paymentTokenize() {
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
           case 63:
-            publishableKey = payMethods.card.publishable_key;
+            _toCamel2 = toCamel(payMethods.card), publishableKey = _toCamel2.publishableKey;
             _stripe = window.Stripe(publishableKey);
             _context10.next = 67;
             return settingsApi.methods(request).get();
@@ -898,7 +900,7 @@ function _paymentTokenize() {
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
           case 81:
-            _publishableKey = payMethods.card.publishable_key;
+            _toCamel3 = toCamel(payMethods.card), _publishableKey = _toCamel3.publishableKey;
             _stripe2 = window.Stripe(_publishableKey);
             _context10.next = 85;
             return createBancontactSource(_stripe2, cart);
