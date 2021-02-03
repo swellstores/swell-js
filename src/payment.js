@@ -294,19 +294,21 @@ async function paymentTokenize(request, params, payMethods, cart) {
       const amount = get(cart, 'grand_total', 0) * 100;
       const currency = toLower(get(cart, 'currency', 'usd'));
       const stripeCustomer = get(cart, 'account.stripe_customer');
-      const intent = await methods(request)
-        .createIntent({
-          gateway: 'stripe',
-          intent: {
-            payment_method: paymentMethod.token,
-            amount,
-            currency,
-            capture_method: 'manual',
-            setup_future_usage: 'off_session',
-            ...(stripeCustomer ? { customer: stripeCustomer } : {}),
-          },
-        })
-        .catch((err) => onError(err));
+      const intent = toSnake(
+        await methods(request)
+          .createIntent({
+            gateway: 'stripe',
+            intent: {
+              payment_method: paymentMethod.token,
+              amount,
+              currency,
+              capture_method: 'manual',
+              setup_future_usage: 'off_session',
+              ...(stripeCustomer ? { customer: stripeCustomer } : {}),
+            },
+          })
+          .catch((err) => onError(err)),
+      );
 
       if (intent && intent.status === 'requires_confirmation') {
         const { paymentIntent, error } = await stripe.confirmCardPayment(intent.client_secret);
@@ -346,20 +348,22 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       const amount = get(cart, 'grand_total', 0) * 100;
       const currency = toLower(get(cart, 'currency', 'eur'));
-      const intent = await methods(request)
-        .createIntent({
-          gateway: 'stripe',
-          intent: {
-            payment_method: paymentMethod.id,
-            amount,
-            currency,
-            payment_method_types: 'ideal',
-            confirmation_method: 'manual',
-            confirm: true,
-            return_url: window.location.href,
-          },
-        })
-        .catch((err) => onError(err));
+      const intent = toSnake(
+        await methods(request)
+          .createIntent({
+            gateway: 'stripe',
+            intent: {
+              payment_method: paymentMethod.id,
+              amount,
+              currency,
+              payment_method_types: 'ideal',
+              confirmation_method: 'manual',
+              confirm: true,
+              return_url: window.location.href,
+            },
+          })
+          .catch((err) => onError(err)),
+      );
 
       if (intent) {
         await cartApi
