@@ -37,7 +37,7 @@ const mockSettingState = {
   },
 };
 
-describe('products', () => {
+describe('currency', () => {
   beforeEach(() => {
     api.init('test', 'pk_test');
     api.settings.state = JSON.parse(JSON.stringify(mockSettingState));

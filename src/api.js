@@ -20,6 +20,7 @@ const subscriptions = require('./subscriptions');
 const content = require('./content');
 const settings = require('./settings');
 const payment = require('./payment');
+const locale = require('./locale');
 const currency = require('./currency');
 
 require('isomorphic-fetch');
@@ -44,6 +45,9 @@ const api = {
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
+    options.session = opt.session;
+    options.locale = opt.locale;
+    options.currency = opt.currency;
     options.api = api;
     setOptions(options);
   },
@@ -91,6 +95,8 @@ const api = {
 
   payment: payment.methods(request, options),
 
+  locale: locale.methods(request, options),
+
   currency: currency.methods(request, options),
 };
 
@@ -125,11 +131,16 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     reqBody = JSON.stringify(reqData);
   }
 
-  const session = getCookie('swell-session');
+  const session = allOptions.session || getCookie('swell-session');
+  const locale = allOptions.locale || getCookie('swell-locale');
+  const currency = allOptions.currency || getCookie('swell-currency');
+
   const reqHeaders = {
     'Content-Type': 'application/json',
     Authorization: `Basic ${base64Encode(String(allOptions.key))}`,
     ...(session ? { 'X-Session': session } : {}),
+    ...(locale ? { 'X-Locale': locale } : {}),
+    ...(currency ? { 'X-Currency': currency } : {}),
   };
 
   const response = await fetch(reqUrl, {
