@@ -338,6 +338,7 @@ module.exports = {
   stringifyQuery: stringifyQuery,
   isServer: isServer,
   isFunction: isFunction,
+  isObject: isObject,
   map: map,
   reduce: reduce,
   base64Encode: base64Encode,

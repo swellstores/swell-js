@@ -1,4 +1,4 @@
-const { get, find, set, merge, toCamel } = require('./utils');
+const { get, find, set, merge, toCamel, isObject, cloneDeep } = require('./utils');
 
 function methods(request, opt) {
   return {
@@ -6,6 +6,9 @@ function methods(request, opt) {
     menuState: null,
     paymentState: null,
     sessionState: null,
+
+    locale: null,
+    localizedState: {},
 
     refresh() {
       this.state = null;
@@ -22,10 +25,25 @@ function methods(request, opt) {
       if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then((state) => {
           this[stateName] = state;
-          return id ? get(state, id, def) : state;
+          this.localizedState = {};
+          return this.getLocalizedState(stateName, id, def);
         });
       }
-      return id ? get(this[stateName], id, def) : this[stateName];
+      return this.getLocalizedState(stateName, id, def);
+    },
+
+    getLocalizedState(stateName, id, def) {
+      if (!this.locale) {
+        this.locale = opt.api.locale.selected();
+      }
+      if (this.localizedState.code !== this.locale) {
+        this.localizedState.code = this.locale;
+        delete this.localizedState[this.locale];
+      }
+      if (!this.localizedState[this.locale]) {
+        this.localizedState[this.locale] = this.decodeLocale(this[stateName]);
+      }
+      return id ? get(this.localizedState[this.locale], id, def) : this.localizedState[this.locale];
     },
 
     findState(uri, stateName, { where = undefined, def = undefined } = {}) {
@@ -38,6 +56,14 @@ function methods(request, opt) {
 
     get(id = undefined, def = undefined) {
       return this.getState('/settings', 'state', { id, def });
+    },
+
+    getStoreLocale() {
+      return get(this.state, 'store.locale');
+    },
+
+    getStoreLocales() {
+      return get(this.state, 'store.locales');
     },
 
     set({ model, path, value }) {
@@ -71,6 +97,25 @@ function methods(request, opt) {
       return this.getState('/session', 'sessionState', { id, def });
     },
 
+    decodeLocale(values) {
+      if (!values || typeof values !== 'object') {
+        return values;
+      }
+      let configs = this.getStoreLocales();
+      if (configs) {
+        configs = configs.reduce(
+          (acc, config) => ({
+            ...acc,
+            [config.code]: config,
+          }),
+          {},
+        );
+      } else {
+        configs = {};
+      }
+      return decodeLocaleObjects(cloneDeep(values), this.locale, configs);
+    },
+
     async load() {
       try {
         const { settings, menus, payments, session } = await request('get', '/settings/all');
@@ -83,6 +128,102 @@ function methods(request, opt) {
       }
     },
   };
+}
+
+function decodeLocaleObjects(values, locale, configs) {
+  if (isObject(values)) {
+    const keys = Object.keys(values);
+    for (let key of keys) {
+      if (key == '$locale') {
+        decodeLocaleValue(locale, values, key, configs);
+        delete values.$locale;
+      }
+      if (values[key] !== undefined) {
+        values[key] = decodeLocaleObjects(values[key], locale, configs);
+      }
+    }
+  } else if (values instanceof Array) {
+    for (var i = 0; i < values.length; i++) {
+      values[i] = decodeLocaleObjects(values[i], locale, configs);
+    }
+  }
+  return values;
+}
+
+function decodeLocaleValue(locale, values, key, configs) {
+  if (!locale || !isObject(values[key])) {
+    return;
+  }
+
+  let returnLocaleKey;
+  let returnLocaleConfig;
+  const localeKeys = Object.keys(values[key]);
+  for (let localeKey of localeKeys) {
+    const shortKey = localeKey.replace(/\-.+$/, '');
+    if (localeKey === locale || shortKey === locale) {
+      returnLocaleKey = localeKey;
+      returnLocaleConfig = configs[localeKey];
+    }
+  }
+
+  // Find configured locale for fallback
+  if (!returnLocaleKey && isObject(configs)) {
+    const localeKeys = Object.keys(configs);
+    for (let localeKey of localeKeys) {
+      const shortKey = localeKey.replace(/\-.+$/, '');
+      if (localeKey === locale || shortKey === locale) {
+        returnLocaleKey = localeKey;
+        returnLocaleConfig = configs[localeKey];
+      }
+    }
+  }
+
+  // Find fallback key and values if applicable
+  let fallbackKeys;
+  let fallbackValues = {};
+  if (returnLocaleConfig) {
+    let fallbackKey = returnLocaleConfig.fallback;
+    const origFallbackKey = fallbackKey;
+    while (fallbackKey) {
+      fallbackKeys = fallbackKeys || [];
+      fallbackKeys.push(fallbackKey);
+      fallbackValues = { ...(values[key][fallbackKey] || {}), ...fallbackValues };
+      fallbackKey = configs[fallbackKey] && configs[fallbackKey].fallback;
+      if (origFallbackKey === fallbackKey) {
+        break;
+      }
+    }
+  }
+
+  // Merge locale value with fallbacks
+  let localeValues = { ...fallbackValues, ...(values[key][returnLocaleKey] || {}) };
+  const valueKeys = Object.keys(localeValues);
+  for (let valueKey of valueKeys) {
+    const hasValue = localeValues[valueKey] !== null && localeValues[valueKey] !== '';
+    let shouldFallback = fallbackKeys && !hasValue;
+    if (shouldFallback) {
+      for (let fallbackKey of fallbackKeys) {
+        shouldFallback =
+          !values[key][fallbackKey] ||
+          values[key][fallbackKey][valueKey] === null ||
+          values[key][fallbackKey][valueKey] === '';
+        if (shouldFallback) {
+          if (fallbackKey === 'none') {
+            values[valueKey] = null;
+            break;
+          }
+          continue;
+        } else {
+          values[valueKey] = values[key][fallbackKey][valueKey];
+          break;
+        }
+      }
+    } else {
+      if (hasValue) {
+        values[valueKey] = localeValues[valueKey];
+      }
+    }
+  }
 }
 
 module.exports = {

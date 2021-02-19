@@ -28,15 +28,16 @@ function methods(request, opt) {
               case 0:
                 this.set(locale);
                 setCookie('swell-locale', locale);
-                _context.next = 4;
+                opt.api.settings.locale = locale;
+                _context.next = 5;
                 return request('put', '/session', {
                   locale: locale
                 });
 
-              case 4:
+              case 5:
                 return _context.abrupt("return", _context.sent);
 
-              case 5:
+              case 6:
               case "end":
                 return _context.stop();
             }
@@ -55,8 +56,9 @@ function methods(request, opt) {
         return this.code;
       }
 
-      var storeLocale = opt.api.settings.get('store.locale');
+      var storeLocale = opt.api.settings.getStoreLocale();
       var cookieLocale = getCookie('swell-locale');
+      opt.api.settings.locale = cookieLocale || storeLocale;
       return cookieLocale || storeLocale;
     },
     get: function get() {
