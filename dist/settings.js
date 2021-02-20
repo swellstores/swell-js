@@ -62,7 +62,6 @@ function methods(request, opt) {
       if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then(function (state) {
           _this[stateName] = state;
-          _this.localizedState = {};
           return _this.getLocalizedState(stateName, id, def);
         });
       }
@@ -74,16 +73,22 @@ function methods(request, opt) {
         this.locale = opt.api.locale.selected();
       }
 
-      if (this.localizedState.code !== this.locale) {
-        this.localizedState.code = this.locale;
-        delete this.localizedState[this.locale];
+      var ls = this.localizedState;
+
+      if (ls.code !== this.locale) {
+        ls.code = this.locale;
+        delete ls[this.locale];
       }
 
-      if (!this.localizedState[this.locale]) {
-        this.localizedState[this.locale] = this.decodeLocale(this[stateName]);
+      if (!ls[this.locale]) {
+        ls[this.locale] = {};
       }
 
-      return id ? get(this.localizedState[this.locale], id, def) : this.localizedState[this.locale];
+      if (!ls[this.locale][stateName]) {
+        ls[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      }
+
+      return id ? get(ls[this.locale][stateName], id, def) : ls[this.locale][stateName];
     },
     findState: function findState(uri, stateName) {
       var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},

@@ -21,7 +21,7 @@ describe('settings', () => {
       expect(api.settings.state).toEqual({ store_title: 'Test' });
     });
 
-    it('should delocale $locale objects', async () => {
+    it('should decode $locale objects', async () => {
       api.settings.state = null;
       fetch.mockResponseOnce(
         JSON.stringify({
@@ -51,7 +51,7 @@ describe('settings', () => {
       expect(test).toEqual('3');
     });
 
-    it('should delocale $locale objects from raw state', async () => {
+    it('should decode $locale objects from raw state', async () => {
       api.settings.locale = 'en';
       api.settings.localizedState = {};
       api.settings.state = {
@@ -78,6 +78,39 @@ describe('settings', () => {
       api.locale.select('es');
       test = await api.settings.get('obj.value');
       expect(test).toEqual('3');
+    });
+
+    it('should decode $locale objects from multiple states', async () => {
+      api.settings.locale = 'en';
+      api.settings.localizedState = {};
+      api.settings.state = {
+        store: { locale: 'en' },
+        test: 'hello',
+        $locale: { en: { test: 'hellooo' }, es: { test: 'hola' } },
+      };
+      api.settings.menuState = [
+        {
+          id: 'header',
+          test: 'hello1',
+          $locale: { en: { test: 'hellooo1' }, es: { test: 'hola1' } },
+        },
+        {
+          id: 'footer',
+          test: 'hello2',
+          $locale: { en: { test: 'hellooo2' }, es: { test: 'hola2' } },
+        }
+      ];
+
+      let test = await api.settings.get('test');
+      expect(test).toEqual('hellooo');
+      let menu = await api.settings.menus('header');
+      expect(menu.test).toEqual('hellooo1');
+
+      api.locale.select('es');
+      test = await api.settings.get('test');
+      expect(test).toEqual('hola');
+      menu = await api.settings.menus('footer');
+      expect(menu.test).toEqual('hola2');
     });
   });
 
