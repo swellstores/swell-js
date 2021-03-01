@@ -46,12 +46,21 @@ describe('utils', () => {
       expect(obj).toEqual({
         $cache: true,
         otherStuff: true,
-      })
+      });
+    });
+
+    it('should preserve deep $ prefixed keys', () => {
+      const obj = utils.toCamel({ $cache: true, other_stuff: true, obj: { $locale: true } });
+      expect(obj).toEqual({
+        $cache: true,
+        otherStuff: true,
+        obj: { $locale: true }
+      });
     });
 
     it('should not break arrays', () => {
       const obj = utils.toCamel([{ quantity_value: 1 }]);
-      expect(obj).toEqual([{ quantityValue: 1 }])
+      expect(obj).toEqual([{ quantityValue: 1 }]);
     });
   });
 
@@ -61,28 +70,37 @@ describe('utils', () => {
       expect(obj).toEqual({
         $cache: true,
         other_stuff: true,
-      })
+      });
+    });
+
+    it('should preserve deep $ prefixed keys', () => {
+      const obj = utils.toSnake({ $cache: true, otherStuff: true, obj: { $locale: true } });
+      expect(obj).toEqual({
+        $cache: true,
+        other_stuff: true,
+        obj: { $locale: true },
+      });
     });
 
     it('should not break arrays', () => {
       const obj = utils.toSnake([{ quantityValue: 1 }]);
-      expect(obj).toEqual([{ quantity_value: 1 }])
+      expect(obj).toEqual([{ quantity_value: 1 }]);
     });
 
     it('should handle _[num] correctly', () => {
       const obj1 = utils.toSnake([{ address1: 1 }]);
-      expect(obj1).toEqual([{ address1: 1 }])
+      expect(obj1).toEqual([{ address1: 1 }]);
       const obj2 = utils.toSnake([{ address1Test: 1 }]);
-      expect(obj2).toEqual([{ address1_test: 1 }])
+      expect(obj2).toEqual([{ address1_test: 1 }]);
       const obj3 = utils.toSnake([{ address1Test2: 1 }]);
-      expect(obj3).toEqual([{ address1_test2: 1 }])
+      expect(obj3).toEqual([{ address1_test2: 1 }]);
     });
   });
 
   describe('stringifyQuery', () => {
     it('should preserve $ prefixed keys', () => {
       const str = utils.stringifyQuery({ $cache: true, other_stuff: true });
-      expect(str).toEqual('$cache=true&other_stuff=true')
+      expect(str).toEqual('$cache=true&other_stuff=true');
     });
   });
 });

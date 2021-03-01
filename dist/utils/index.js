@@ -6,13 +6,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
-
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var qs = require('qs');
 
@@ -82,22 +76,9 @@ function isObject(val) {
 }
 
 function toCamel(obj) {
-  var reserved = isObject(obj) ? Object.keys(obj).reduce(function (acc, key) {
-    if (key[0] === '$') {
-      var value = obj[key];
-      delete obj[key];
-      return _objectSpread(_objectSpread({}, acc), {}, (0, _defineProperty2["default"])({}, key, value));
-    }
-
-    return acc;
-  }, {}) : null;
-  var normal = normalizeKeys(obj, 'camel');
-
-  if (reserved) {
-    return _objectSpread(_objectSpread({}, normal), reserved);
-  }
-
-  return normal;
+  if (!obj) return;
+  var objCopy = JSON.parse(JSON.stringify(obj));
+  return normalizeKeys(objCopy, keyToCamel);
 }
 
 function toCamelPath(str) {
@@ -109,30 +90,19 @@ function toCamelPath(str) {
 }
 
 function toSnake(obj) {
-  if (!obj) return; // Make a copy to avoid mutating source object
-
+  if (!obj) return;
   var objCopy = JSON.parse(JSON.stringify(obj));
-  var reserved = isObject(objCopy) ? Object.keys(objCopy).reduce(function (acc, key) {
-    if (key[0] === '$') {
-      var value = objCopy[key];
-      delete objCopy[key];
-      return _objectSpread(_objectSpread({}, acc), {}, (0, _defineProperty2["default"])({}, key, value));
-    }
-
-    return acc;
-  }, {}) : null;
-  var normal = normalizeKeys(objCopy, keyToSnake);
-
-  if (reserved) {
-    return _objectSpread(_objectSpread({}, normal), reserved);
-  }
-
-  return normal;
+  return normalizeKeys(objCopy, keyToSnake);
 }
 
 function keyToSnake(key) {
-  // Numbers not prefixed with _
-  return snakeCase(key).replace(/\_([0-9])/g, '$1');
+  // Handle keys prefixed with $ or _
+  return (key[0] === '$' ? '$' : '') + snakeCase(key).replace(/\_([0-9])/g, '$1');
+}
+
+function keyToCamel(key) {
+  // Handle keys prefixed with $ or _
+  return (key[0] === '$' ? '$' : '') + camelCase(key).replace(/\_([0-9])/g, '$1');
 }
 
 function trimBoth(str) {

@@ -50,21 +50,9 @@ function isObject(val) {
 }
 
 function toCamel(obj) {
-  const reserved = isObject(obj)
-    ? Object.keys(obj).reduce((acc, key) => {
-        if (key[0] === '$') {
-          const value = obj[key];
-          delete obj[key];
-          return { ...acc, [key]: value };
-        }
-        return acc;
-      }, {})
-    : null;
-  const normal = normalizeKeys(obj, 'camel');
-  if (reserved) {
-    return { ...normal, ...reserved };
-  }
-  return normal;
+  if (!obj) return;
+  const objCopy = JSON.parse(JSON.stringify(obj));
+  return normalizeKeys(objCopy, keyToCamel);
 }
 
 function toCamelPath(str) {
@@ -76,28 +64,18 @@ function toCamelPath(str) {
 
 function toSnake(obj) {
   if (!obj) return;
-  // Make a copy to avoid mutating source object
   const objCopy = JSON.parse(JSON.stringify(obj));
-  const reserved = isObject(objCopy)
-    ? Object.keys(objCopy).reduce((acc, key) => {
-        if (key[0] === '$') {
-          const value = objCopy[key];
-          delete objCopy[key];
-          return { ...acc, [key]: value };
-        }
-        return acc;
-      }, {})
-    : null;
-  const normal = normalizeKeys(objCopy, keyToSnake);
-  if (reserved) {
-    return { ...normal, ...reserved };
-  }
-  return normal;
+  return normalizeKeys(objCopy, keyToSnake);
 }
 
 function keyToSnake(key) {
-  // Numbers not prefixed with _
-  return snakeCase(key).replace(/\_([0-9])/g, '$1');
+  // Handle keys prefixed with $ or _
+  return (key[0] === '$' ? '$' : '') + snakeCase(key).replace(/\_([0-9])/g, '$1');
+}
+
+function keyToCamel(key) {
+  // Handle keys prefixed with $ or _
+  return (key[0] === '$' ? '$' : '') + camelCase(key).replace(/\_([0-9])/g, '$1');
 }
 
 function trimBoth(str) {
