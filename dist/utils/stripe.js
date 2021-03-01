@@ -350,9 +350,35 @@ function _createBancontactSource() {
   return _createBancontactSource.apply(this, arguments);
 }
 
+function stripeAmountByCurrency(currency, amount) {
+  var zeroDecimalCurrencies = ['BIF', // Burundian Franc
+  'DJF', // Djiboutian Franc,
+  'JPY', // Japanese Yen
+  'KRW', // South Korean Won
+  'PYG', // Paraguayan Guaraní
+  'VND', // Vietnamese Đồng
+  'XAF', // Central African Cfa Franc
+  'XPF', // Cfp Franc
+  'CLP', // Chilean Peso
+  'GNF', // Guinean Franc
+  'KMF', // Comorian Franc
+  'MGA', // Malagasy Ariary
+  'RWF', // Rwandan Franc
+  'VUV', // Vanuatu Vatu
+  'XOF' // West African Cfa Franc
+  ];
+
+  if (zeroDecimalCurrencies.includes(currency.toUpperCase())) {
+    return amount;
+  } else {
+    return Math.round(amount * 100);
+  }
+}
+
 module.exports = {
   createPaymentMethod: createPaymentMethod,
   createIDealPaymentMethod: createIDealPaymentMethod,
   createKlarnaSource: createKlarnaSource,
-  createBancontactSource: createBancontactSource
+  createBancontactSource: createBancontactSource,
+  stripeAmountByCurrency: stripeAmountByCurrency
 };

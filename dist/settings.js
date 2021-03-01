@@ -42,6 +42,7 @@ function methods(request, opt) {
       this.menuState = null;
       this.paymentState = null;
       this.sessionState = null;
+      this.localizedState = {};
       return this.get();
     },
     getState: function getState(uri, stateName) {
@@ -144,6 +145,10 @@ function methods(request, opt) {
       }
 
       this[stateName] = merge(this[stateName], mergeData);
+
+      if (this.localizedState[this.locale]) {
+        this.localizedState[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      }
     },
     menus: function menus() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
@@ -210,20 +215,21 @@ function methods(request, opt) {
                 this.menuState = menus;
                 this.paymentState = payments;
                 this.sessionState = session;
-                _context.next = 17;
+                this.localizedState = {};
+                _context.next = 18;
                 break;
 
-              case 14:
-                _context.prev = 14;
+              case 15:
+                _context.prev = 15;
                 _context.t0 = _context["catch"](0);
                 console.error("Swell: unable to loading settings (".concat(_context.t0, ")"));
 
-              case 17:
+              case 18:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 14]]);
+        }, _callee, this, [[0, 15]]);
       }));
 
       function load() {

@@ -1,8 +1,9 @@
-global.fetch = require('jest-fetch-mock');
-global.window = {};
-
+import fetchMock from 'jest-fetch-mock';
 import api from './api';
 import { vaultRequest, stringifyQuery, toCamel, toSnake } from './utils';
+
+global.fetch = fetchMock;
+global.window = {};
 
 describe('utils', () => {
   let script;
@@ -46,7 +47,16 @@ describe('utils', () => {
       expect(obj).toEqual({
         $cache: true,
         otherStuff: true,
-      })
+      });
+    });
+
+    it('should preserve deep $ prefixed keys', () => {
+      const obj = toCamel({ $cache: true, other_stuff: true, obj: { $locale: true } });
+      expect(obj).toEqual({
+        $cache: true,
+        otherStuff: true,
+        obj: { $locale: true }
+      });
     });
 
     it('should not break arrays', () => {
@@ -61,21 +71,30 @@ describe('utils', () => {
       expect(obj).toEqual({
         $cache: true,
         other_stuff: true,
-      })
+      });
+    });
+
+    it('should preserve deep $ prefixed keys', () => {
+      const obj = toSnake({ $cache: true, otherStuff: true, obj: { $locale: true } });
+      expect(obj).toEqual({
+        $cache: true,
+        other_stuff: true,
+        obj: { $locale: true },
+      });
     });
 
     it('should not break arrays', () => {
       const obj = toSnake([{ quantityValue: 1 }]);
-      expect(obj).toEqual([{ quantity_value: 1 }])
+      expect(obj).toEqual([{ quantity_value: 1 }]);
     });
 
     it('should handle _[num] correctly', () => {
       const obj1 = toSnake([{ address1: 1 }]);
-      expect(obj1).toEqual([{ address1: 1 }])
+      expect(obj1).toEqual([{ address1: 1 }]);
       const obj2 = toSnake([{ address1Test: 1 }]);
-      expect(obj2).toEqual([{ address1_test: 1 }])
+      expect(obj2).toEqual([{ address1_test: 1 }]);
       const obj3 = toSnake([{ address1Test2: 1 }]);
-      expect(obj3).toEqual([{ address1_test2: 1 }])
+      expect(obj3).toEqual([{ address1_test2: 1 }]);
     });
   });
 
