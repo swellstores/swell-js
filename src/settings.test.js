@@ -98,7 +98,7 @@ describe('settings', () => {
           id: 'footer',
           test: 'hello2',
           $locale: { en: { test: 'hellooo2' }, es: { test: 'hola2' } },
-        }
+        },
       ];
 
       let test = await api.settings.get('test');
@@ -111,6 +111,50 @@ describe('settings', () => {
       expect(test).toEqual('hola');
       menu = await api.settings.menus('footer');
       expect(menu.test).toEqual('hola2');
+    });
+
+    it('should update localized state when calling set()', async () => {
+      api.settings.locale = 'en';
+      api.settings.localizedState = {};
+      api.settings.state = {
+        store: {
+          locale: 'en',
+          name: 'test store',
+          $locale: {},
+        },
+      };
+
+      let test = await api.settings.get('store.name');
+      expect(test).toEqual('test store');
+
+      api.settings.set({ path: 'store.name', value: 'test store 2' });
+
+      test = await api.settings.get('store.name');
+      expect(test).toEqual('test store 2');
+    });
+
+    it('should update localized $locale state when calling set()', async () => {
+      api.settings.locale = 'en';
+      api.settings.localizedState = {};
+      api.settings.state = {
+        store: {
+          locale: 'en',
+          name: 'test store',
+          $locale: {
+            en: {
+              name: 'test store',
+            },
+          },
+        },
+      };
+
+      let test = await api.settings.get('store.name');
+      expect(test).toEqual('test store');
+
+      api.settings.set({ path: 'store.$locale.en.name', value: 'test store 2' });
+
+      test = await api.settings.get('store.name');
+      expect(test).toEqual('test store 2');
     });
   });
 

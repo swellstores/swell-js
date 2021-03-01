@@ -15,6 +15,7 @@ function methods(request, opt) {
       this.menuState = null;
       this.paymentState = null;
       this.sessionState = null;
+      this.localizedState = {};
       return this.get();
     },
 
@@ -86,6 +87,9 @@ function methods(request, opt) {
         mergeData = toCamel(mergeData);
       }
       this[stateName] = merge(this[stateName], mergeData);
+      if (this.localizedState[this.locale]) {
+        this.localizedState[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      }
     },
 
     menus(id = undefined, def = undefined) {
@@ -126,6 +130,7 @@ function methods(request, opt) {
         this.menuState = menus;
         this.paymentState = payments;
         this.sessionState = session;
+        this.localizedState = {};
       } catch (err) {
         console.error(`Swell: unable to loading settings (${err})`);
       }
