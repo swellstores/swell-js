@@ -1,7 +1,6 @@
 
 import get from 'lodash/get';
 import toLower from 'lodash/toLower';
-import pick from 'lodash/pick';
 import cartApi from './cart';
 import settingsApi from './settings';
 import { isFunction, vaultRequest, toSnake } from './utils';

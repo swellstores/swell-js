@@ -1,46 +1,39 @@
-import { nodeResolve } from "@rollup/plugin-node-resolve";
+import resolve from "@rollup/plugin-node-resolve";
 import { terser } from "rollup-plugin-terser";
-import babel from "@rollup/plugin-babel";
 import pkg from "./package.json";
+import commonjs from '@rollup/plugin-commonjs';
+import del from 'rollup-plugin-delete';
 
 const input = ["./src/api.js"];
 
 export default [
+// UMD, browser-friendly
+	{
+		input,
+		output: {
+			name: 'swell-js',
+			file: pkg.browser,
+			format: 'umd'
+		},
+		plugins: [
+			del({ targets: 'dist/*' }),
+			resolve(),
+			commonjs({
+				include: 'node_modules/**',
+			}),
+			terser()
+		]
+	},
+  // CommonJS for Node,
+  // ES modules for bundlers
   {
-    // UMD
-    input,
-    plugins: [
-      nodeResolve(),
-      babel({
-        babelHelpers: "bundled",
-      }),
-      terser(),
-    ],
-    output: {
-      file: `dist/${pkg.name}.min.js`,
-      format: "umd",
-      name: "Swell JS", // this is the name of the global object
-      esModule: false,
-      exports: "named",
-      sourcemap: true,
-    },
-  },// ESM and CJS
-  {
-    input,
-    plugins: [nodeResolve()],
-    output: [
-      {
-        dir: "dist/esm",
-        format: "esm",
-        exports: "named",
-        sourcemap: true,
-      },
-      {
-        dir: "dist/cjs",
-        format: "cjs",
-        exports: "named",
-        sourcemap: true,
-      },
-    ],
-  },
-];
+		input,
+		// external: ['deepmerge', 'isomorphic-fetch', 'lodash', 'object-keys-normalizer', 'qs', '@babel/runtime'],
+		output: [
+			{ file: pkg.main, format: 'cjs' },
+			{ file: pkg.module, format: 'es' },
+		],
+		
+    plugins: [commonjs(), resolve()],
+	}
+]

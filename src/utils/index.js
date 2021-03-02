@@ -3,11 +3,10 @@ import set from 'lodash/set';
 import get from 'lodash/get';
 import uniq from 'lodash/uniq';
 import find from 'lodash/find';
-import findIndex from 'lodash/findIndex';
 import camelCase from 'lodash/camelCase';
 import snakeCase from 'lodash/snakeCase';
 import cloneDeep from 'lodash/cloneDeep';
-import deepmerge from 'deepmerge';
+import { mergeAdvanced } from 'object-merge-advanced';
 import { normalizeKeys } from 'object-keys-normalizer';
 
 let options = {};
@@ -32,7 +31,7 @@ function merge(x, y, opt = {}) {
     });
     return destination;
   }
-  return deepmerge(x, y, {
+  return mergeAdvanced(x, y, {
     arrayMerge,
   });
 }
@@ -240,7 +239,6 @@ export {
   get,
   uniq,
   find,
-  findIndex,
   camelCase,
   cloneDeep,
   merge,
