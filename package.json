@@ -6,9 +6,9 @@
     "type": "git",
     "url": "https://github.com/swellstores/swell-js"
   },
-  "main": "dist/cjs/swell.cjs.js",
-  "module": "dist/esm/swell.esm.js",
-  "browser": "dist/umd/swell.umd.js",
+  "main": "dist/swell.cjs.js",
+  "module": "dist/swell.esm.js",
+  "browser": "dist/swell.umd.js",
   "files": [
     "dist"
   ],
@@ -30,7 +30,6 @@
     "@material-ui/core": "4.9.0",
     "@material-ui/icons": "4.5.1",
     "@material-ui/lab": "4.0.0-alpha.42",
-    "@rollup/plugin-babel": "5.3.0",
     "@rollup/plugin-commonjs": "17.1.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "11.2.0",
@@ -53,6 +52,9 @@
     "replace": "1.2.0",
     "rollup": "2.39.1",
     "rollup-plugin-delete": "2.0.0",
+    "rollup-plugin-filesize": "9.1.1",
+    "rollup-plugin-node-builtins": "2.1.2",
+    "rollup-plugin-node-globals": "1.4.0",
     "rollup-plugin-terser": "7.0.2",
     "style-loader": "1.1.3",
     "webpack": "4.41.5",
