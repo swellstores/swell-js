@@ -14,7 +14,7 @@ import  {
 import cache from './cache';
 import cart from './cart';
 import account from './account'
-import { default as products } from './products';
+import products from './products';
 import categories from './categories';
 import attributes from './attributes';
 import subscriptions from './subscriptions';

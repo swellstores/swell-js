@@ -10,12 +10,15 @@ import {
 import pkg from './package.json';
 
 const input = ["./src/api.js"];
+const external = Object.keys(pkg.dependencies);
+
+console.log(external);
 
 export default [
 // UMD, browser-friendly
 	{
 		input,
-    external: ['deepmerge', 'isomorphic-fetch', 'lodash', 'object-keys-normalizer', 'object-merge-advanced', 'qs', '@babel/runtime'],
+    external,
 		output: {
 			name: 'swell-js',
 			file: pkg.browser,
@@ -35,16 +38,15 @@ export default [
   // ES modules for bundlers
   {
 		input,
-		external: ['deepmerge', 'isomorphic-fetch', 'lodash', 'object-keys-normalizer', 'object-merge-advanced', 'qs', '@babel/runtime'],
+		external,
 		output: [
-			{ file: pkg.main, format: 'cjs' },
+			{ file: pkg.main, format: 'cjs', exports: 'default' },
 			{ file: pkg.module, format: 'es' },
 		],
 		plugins: [
       globals(),
       builtins(),
       resolve(),
-      terser(),
       commonjs({ include: 'node_modules/**' }),
       filesize(),
     ]
