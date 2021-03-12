@@ -16,6 +16,7 @@ import { RemoveCircle } from '@material-ui/icons';
 import cartActions from '../../actions/cart';
 import flashActions from '../../actions/flash';
 import Products from '../../components/products';
+import PayPal from './paypal';
 import BraintreePayPal from './braintree-paypal';
 import Stripe from './stripe';
 import StripeIDeal from './stripe-ideal';
@@ -132,6 +133,8 @@ class Payment extends React.Component {
     const { onOrderSubmit, onCartUpdate, onError } = this.state;
 
     switch (gateway) {
+      case 'paypal':
+        return <PayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'braintree-paypal':
         return <BraintreePayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'stripe':
