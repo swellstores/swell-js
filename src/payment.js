@@ -15,7 +15,7 @@ const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
 const API = {};
 
-function methods(request) {
+function methods(request, options) {
   return {
     params: null,
     methodSettings: null,
@@ -30,11 +30,11 @@ function methods(request) {
 
     async createElements(elementParams) {
       this.params = elementParams || {};
-      const cart = toSnake(await cartApi.methods(request).get());
+      const cart = toSnake(await cartApi.methods(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = toSnake(await settingsApi.methods(request).payments());
+      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -42,11 +42,11 @@ function methods(request) {
     },
 
     async tokenize(params) {
-      const cart = toSnake(await cartApi.methods(request).get());
+      const cart = toSnake(await cartApi.methods(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = toSnake(await settingsApi.methods(request).payments());
+      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -241,7 +241,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then(({ nonce }) =>
-                cartApi.methods(request).update({ billing: { paypal: { nonce } } }),
+                cartApi.methods(request, options).update({ billing: { paypal: { nonce } } }),
               )
               .then(
                 () => isFunction(params.paypal.onSuccess) && params.paypal.onSuccess(data, actions),
@@ -316,7 +316,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         return error
           ? onError(error)
           : await cartApi
-              .methods(request)
+              .methods(request, options)
               .update({
                 billing: {
                   method: 'card',
@@ -368,7 +368,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       if (intent) {
         await cartApi
-          .methods(request)
+          .methods(request, options)
           .update({
             billing: {
               method: 'ideal',
@@ -393,7 +393,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
       const { publishable_key } = payMethods.card;
       const stripe = window.Stripe(publishable_key);
-      const settings = toSnake(await settingsApi.methods(request).get());
+      const settings = toSnake(await settingsApi.methods(request, options).get());
 
       const { error, source } = await createKlarnaSource(stripe, {
         ...cart,
@@ -403,7 +403,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       return error
         ? onError(error)
         : cartApi
-            .methods(request)
+            .methods(request, options)
             .update({
               billing: {
                 method: 'klarna',
@@ -425,7 +425,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       return error
         ? onError(error)
         : cartApi
-            .methods(request)
+            .methods(request, options)
             .update({
               billing: {
                 method: 'bancontact',
