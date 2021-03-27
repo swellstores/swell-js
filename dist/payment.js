@@ -36,7 +36,7 @@ var LOADING_SCRIPTS = {};
 var CARD_ELEMENTS = {};
 var API = {};
 
-function methods(request) {
+function methods(request, options) {
   return {
     params: null,
     methodSettings: null,
@@ -86,7 +86,7 @@ function methods(request) {
                 this.params = elementParams || {};
                 _context2.t0 = toSnake;
                 _context2.next = 4;
-                return cartApi.methods(request).get();
+                return cartApi.methods(request, options).get();
 
               case 4:
                 _context2.t1 = _context2.sent;
@@ -102,7 +102,7 @@ function methods(request) {
               case 8:
                 _context2.t2 = toSnake;
                 _context2.next = 11;
-                return settingsApi.methods(request).payments();
+                return settingsApi.methods(request, options).payments();
 
               case 11:
                 _context2.t3 = _context2.sent;
@@ -142,7 +142,7 @@ function methods(request) {
               case 0:
                 _context3.t0 = toSnake;
                 _context3.next = 3;
-                return cartApi.methods(request).get();
+                return cartApi.methods(request, options).get();
 
               case 3:
                 _context3.t1 = _context3.sent;
@@ -158,7 +158,7 @@ function methods(request) {
               case 7:
                 _context3.t2 = toSnake;
                 _context3.next = 10;
-                return settingsApi.methods(request).payments();
+                return settingsApi.methods(request, options).payments();
 
               case 10:
                 _context3.t3 = _context3.sent;
@@ -580,7 +580,7 @@ function _braintreePayPalButton() {
                 onApprove: function onApprove(data, actions) {
                   return paypalCheckoutInstance.tokenizePayment(data).then(function (_ref2) {
                     var nonce = _ref2.nonce;
-                    return cartApi.methods(request).update({
+                    return cartApi.methods(request, options).update({
                       billing: {
                         paypal: {
                           nonce: nonce
@@ -723,7 +723,7 @@ function _paymentTokenize() {
 
           case 29:
             _context10.next = 31;
-            return cartApi.methods(request).update({
+            return cartApi.methods(request, options).update({
               billing: {
                 method: 'card',
                 card: paymentMethod,
@@ -805,7 +805,7 @@ function _paymentTokenize() {
             }
 
             _context10.next = 54;
-            return cartApi.methods(request).update({
+            return cartApi.methods(request, options).update({
               billing: {
                 method: 'ideal',
                 ideal: {
@@ -866,7 +866,7 @@ function _paymentTokenize() {
             _stripe = window.Stripe(publishable_key);
             _context10.t6 = toSnake;
             _context10.next = 72;
-            return settingsApi.methods(request).get();
+            return settingsApi.methods(request, options).get();
 
           case 72:
             _context10.t7 = _context10.sent;
@@ -880,7 +880,7 @@ function _paymentTokenize() {
             _yield$createKlarnaSo = _context10.sent;
             _error2 = _yield$createKlarnaSo.error;
             source = _yield$createKlarnaSo.source;
-            return _context10.abrupt("return", _error2 ? onError(_error2) : cartApi.methods(request).update({
+            return _context10.abrupt("return", _error2 ? onError(_error2) : cartApi.methods(request, options).update({
               billing: {
                 method: 'klarna'
               }
@@ -923,7 +923,7 @@ function _paymentTokenize() {
             _yield$createBanconta = _context10.sent;
             _error3 = _yield$createBanconta.error;
             _source = _yield$createBanconta.source;
-            return _context10.abrupt("return", _error3 ? onError(_error3) : cartApi.methods(request).update({
+            return _context10.abrupt("return", _error3 ? onError(_error3) : cartApi.methods(request, options).update({
               billing: {
                 method: 'bancontact'
               }
