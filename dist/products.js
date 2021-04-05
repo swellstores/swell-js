@@ -2,7 +2,11 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -19,7 +23,6 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _require = require('./utils'),
-    map = _require.map,
     reduce = _require.reduce,
     find = _require.find,
     uniq = _require.uniq,
@@ -28,6 +31,8 @@ var _require = require('./utils'),
     toCamel = _require.toCamel;
 
 var cache = require('./cache');
+
+var attributesApi = require('./attributes');
 
 var OPTIONS;
 
@@ -53,7 +58,9 @@ function methods(request, opt) {
     categories: getCategories,
     attributes: getAttributes,
     priceRange: getPriceRange,
-    filters: getFilters
+    filters: function filters(products, options) {
+      return getFilters(request, products, options);
+    }
   };
 }
 
@@ -261,62 +268,101 @@ function calculateVariation(input, options) {
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
 }
 
-function getFilters(products) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var attributes = (options.attributes || options.attributes === undefined) && getAttributes(products);
-  var categories = (options.categories || options.categories === undefined) && getCategories(products);
-  var priceRange = (options.price || options.price === undefined) && getPriceRange(products);
-  var filters = [];
+function getFilters(_x, _x2) {
+  return _getFilters.apply(this, arguments);
+}
 
-  if (priceRange) {
-    filters.push({
-      id: 'price',
-      label: 'Price',
-      type: 'range',
-      options: [{
-        value: priceRange.min,
-        label: priceRange.min // TODO: formatting
+function _getFilters() {
+  _getFilters = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(request, products) {
+    var options,
+        _yield$attributesApi$,
+        filterableAttributes,
+        attributes,
+        categories,
+        priceRange,
+        filters,
+        _args = arguments;
 
-      }, {
-        value: priceRange.max,
-        label: priceRange.max // TODO: formatting
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            options = _args.length > 2 && _args[2] !== undefined ? _args[2] : {};
+            _context.next = 3;
+            return attributesApi.methods(request, OPTIONS).list({
+              filterable: true
+            });
 
-      }],
-      interval: priceRange.interval
-    });
-  }
+          case 3:
+            _yield$attributesApi$ = _context.sent;
+            filterableAttributes = _yield$attributesApi$.results;
+            attributes = (options.attributes || options.attributes === undefined) && getAttributes(products).filter(function (productAttr) {
+              return filterableAttributes.find(function (filterableAttr) {
+                return productAttr.id === filterableAttr.id;
+              });
+            });
+            categories = (options.categories || options.categories === undefined) && getCategories(products);
+            priceRange = (options.price || options.price === undefined) && getPriceRange(products);
+            filters = [];
 
-  if (categories && categories.length > 0) {
-    filters.push({
-      id: 'category',
-      label: 'Category',
-      type: 'select',
-      options: categories.map(function (category) {
-        return {
-          value: category.slug,
-          label: category.name
-        };
-      })
-    });
-  }
+            if (priceRange) {
+              filters.push({
+                id: 'price',
+                label: 'Price',
+                type: 'range',
+                options: [{
+                  value: priceRange.min,
+                  label: priceRange.min // TODO: formatting
 
-  if (attributes && attributes.length > 0) {
-    filters = [].concat((0, _toConsumableArray2["default"])(filters), (0, _toConsumableArray2["default"])(reduce(attributes, function (acc, attr) {
-      return [].concat((0, _toConsumableArray2["default"])(acc), (0, _toConsumableArray2["default"])(attr.id !== 'category' && attr.id !== 'price' && attr.values instanceof Array && attr.values.length > 0 ? [{
-        id: attr.id,
-        label: attr.name,
-        type: 'select',
-        options: attr.values.map(function (value) {
-          return {
-            value: value,
-            label: value
-          };
-        })
-      }] : []));
-    }, [])));
-  }
+                }, {
+                  value: priceRange.max,
+                  label: priceRange.max // TODO: formatting
 
-  return filters;
+                }],
+                interval: priceRange.interval
+              });
+            }
+
+            if (categories && categories.length > 0) {
+              filters.push({
+                id: 'category',
+                label: 'Category',
+                type: 'select',
+                options: categories.map(function (category) {
+                  return {
+                    value: category.slug,
+                    label: category.name
+                  };
+                })
+              });
+            }
+
+            if (attributes && attributes.length > 0) {
+              filters = [].concat((0, _toConsumableArray2["default"])(filters), (0, _toConsumableArray2["default"])(reduce(attributes, function (acc, attr) {
+                return [].concat((0, _toConsumableArray2["default"])(acc), (0, _toConsumableArray2["default"])(attr.id !== 'category' && attr.id !== 'price' && attr.values instanceof Array && attr.values.length > 0 ? [{
+                  id: attr.id,
+                  label: attr.name,
+                  type: 'select',
+                  options: attr.values.map(function (value) {
+                    return {
+                      value: value,
+                      label: value
+                    };
+                  })
+                }] : []));
+              }, [])));
+            }
+
+            return _context.abrupt("return", filters);
+
+          case 13:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _getFilters.apply(this, arguments);
 }
 
 function getCategories(products) {
