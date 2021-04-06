@@ -76,7 +76,7 @@ function isObject(val) {
 }
 
 function toCamel(obj) {
-  if (!obj) return;
+  if (!obj) return obj;
   var objCopy = JSON.parse(JSON.stringify(obj));
   return normalizeKeys(objCopy, keyToCamel);
 }
@@ -90,7 +90,7 @@ function toCamelPath(str) {
 }
 
 function toSnake(obj) {
-  if (!obj) return;
+  if (!obj) return obj;
   var objCopy = JSON.parse(JSON.stringify(obj));
   return normalizeKeys(objCopy, keyToSnake);
 }

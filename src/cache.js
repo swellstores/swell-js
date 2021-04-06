@@ -76,9 +76,19 @@ const cacheApi = {
 
     this.values(details, { data });
 
-    // Make sure values have clean refs
-    if (VALUES[model][id] !== undefined) {
-      VALUES[model][id] = JSON.parse(JSON.stringify(VALUES[model][id]));
+    try {
+      // Make sure values have clean refs
+      const cache = VALUES[model][id];
+      if (cache !== undefined) {
+        if (cache.data !== undefined) {
+          cache.data = JSON.parse(JSON.stringify(cache.data));
+        }
+        if (cache.record !== undefined) {
+          cache.record = JSON.parse(JSON.stringify(cache.record));
+        }
+      }
+    } catch (err) {
+      // noop
     }
   },
 
@@ -103,8 +113,8 @@ const cacheApi = {
       this.values(details, { record: undefined, recordTimer: undefined });
     }, RECORD_TIMEOUT);
 
-    // Record has to be an empty object at minimum
-    this.values(details, { record, recordTimer });
+    // Record has to be null at minimum, not undefined
+    this.values(details, { record: record !== undefined ? record : null, recordTimer });
 
     if (presets) {
       for (let preset of presets) {
