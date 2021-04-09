@@ -233,7 +233,7 @@ function calculateVariation(input, options) {
       variation.price = variant.price || 0;
       variation.sale_price = variant.sale_price || product.sale_price;
       variation.orig_price = variant.orig_price || product.orig_price;
-      variation.stock_status = variant.stock_status || product.stock_status;
+      variation.stock_status = variant.stock_status;
       variation.images = variant.images && variant.images.length ? variant.images : product.images;
     }
   }
