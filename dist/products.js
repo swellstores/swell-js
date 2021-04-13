@@ -2,7 +2,11 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -19,7 +23,6 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _require = require('./utils'),
-    map = _require.map,
     reduce = _require.reduce,
     find = _require.find,
     uniq = _require.uniq,
@@ -28,6 +31,8 @@ var _require = require('./utils'),
     toCamel = _require.toCamel;
 
 var cache = require('./cache');
+
+var attributesApi = require('./attributes');
 
 var OPTIONS;
 
@@ -53,7 +58,10 @@ function methods(request, opt) {
     categories: getCategories,
     attributes: getAttributes,
     priceRange: getPriceRange,
-    filters: getFilters
+    filters: getFilters,
+    filterableAttributeFilters: function filterableAttributeFilters(products, options) {
+      return getFilterableAttributeFilters(request, products, options);
+    }
   };
 }
 
@@ -261,9 +269,52 @@ function calculateVariation(input, options) {
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
 }
 
+function getFilterableAttributeFilters(_x, _x2, _x3) {
+  return _getFilterableAttributeFilters.apply(this, arguments);
+}
+
+function _getFilterableAttributeFilters() {
+  _getFilterableAttributeFilters = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(request, products, options) {
+    var _yield$attributesApi$, filterableAttributes;
+
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return attributesApi.methods(request, OPTIONS).list({
+              filterable: true
+            });
+
+          case 2:
+            _yield$attributesApi$ = _context.sent;
+            filterableAttributes = _yield$attributesApi$.results;
+            return _context.abrupt("return", getFilters(products, _objectSpread(_objectSpread({}, options), {}, {
+              filterableAttributes: filterableAttributes
+            })));
+
+          case 5:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _getFilterableAttributeFilters.apply(this, arguments);
+}
+
 function getFilters(products) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var attributes = (options.attributes || options.attributes === undefined) && getAttributes(products);
+
+  if (options.filterableAttributes) {
+    attributes = attributes.filter(function (productAttr) {
+      return options.filterableAttributes.find(function (filterableAttr) {
+        return productAttr.id === filterableAttr.id;
+      });
+    });
+  }
+
   var categories = (options.categories || options.categories === undefined) && getCategories(products);
   var priceRange = (options.price || options.price === undefined) && getPriceRange(products);
   var filters = [];

@@ -1,5 +1,6 @@
-const { map, reduce, find, uniq, defaultMethods, toSnake, toCamel } = require('./utils');
+const { reduce, find, uniq, defaultMethods, toSnake, toCamel } = require('./utils');
 const cache = require('./cache');
+const attributesApi = require('./attributes');
 
 let OPTIONS;
 
@@ -22,6 +23,9 @@ function methods(request, opt) {
     priceRange: getPriceRange,
 
     filters: getFilters,
+
+    filterableAttributeFilters: (products, options) =>
+      getFilterableAttributeFilters(request, products, options),
   };
 }
 
@@ -161,9 +165,24 @@ function calculateVariation(input, options) {
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
 }
 
+async function getFilterableAttributeFilters(request, products, options) {
+  const { results: filterableAttributes } = await attributesApi.methods(request, OPTIONS).list({
+    filterable: true,
+  });
+
+  return getFilters(products, { ...options, filterableAttributes });
+}
+
 function getFilters(products, options = {}) {
-  const attributes =
+  let attributes =
     (options.attributes || options.attributes === undefined) && getAttributes(products);
+
+  if (options.filterableAttributes) {
+    attributes = attributes.filter((productAttr) =>
+      options.filterableAttributes.find((filterableAttr) => productAttr.id === filterableAttr.id),
+    );
+  }
+
   const categories =
     (options.categories || options.categories === undefined) && getCategories(products);
   const priceRange = (options.price || options.price === undefined) && getPriceRange(products);
@@ -310,7 +329,7 @@ function getPriceRange(products) {
   if (min % interval > 0) {
     min = min - (min % interval);
   }
-  while ((max - min) / interval % 1 > 0) {
+  while (((max - min) / interval) % 1 > 0) {
     max++;
   }
   return {
