@@ -2,7 +2,7 @@ const get = require('lodash/get');
 const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
-const { isFunction, vaultRequest, toSnake } = require('./utils');
+const { isFunction, vaultRequest, toSnake, getOptions } = require('./utils');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -29,6 +29,7 @@ function methods(request, options) {
     },
 
     async createElements(elementParams) {
+      const options = getOptions();
       this.params = elementParams || {};
       const cart = toSnake(await cartApi.methods(request, options).get());
       if (!cart) {
@@ -42,6 +43,7 @@ function methods(request, options) {
     },
 
     async tokenize(params) {
+      const options = getOptions()
       const cart = toSnake(await cartApi.methods(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
@@ -212,6 +214,7 @@ async function stripeElements(request, payMethods, params) {
 }
 
 async function braintreePayPalButton(request, cart, payMethods, params) {
+  const options = getOptions();
   const authorization = await vaultRequest('post', '/authorization', { gateway: 'braintree' });
   if (authorization.error) {
     throw new Error(authorization.error);
@@ -268,6 +271,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 }
 
 async function paymentTokenize(request, params, payMethods, cart) {
+  const options = getOptions();
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
