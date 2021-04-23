@@ -21,9 +21,12 @@ const billingFieldsMap = {
 
 function getBillingDetails(data) {
   const { account = {}, billing, shipping } = data;
+  const accountShipping = get(account, 'shipping', {});
+  const accountBilling = get(account, 'billing', {});
+
   const billingData = {
-    ...account.shipping,
-    ...account.billing,
+    ...accountShipping,
+    ...accountBilling,
     ...shipping,
     ...billing,
   };
