@@ -42,8 +42,10 @@ function getBillingDetails(data) {
       account = _data$account === void 0 ? {} : _data$account,
       billing = data.billing,
       shipping = data.shipping;
+  var accountShipping = get(account, 'shipping', {});
+  var accountBilling = get(account, 'billing', {});
 
-  var billingData = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, account.shipping), account.billing), shipping), billing);
+  var billingData = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, accountShipping), accountBilling), shipping), billing);
 
   var fillValues = function fillValues(fieldsMap) {
     return reduce(fieldsMap, function (acc, value, key) {
