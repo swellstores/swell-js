@@ -35,8 +35,10 @@ var _require2 = require('./utils/stripe'),
 var LOADING_SCRIPTS = {};
 var CARD_ELEMENTS = {};
 var API = {};
+var options = null;
 
-function methods(request, options) {
+function methods(request, opts) {
+  options = opts;
   return {
     params: null,
     methodSettings: null,
