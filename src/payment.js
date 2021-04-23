@@ -15,7 +15,11 @@ const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
 const API = {};
 
-function methods(request, options) {
+let options = null;
+
+function methods(request, opts) {
+  options = opts;
+
   return {
     params: null,
     methodSettings: null,
