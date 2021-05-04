@@ -103,6 +103,7 @@ class Sidebar extends React.Component {
         text: 'Payment',
         icon: <Payment />,
         menu: [
+          'PayPal',
           'Braintree-PayPal',
           'Stripe',
           'Stripe-iDEAL',

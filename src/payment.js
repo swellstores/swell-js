@@ -127,32 +127,38 @@ async function render(request, cart, payMethods, params) {
       console.error(
         `Payment element error: PayPal payments are disabled. See Payment settings in the Swell dashboard for details.`,
       );
-    } else {
+    } else if (
+      payMethods.card &&
+      payMethods.card.gateway === 'braintree' &&
+      payMethods.paypal.gateway === 'braintree'
+    ) {
       if (!window.paypal) {
         await loadScript(
           'paypal-sdk',
           `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&vault=true`,
         );
       }
-      if (
-        payMethods.card &&
-        payMethods.card.gateway === 'braintree' &&
-        payMethods.paypal.gateway === 'braintree'
-      ) {
-        if (!window.braintree) {
-          await loadScript(
-            'braintree-web',
-            'https://js.braintreegateway.com/web/3.57.0/js/client.min.js',
-          );
-        }
-        if (window.braintree && !window.braintree.paypalCheckout) {
-          await loadScript(
-            'braintree-web-paypal-checkout',
-            'https://js.braintreegateway.com/web/3.57.0/js/paypal-checkout.min.js',
-          );
-        }
-        await braintreePayPalButton(request, cart, payMethods, params);
+      if (!window.braintree) {
+        await loadScript(
+          'braintree-web',
+          'https://js.braintreegateway.com/web/3.57.0/js/client.min.js',
+        );
       }
+      if (window.braintree && !window.braintree.paypalCheckout) {
+        await loadScript(
+          'braintree-web-paypal-checkout',
+          'https://js.braintreegateway.com/web/3.57.0/js/paypal-checkout.min.js',
+        );
+      }
+      await braintreePayPalButton(request, cart, payMethods, params);
+    } else {
+      if (!window.paypal) {
+        await loadScript(
+          'paypal-sdk',
+          `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize`,
+        );
+      }
+      await payPalButton(request, cart, payMethods, params);
     }
   }
 }
@@ -213,6 +219,79 @@ async function stripeElements(request, payMethods, params) {
   } else {
     createElement('card');
   }
+}
+
+async function payPalButton(request, cart, payMethods, params) {
+  const paypal = window.paypal;
+  const { paypal: { locale, style, elementId } = {} } = params;
+  const onError = (error) => {
+    const errorHandler = get(params, 'paypal.onError');
+    if (isFunction(errorHandler)) {
+      return errorHandler(error);
+    }
+    throw new Error(error.message);
+  };
+  const onSuccess = () => {
+    const successHandler = get(params, 'paypal.onSuccess');
+    return isFunction(successHandler) && successHandler();
+  };
+
+  paypal
+    .Buttons(
+      {
+        locale: locale || 'en_US',
+        style: style || {
+          layout: 'horizontal',
+          height: 45,
+          color: 'gold',
+          shape: 'rect',
+          label: 'paypal',
+          tagline: false,
+        },
+        createOrder: (data, actions) =>
+          actions.order.create({
+            intent: 'AUTHORIZE',
+            purchase_units: [
+              {
+                amount: {
+                  value: cart.grand_total,
+                  currency_code: cart.currency,
+                },
+              },
+            ],
+          }),
+        onApprove: (data, actions) =>
+          actions.order
+            .authorize()
+            .then((authorization) => {
+              const payer = authorization.payer;
+              const shipping = get(authorization, 'purchase_units[0].shipping');
+              const authorizationID = get(
+                authorization,
+                'purchase_units[0].payments.authorizations[0].id',
+              );
+              return cartApi.methods(request).update({
+                account: {
+                  email: payer.email_address,
+                },
+                billing: { method: 'paypal', paypal: { authorization_id: authorizationID } },
+                shipping: {
+                  name: shipping.name.full_name,
+                  address1: shipping.address.address_line_1,
+                  address2: shipping.address.address_line_2,
+                  state: shipping.address.admin_area_1,
+                  city: shipping.address.admin_area_2,
+                  zip: shipping.address.postal_code,
+                  country: shipping.address.country_code,
+                },
+              });
+            })
+            .then(onSuccess)
+            .catch(onError),
+      },
+      onError,
+    )
+    .render(elementId || '#paypal-button');
 }
 
 async function braintreePayPalButton(request, cart, payMethods, params) {
