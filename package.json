@@ -1,6 +1,6 @@
 {
   "name": "swell-js",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "Swell JS library for client-side stores",
   "repository": {
     "type": "git",
@@ -52,8 +52,8 @@
     "test:page": "webpack-dev-server --open --config test/page/webpack.config.js",
     "watch": "nodemon --watch src --exec 'npm run build'",
     "inject-version": "cross-var replace \"@VERSION@\" $npm_package_version dist/api.js",
-    "build": "babel src --out-dir dist --ignore src/**/*.test.js",
+    "build": "babel src --out-dir dist --ignore src/**/*.test.js && npm run inject-version",
     "version": "npm run build && git add -A dist",
-    "bump": "npm version patch && npm run inject-version && npm publish"
+    "bump": "npm version patch && npm publish"
   }
 }
