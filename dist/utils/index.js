@@ -26,6 +26,8 @@ var snakeCase = require('lodash/snakeCase');
 
 var cloneDeep = require('lodash/cloneDeep');
 
+var isEqual = require('lodash/isEqual');
+
 var deepmerge = require('deepmerge');
 
 var _require = require('object-keys-normalizer'),
@@ -309,6 +311,7 @@ module.exports = {
   isServer: isServer,
   isFunction: isFunction,
   isObject: isObject,
+  isEqual: isEqual,
   map: map,
   reduce: reduce,
   base64Encode: base64Encode,
