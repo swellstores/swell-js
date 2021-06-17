@@ -7,6 +7,7 @@ const findIndex = require('lodash/findIndex');
 const camelCase = require('lodash/camelCase');
 const snakeCase = require('lodash/snakeCase');
 const cloneDeep = require('lodash/cloneDeep');
+const isEqual = require('lodash/isEqual');
 const deepmerge = require('deepmerge');
 const { normalizeKeys } = require('object-keys-normalizer');
 
@@ -256,6 +257,7 @@ module.exports = {
   isServer,
   isFunction,
   isObject,
+  isEqual,
   map,
   reduce,
   base64Encode,
