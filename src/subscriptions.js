@@ -1,10 +1,15 @@
 const { cleanProductOptions } = require('./products');
+const { defaultMethods } = require('./utils');
+const cache = require('./cache');
 
 function methods(request) {
+  const { get, list } = defaultMethods(request, '/subscriptions', ['list', 'get']);
   return {
-    get(id, query) {
-      return request('get', '/subscriptions', id, query);
+    get: (id, ...args) => {
+      return cache.getFetch('subscriptions', id, () => get(id, ...args));
     },
+
+    list,
 
     getCleanData(data) {
       if (data && data.options) {
