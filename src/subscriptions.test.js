@@ -23,6 +23,17 @@ describe('cart', () => {
     });
   });
 
+  describe('list', () => {
+    it('should make request to GET /subscriptions', async () => {
+      await api.subscriptions.list();
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions`);
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+    });
+
+  });
+
   describe('create', () => {
     it('should make request to POST /subscriptions', async () => {
       await api.subscriptions.create({ product_id: '123' });
