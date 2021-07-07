@@ -1,4 +1,4 @@
-const { reduce, find, uniq, defaultMethods, toSnake, toCamel } = require('./utils');
+const { reduce, find, uniq, defaultMethods, toSnake, toCamel, isEqual } = require('./utils');
 const cache = require('./cache');
 const attributesApi = require('./attributes');
 
@@ -93,14 +93,8 @@ function findVariantWithOptionValueIds(product, ids) {
     const variants = product.variants && product.variants.results;
     if (variants.length > 0) {
       for (const variant of variants) {
-        let matched = true;
-        for (const valueId of ids) {
-          const variantObj = toSnake(variant);
-          if (variantObj.option_value_ids && variantObj.option_value_ids.indexOf(valueId) === -1) {
-            matched = false;
-            break;
-          }
-        }
+        const variantObj = toSnake(variant);
+        const matched = isEqual(variantObj.option_value_ids.sort(), ids.sort())
         if (matched) {
           return variant;
         }

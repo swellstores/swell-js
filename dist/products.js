@@ -12,13 +12,13 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
@@ -28,7 +28,8 @@ var _require = require('./utils'),
     uniq = _require.uniq,
     defaultMethods = _require.defaultMethods,
     toSnake = _require.toSnake,
-    toCamel = _require.toCamel;
+    toCamel = _require.toCamel,
+    isEqual = _require.isEqual;
 
 var cache = require('./cache');
 
@@ -157,26 +158,8 @@ function findVariantWithOptionValueIds(product, ids) {
       try {
         for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var variant = _step2.value;
-          var matched = true;
-
-          var _iterator3 = _createForOfIteratorHelper(ids),
-              _step3;
-
-          try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var valueId = _step3.value;
-              var variantObj = toSnake(variant);
-
-              if (variantObj.option_value_ids && variantObj.option_value_ids.indexOf(valueId) === -1) {
-                matched = false;
-                break;
-              }
-            }
-          } catch (err) {
-            _iterator3.e(err);
-          } finally {
-            _iterator3.f();
-          }
+          var variantObj = toSnake(variant);
+          var matched = isEqual(variantObj.option_value_ids.sort(), ids.sort());
 
           if (matched) {
             return variant;
@@ -213,12 +196,12 @@ function calculateVariation(input, options) {
   var cleanOptions = cleanProductOptions(options);
   var index = getProductOptionIndex(product);
 
-  var _iterator4 = _createForOfIteratorHelper(cleanOptions),
-      _step4;
+  var _iterator3 = _createForOfIteratorHelper(cleanOptions),
+      _step3;
 
   try {
-    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-      var option = _step4.value;
+    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+      var option = _step3.value;
 
       if (index[option.id] && index[option.id].values[option.value]) {
         if (index[option.id].variant) {
@@ -229,9 +212,9 @@ function calculateVariation(input, options) {
       }
     }
   } catch (err) {
-    _iterator4.e(err);
+    _iterator3.e(err);
   } finally {
-    _iterator4.f();
+    _iterator3.f();
   }
 
   if (variantOptionValueIds.length > 0) {
@@ -377,20 +360,20 @@ function getCategories(products) {
   var collection = products && products.results || (products.id ? [products] : products);
 
   if (collection instanceof Array) {
-    var _iterator5 = _createForOfIteratorHelper(collection),
-        _step5;
+    var _iterator4 = _createForOfIteratorHelper(collection),
+        _step4;
 
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var product = _step5.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var product = _step4.value;
 
         if (product.categories) {
-          var _iterator6 = _createForOfIteratorHelper(product.categories),
-              _step6;
+          var _iterator5 = _createForOfIteratorHelper(product.categories),
+              _step5;
 
           try {
-            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-              var category = _step6.value;
+            for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+              var category = _step5.value;
               if (!category) continue;
               var ex = find(categories, {
                 id: category.id
@@ -401,16 +384,16 @@ function getCategories(products) {
               }
             }
           } catch (err) {
-            _iterator6.e(err);
+            _iterator5.e(err);
           } finally {
-            _iterator6.f();
+            _iterator5.f();
           }
         }
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator5.f();
+      _iterator4.f();
     }
   }
 
@@ -422,12 +405,12 @@ function getAttributes(products) {
   var collection = products && products.results || (products.id ? [products] : products);
 
   if (collection instanceof Array) {
-    var _iterator7 = _createForOfIteratorHelper(collection),
-        _step7;
+    var _iterator6 = _createForOfIteratorHelper(collection),
+        _step6;
 
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        var product = _step7.value;
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var product = _step6.value;
 
         if (product.attributes) {
           for (var id in product.attributes) {
@@ -449,9 +432,9 @@ function getAttributes(products) {
         }
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator6.e(err);
     } finally {
-      _iterator7.f();
+      _iterator6.f();
     }
   }
 
@@ -465,12 +448,12 @@ function getPriceRange(products) {
   var collection = products && products.results || (products.id ? [products] : products);
 
   if (collection instanceof Array) {
-    var _iterator8 = _createForOfIteratorHelper(collection),
-        _step8;
+    var _iterator7 = _createForOfIteratorHelper(collection),
+        _step7;
 
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        var product = _step8.value;
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        var product = _step7.value;
 
         if (max === undefined || product.price > max) {
           max = Math.ceil(product.price);
@@ -481,9 +464,9 @@ function getPriceRange(products) {
         }
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator7.e(err);
     } finally {
-      _iterator8.f();
+      _iterator7.f();
     }
   }
 
