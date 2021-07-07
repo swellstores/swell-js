@@ -221,7 +221,8 @@ function calculateVariation(input, options) {
     var variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
 
     if (variant) {
-      variation.variation_id = variant.id;
+      variation.id = variant.id;
+      variation.parent_id = product.id;
       variation.price = variant.price || 0;
       variation.sale_price = variant.sale_price || product.sale_price;
       variation.orig_price = variant.orig_price || product.orig_price;
