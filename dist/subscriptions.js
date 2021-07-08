@@ -3,11 +3,27 @@
 var _require = require('./products'),
     cleanProductOptions = _require.cleanProductOptions;
 
+var _require2 = require('./utils'),
+    defaultMethods = _require2.defaultMethods;
+
+var cache = require('./cache');
+
 function methods(request) {
+  var _defaultMethods = defaultMethods(request, '/subscriptions', ['list', 'get']),
+      _get = _defaultMethods.get,
+      list = _defaultMethods.list;
+
   return {
-    get: function get(id, query) {
-      return request('get', '/subscriptions', id, query);
+    get: function get(id) {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      return cache.getFetch('subscriptions', id, function () {
+        return _get.apply(void 0, [id].concat(args));
+      });
     },
+    list: list,
     getCleanData: function getCleanData(data) {
       if (data && data.options) {
         data.options = cleanProductOptions(data.options);
