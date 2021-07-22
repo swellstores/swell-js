@@ -134,8 +134,7 @@ function calculateVariation(input, options) {
   if (variantOptionValueIds.length > 0) {
     const variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
     if (variant) {
-      variation.id = variant.id
-      variation.parent_id = product.id
+      variation.variant_id = variant.id;
       variation.price = variant.price || 0;
       variation.sale_price = variant.sale_price || product.sale_price;
       variation.orig_price = variant.orig_price || product.orig_price;
