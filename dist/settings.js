@@ -193,8 +193,10 @@ function methods(request, opt) {
 
       return decodeLocaleObjects(cloneDeep(values), this.locale, configs);
     },
-    load: function () {
-      var _load = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    load: function load() {
+      var _this2 = this;
+
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         var _yield$request, settings, menus, payments, session;
 
         return _regenerator["default"].wrap(function _callee$(_context) {
@@ -211,11 +213,11 @@ function methods(request, opt) {
                 menus = _yield$request.menus;
                 payments = _yield$request.payments;
                 session = _yield$request.session;
-                this.state = settings;
-                this.menuState = menus;
-                this.paymentState = payments;
-                this.sessionState = session;
-                this.localizedState = {};
+                _this2.state = settings;
+                _this2.menuState = menus;
+                _this2.paymentState = payments;
+                _this2.sessionState = session;
+                _this2.localizedState = {};
                 _context.next = 18;
                 break;
 
@@ -229,15 +231,9 @@ function methods(request, opt) {
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 15]]);
-      }));
-
-      function load() {
-        return _load.apply(this, arguments);
-      }
-
-      return load;
-    }()
+        }, _callee, null, [[0, 15]]);
+      }))();
+    }
   };
 }
 

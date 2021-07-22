@@ -2,9 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
@@ -25,13 +25,16 @@ function methods(request, opt) {
     list: function list() {
       return opt.api.settings.get('store.currencies', []);
     },
-    select: function () {
-      var _select = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(currency) {
+    select: function select(currency) {
+      var _this = this;
+
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                this.set(currency);
+                _this.set(currency);
+
                 setCookie('swell-currency', currency);
                 _context.next = 4;
                 return request('put', '/session', {
@@ -46,15 +49,9 @@ function methods(request, opt) {
                 return _context.stop();
             }
           }
-        }, _callee, this);
-      }));
-
-      function select(_x) {
-        return _select.apply(this, arguments);
-      }
-
-      return select;
-    }(),
+        }, _callee);
+      }))();
+    },
     selected: function selected() {
       if (this.code) {
         return this.code;

@@ -9,8 +9,10 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 function methods(request) {
   return {
     state: null,
-    requestStateChange: function () {
-      var _requestStateChange = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(method, url, id, data) {
+    requestStateChange: function requestStateChange(method, url, id, data) {
+      var _this = this;
+
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         var result;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -30,22 +32,16 @@ function methods(request) {
                 return _context.abrupt("return", result);
 
               case 5:
-                return _context.abrupt("return", this.state = result);
+                return _context.abrupt("return", _this.state = result);
 
               case 6:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this);
-      }));
-
-      function requestStateChange(_x, _x2, _x3, _x4) {
-        return _requestStateChange.apply(this, arguments);
-      }
-
-      return requestStateChange;
-    }(),
+        }, _callee);
+      }))();
+    },
     get: function get(query) {
       return this.requestStateChange('get', '/account', query);
     },

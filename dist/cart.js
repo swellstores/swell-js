@@ -2,9 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
@@ -26,15 +26,15 @@ function methods(request, options) {
     requested: false,
     pendingRequests: [],
     cacheClear: null,
-    requestStateChange: function () {
-      var _requestStateChange = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(method, url, id, data) {
-        var _this = this;
+    requestStateChange: function requestStateChange(method, url, id, data) {
+      var _this = this;
 
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
         return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                return _context2.abrupt("return", this.requestStateSync( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+                return _context2.abrupt("return", _this.requestStateSync( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
                   var result;
                   return _regenerator["default"].wrap(function _callee$(_context) {
                     while (1) {
@@ -70,26 +70,20 @@ function methods(request, options) {
                 return _context2.stop();
             }
           }
-        }, _callee2, this);
-      }));
+        }, _callee2);
+      }))();
+    },
+    requestStateSync: function requestStateSync(handler) {
+      var _this2 = this;
 
-      function requestStateChange(_x, _x2, _x3, _x4) {
-        return _requestStateChange.apply(this, arguments);
-      }
-
-      return requestStateChange;
-    }(),
-    requestStateSync: function () {
-      var _requestStateSync = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(handler) {
-        var _this2 = this;
-
-        var result, _this$pendingRequests, _handler, resolve;
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
+        var result, _this2$pendingRequest, _handler, resolve;
 
         return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                if (!this.state) {
+                if (!_this2.state) {
                   _context3.next = 6;
                   break;
                 }
@@ -101,7 +95,7 @@ function methods(request, options) {
                 return _context3.abrupt("return", _context3.sent);
 
               case 6:
-                if (!this.requested) {
+                if (!_this2.requested) {
                   _context3.next = 8;
                   break;
                 }
@@ -114,16 +108,16 @@ function methods(request, options) {
                 }));
 
               case 8:
-                this.requested = true;
+                _this2.requested = true;
                 _context3.next = 11;
                 return handler();
 
               case 11:
                 result = _context3.sent;
-                this.requested = false;
+                _this2.requested = false;
 
-                while (this.pendingRequests.length > 0) {
-                  _this$pendingRequests = this.pendingRequests.shift(), _handler = _this$pendingRequests.handler, resolve = _this$pendingRequests.resolve;
+                while (_this2.pendingRequests.length > 0) {
+                  _this2$pendingRequest = _this2.pendingRequests.shift(), _handler = _this2$pendingRequest.handler, resolve = _this2$pendingRequest.resolve;
                   resolve(_handler());
                 }
 
@@ -134,15 +128,9 @@ function methods(request, options) {
                 return _context3.stop();
             }
           }
-        }, _callee3, this);
-      }));
-
-      function requestStateSync(_x5) {
-        return _requestStateSync.apply(this, arguments);
-      }
-
-      return requestStateSync;
-    }(),
+        }, _callee3);
+      }))();
+    },
     get: function get() {
       var data;
 
@@ -222,34 +210,32 @@ function methods(request, options) {
     removeGiftcard: function removeGiftcard(id) {
       return this.requestStateChange('delete', "/cart/giftcards/".concat(id));
     },
-    getShippingRates: function () {
-      var _getShippingRates = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
+    getShippingRates: function getShippingRates() {
+      var _this3 = this;
+
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
         return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
                 _context4.next = 2;
-                return this.requestStateChange('get', '/cart/shipment-rating');
+                return _this3.requestStateChange('get', '/cart/shipment-rating');
 
               case 2:
-                return _context4.abrupt("return", this.state[options.useCamelCase ? 'shipmentRating' : 'shipment_rating']);
+                return _context4.abrupt("return", _this3.state[options.useCamelCase ? 'shipmentRating' : 'shipment_rating']);
 
               case 3:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, this);
-      }));
+        }, _callee4);
+      }))();
+    },
+    submitOrder: function submitOrder() {
+      var _this4 = this;
 
-      function getShippingRates() {
-        return _getShippingRates.apply(this, arguments);
-      }
-
-      return getShippingRates;
-    }(),
-    submitOrder: function () {
-      var _submitOrder = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
         var result;
         return _regenerator["default"].wrap(function _callee5$(_context5) {
           while (1) {
@@ -269,8 +255,8 @@ function methods(request, options) {
                 return _context5.abrupt("return", result);
 
               case 5:
-                this.state = null;
-                this.order = result;
+                _this4.state = null;
+                _this4.order = result;
                 return _context5.abrupt("return", result);
 
               case 8:
@@ -278,25 +264,20 @@ function methods(request, options) {
                 return _context5.stop();
             }
           }
-        }, _callee5, this);
-      }));
+        }, _callee5);
+      }))();
+    },
+    getOrder: function getOrder() {
+      var _arguments = arguments,
+          _this5 = this;
 
-      function submitOrder() {
-        return _submitOrder.apply(this, arguments);
-      }
-
-      return submitOrder;
-    }(),
-    getOrder: function () {
-      var _getOrder = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6() {
-        var checkoutId,
-            result,
-            _args6 = arguments;
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6() {
+        var checkoutId, result;
         return _regenerator["default"].wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                checkoutId = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : undefined;
+                checkoutId = _arguments.length > 0 && _arguments[0] !== undefined ? _arguments[0] : undefined;
 
                 if (!checkoutId) {
                   _context6.next = 7;
@@ -321,7 +302,7 @@ function methods(request, options) {
                 result = _context6.sent;
 
               case 10:
-                this.order = result;
+                _this5.order = result;
                 return _context6.abrupt("return", result);
 
               case 12:
@@ -329,17 +310,13 @@ function methods(request, options) {
                 return _context6.stop();
             }
           }
-        }, _callee6, this);
-      }));
+        }, _callee6);
+      }))();
+    },
+    getSettings: function getSettings() {
+      var _this6 = this;
 
-      function getOrder() {
-        return _getOrder.apply(this, arguments);
-      }
-
-      return getOrder;
-    }(),
-    getSettings: function () {
-      var _getSettings = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
         return _regenerator["default"].wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -348,23 +325,17 @@ function methods(request, options) {
                 return request('get', '/cart/settings');
 
               case 2:
-                this.settings = _context7.sent;
-                return _context7.abrupt("return", this.settings);
+                _this6.settings = _context7.sent;
+                return _context7.abrupt("return", _this6.settings);
 
               case 4:
               case "end":
                 return _context7.stop();
             }
           }
-        }, _callee7, this);
-      }));
-
-      function getSettings() {
-        return _getSettings.apply(this, arguments);
-      }
-
-      return getSettings;
-    }()
+        }, _callee7);
+      }))();
+    }
   };
 }
 

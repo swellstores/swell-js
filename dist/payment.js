@@ -2,9 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
-
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
@@ -42,19 +42,21 @@ function methods(request, opts) {
   return {
     params: null,
     methodSettings: null,
-    methods: function () {
-      var _methods = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    methods: function methods() {
+      var _this = this;
+
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
         var result;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                if (!this.methodSettings) {
+                if (!_this.methodSettings) {
                   _context.next = 2;
                   break;
                 }
 
-                return _context.abrupt("return", this.methodSettings);
+                return _context.abrupt("return", _this.methodSettings);
 
               case 2:
                 _context.next = 4;
@@ -62,30 +64,26 @@ function methods(request, opts) {
 
               case 4:
                 result = _context.sent;
-                return _context.abrupt("return", this.methodSettings = result);
+                return _context.abrupt("return", _this.methodSettings = result);
 
               case 6:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this);
-      }));
+        }, _callee);
+      }))();
+    },
+    createElements: function createElements(elementParams) {
+      var _this2 = this;
 
-      function methods() {
-        return _methods.apply(this, arguments);
-      }
-
-      return methods;
-    }(),
-    createElements: function () {
-      var _createElements = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(elementParams) {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
         var cart, payMethods;
         return _regenerator["default"].wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                this.params = elementParams || {};
+                _this2.params = elementParams || {};
                 _context2.t0 = toSnake;
                 _context2.next = 4;
                 return cartApi.methods(request, options).get();
@@ -119,24 +117,20 @@ function methods(request, opts) {
 
               case 15:
                 _context2.next = 17;
-                return render(request, cart, payMethods, this.params);
+                return render(request, cart, payMethods, _this2.params);
 
               case 17:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, this);
-      }));
+        }, _callee2);
+      }))();
+    },
+    tokenize: function tokenize(params) {
+      var _this3 = this;
 
-      function createElements(_x) {
-        return _createElements.apply(this, arguments);
-      }
-
-      return createElements;
-    }(),
-    tokenize: function () {
-      var _tokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(params) {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
         var cart, payMethods;
         return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
@@ -175,7 +169,7 @@ function methods(request, opts) {
 
               case 14:
                 _context3.next = 16;
-                return paymentTokenize(request, params || this.params, payMethods, cart);
+                return paymentTokenize(request, params || _this3.params, payMethods, cart);
 
               case 16:
                 return _context3.abrupt("return", _context3.sent);
@@ -185,17 +179,11 @@ function methods(request, opts) {
                 return _context3.stop();
             }
           }
-        }, _callee3, this);
-      }));
-
-      function tokenize(_x2) {
-        return _tokenize.apply(this, arguments);
-      }
-
-      return tokenize;
-    }(),
-    createIntent: function () {
-      var _createIntent = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(data) {
+        }, _callee3);
+      }))();
+    },
+    createIntent: function createIntent(data) {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
         var intent, param, err;
         return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
@@ -228,16 +216,10 @@ function methods(request, opts) {
             }
           }
         }, _callee4);
-      }));
-
-      function createIntent(_x3) {
-        return _createIntent.apply(this, arguments);
-      }
-
-      return createIntent;
-    }(),
-    updateIntent: function () {
-      var _updateIntent = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(data) {
+      }))();
+    },
+    updateIntent: function updateIntent(data) {
+      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
         var intent, param, err;
         return _regenerator["default"].wrap(function _callee5$(_context5) {
           while (1) {
@@ -270,18 +252,12 @@ function methods(request, opts) {
             }
           }
         }, _callee5);
-      }));
-
-      function updateIntent(_x4) {
-        return _updateIntent.apply(this, arguments);
-      }
-
-      return updateIntent;
-    }()
+      }))();
+    }
   };
 }
 
-function render(_x5, _x6, _x7, _x8) {
+function render(_x, _x2, _x3, _x4) {
   return _render.apply(this, arguments);
 }
 
@@ -492,12 +468,12 @@ var loadScript = /*#__PURE__*/function () {
     }, _callee6);
   }));
 
-  return function loadScript(_x9, _x10) {
+  return function loadScript(_x5, _x6) {
     return _ref.apply(this, arguments);
   };
 }();
 
-function stripeElements(_x11, _x12, _x13) {
+function stripeElements(_x7, _x8, _x9) {
   return _stripeElements.apply(this, arguments);
 }
 
@@ -551,7 +527,7 @@ function _stripeElements() {
   return _stripeElements.apply(this, arguments);
 }
 
-function payPalButton(_x14, _x15, _x16, _x17) {
+function payPalButton(_x10, _x11, _x12, _x13) {
   return _payPalButton.apply(this, arguments);
 }
 
@@ -643,7 +619,7 @@ function _payPalButton() {
   return _payPalButton.apply(this, arguments);
 }
 
-function braintreePayPalButton(_x18, _x19, _x20, _x21) {
+function braintreePayPalButton(_x14, _x15, _x16, _x17) {
   return _braintreePayPalButton.apply(this, arguments);
 }
 
@@ -729,7 +705,7 @@ function _braintreePayPalButton() {
   return _braintreePayPalButton.apply(this, arguments);
 }
 
-function paymentTokenize(_x22, _x23, _x24, _x25) {
+function paymentTokenize(_x18, _x19, _x20, _x21) {
   return _paymentTokenize.apply(this, arguments);
 }
 

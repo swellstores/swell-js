@@ -4,6 +4,8 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
@@ -210,17 +212,18 @@ var cacheApi = {
     var result = this.get(details.model, details.id);
     return result !== undefined ? result : record;
   },
-  getFetch: function () {
-    var _getFetch = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(model, id, fetch) {
-      var value,
-          record,
-          _args = arguments;
+  getFetch: function getFetch(model, id, fetch) {
+    var _arguments = arguments,
+        _this2 = this;
+
+    return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+      var value, record;
       return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              debug.apply(void 0, ['cache.getFetch'].concat(Array.prototype.slice.call(_args)));
-              value = this.get(model, id);
+              debug.apply(void 0, ['cache.getFetch'].concat((0, _toConsumableArray2["default"])(_arguments)));
+              value = _this2.get(model, id);
 
               if (!(value !== undefined)) {
                 _context.next = 4;
@@ -235,7 +238,7 @@ var cacheApi = {
 
             case 6:
               record = _context.sent;
-              return _context.abrupt("return", this.setRecord(record, {
+              return _context.abrupt("return", _this2.setRecord(record, {
                 model: model,
                 id: id
               }));
@@ -245,15 +248,9 @@ var cacheApi = {
               return _context.stop();
           }
         }
-      }, _callee, this);
-    }));
-
-    function getFetch(_x, _x2, _x3) {
-      return _getFetch.apply(this, arguments);
-    }
-
-    return getFetch;
-  }(),
+      }, _callee);
+    }))();
+  },
   clear: function clear() {
     var model = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
     var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
