@@ -82,7 +82,8 @@ function methods(request, opt) {
         formatter =
           formatCode === this.state.code &&
           formatLocale === this.locale &&
-          formatDecimals === this.state.decimals
+          formatDecimals === this.state.decimals &&
+          this.formatter
             ? this.formatter
             : new Intl.NumberFormat(formatLocale, {
                 style: 'currency',
