@@ -2,9 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
@@ -25,16 +25,13 @@ function methods(request, opt) {
     list: function list() {
       return opt.api.settings.get('store.currencies', []);
     },
-    select: function select(currency) {
-      var _this = this;
-
-      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    select: function () {
+      var _select = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(currency) {
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _this.set(currency);
-
+                this.set(currency);
                 setCookie('swell-currency', currency);
                 _context.next = 4;
                 return request('put', '/session', {
@@ -49,9 +46,15 @@ function methods(request, opt) {
                 return _context.stop();
             }
           }
-        }, _callee);
-      }))();
-    },
+        }, _callee, this);
+      }));
+
+      function select(_x) {
+        return _select.apply(this, arguments);
+      }
+
+      return select;
+    }(),
     selected: function selected() {
       if (this.code) {
         return this.code;
@@ -123,7 +126,7 @@ function methods(request, opt) {
       var formatter;
 
       try {
-        formatter = formatCode === this.state.code && formatLocale === this.locale && formatDecimals === this.state.decimals ? this.formatter : new Intl.NumberFormat(formatLocale, {
+        formatter = formatCode === this.state.code && formatLocale === this.locale && formatDecimals === this.state.decimals && this.formatter ? this.formatter : new Intl.NumberFormat(formatLocale, {
           style: 'currency',
           currency: formatCode,
           currencyDisplay: 'symbol',

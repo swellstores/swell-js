@@ -11,10 +11,8 @@ var _require = require('./utils'),
     toSnake = _require.toSnake;
 
 var cardApi = {
-  createToken: function createToken(data) {
-    var _this = this;
-
-    return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+  createToken: function () {
+    var _createToken = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(data) {
       var error, code, param, card, exp, err, result, _param, _err;
 
       return _regenerator["default"].wrap(function _callee$(_context) {
@@ -33,25 +31,25 @@ var cardApi = {
               card = toSnake(data);
 
               if (!card.nonce) {
-                if (!_this.validateNumber(card.number)) {
+                if (!this.validateNumber(card.number)) {
                   error = 'Card number appears to be invalid';
                   code = 'invalid_card_number';
                   param = 'number';
                 }
 
                 if (card.exp) {
-                  exp = _this.expiry(card.exp);
+                  exp = this.expiry(card.exp);
                   card.exp_month = exp.month;
                   card.exp_year = exp.year;
                 }
 
-                if (!_this.validateExpiry(card.exp_month, card.exp_year)) {
+                if (!this.validateExpiry(card.exp_month, card.exp_year)) {
                   error = 'Card expiry appears to be invalid';
                   code = 'invalid_card_expiry';
                   param = 'exp_month';
                 }
 
-                if (!_this.validateCVC(card.cvc)) {
+                if (!this.validateCVC(card.cvc)) {
                   error = 'Card CVC code appears to be invalid';
                   code = 'invalid_card_cvc';
                   param = 'exp_cvc';
@@ -96,9 +94,15 @@ var cardApi = {
               return _context.stop();
           }
         }
-      }, _callee);
-    }))();
-  },
+      }, _callee, this);
+    }));
+
+    function createToken(_x) {
+      return _createToken.apply(this, arguments);
+    }
+
+    return createToken;
+  }(),
   expiry: function expiry(value) {
     if (value && value.month && value.year) {
       return value;

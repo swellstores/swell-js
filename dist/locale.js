@@ -20,16 +20,13 @@ function methods(request, opt) {
     list: function list() {
       return opt.api.settings.get('store.locales', []);
     },
-    select: function select(locale) {
-      var _this = this;
-
-      return (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    select: function () {
+      var _select = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(locale) {
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _this.set(locale);
-
+                this.set(locale);
                 setCookie('swell-locale', locale);
                 opt.api.settings.locale = locale;
                 _context.next = 5;
@@ -45,9 +42,15 @@ function methods(request, opt) {
                 return _context.stop();
             }
           }
-        }, _callee);
-      }))();
-    },
+        }, _callee, this);
+      }));
+
+      function select(_x) {
+        return _select.apply(this, arguments);
+      }
+
+      return select;
+    }(),
     selected: function selected() {
       if (this.code) {
         return this.code;
