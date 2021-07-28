@@ -72,7 +72,7 @@ function methods(request, opt) {
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
 
       let formatAmount = amount;
-      if ((type === 'display' || params.rate) && typeof formatRate === 'number') {
+      if ((type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
         // Convert the price currency into the display currency
         formatAmount = amount * formatRate;
       }
