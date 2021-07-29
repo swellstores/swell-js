@@ -27,7 +27,18 @@ const mockSettingState = {
         name: 'Euro',
         symbol: '€',
         decimals: 2,
-        type: 'price',
+        type: 'priced',
+      },
+      {
+        code: 'CNY',
+        rate: 9.9,
+        name: 'China',
+        symbol: '?',
+        decimals: 4,
+        type: 'display',
+        round: 'up',
+        round_interval: 'fraction',
+        round_fraction: 0.25
       },
     ],
     locale: 'en-US',
@@ -145,6 +156,78 @@ describe('currency', () => {
       const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('$0.77');
+    });
+
+    it('should convert amount by selected display currency with rounding (nearest whole)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'nearest';
+      config.round_interval = 'fraction';
+      config.round_fraction = 1;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥11.0000');
+    });
+
+    it('should convert amount by selected display currency with rounding (up whole)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'up';
+      config.round_interval = 'fraction';
+      config.round_fraction = 1;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥11.0000');
+    });
+
+    it('should convert amount by selected display currency with rounding (down whole)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'down';
+      config.round_interval = 'fraction';
+      config.round_fraction = 1;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥10.0000');
+    });
+
+    it('should convert amount by selected display currency with rounding (nearest fraction)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'nearest';
+      config.round_interval = 'fraction';
+      config.round_fraction = 0.25;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥10.2500');
+    });
+
+    it('should convert amount by selected display currency with rounding (up fraction)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'up';
+      config.round_interval = 'fraction';
+      config.round_fraction = 0.25;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥10.2500');
+    });
+
+    it('should convert amount by selected display currency with rounding (down fraction)', async () => {
+      const config = api.currency.list().find((curr) => curr.code === 'CNY');
+      config.round = 'down';
+      config.round_interval = 'fraction';
+      config.round_fraction = 0.25;
+
+      await api.currency.select('CNY');
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('CN¥9.2500');
     });
 
     it('should not convert amount by selected price currency', async () => {

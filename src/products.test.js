@@ -4,6 +4,8 @@ const mockRequest = jest.fn();
 const mockProductWithOptions = {
   price: 10,
   stock_status: 'in_stock',
+  stock_level: 0,
+  images: [],
   options: [
     {
       id: 'x',
