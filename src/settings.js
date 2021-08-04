@@ -5,6 +5,7 @@ function methods(request, opt) {
     state: null,
     menuState: null,
     paymentState: null,
+    subscriptionState: null,
     sessionState: null,
 
     locale: null,
@@ -14,6 +15,7 @@ function methods(request, opt) {
       this.state = null;
       this.menuState = null;
       this.paymentState = null;
+      this.subscriptionState = null;
       this.sessionState = null;
       this.localizedState = {};
       return this.get();
@@ -100,6 +102,10 @@ function methods(request, opt) {
       return this.getState('/settings/payments', 'paymentState', { id, def });
     },
 
+    subscriptions(id = undefined, def = undefined) {
+      return this.getState('/settings/subscriptions', 'subscriptionState', { id, def });
+    },
+
     session(id = undefined, def = undefined) {
       return this.getState('/session', 'sessionState', { id, def });
     },
@@ -125,10 +131,14 @@ function methods(request, opt) {
 
     async load() {
       try {
-        const { settings, menus, payments, session } = await request('get', '/settings/all');
+        const { settings, menus, payments, subscriptions, session } = await request(
+          'get',
+          '/settings/all',
+        );
         this.state = settings;
         this.menuState = menus;
         this.paymentState = payments;
+        this.subscriptionState = subscriptions;
         this.sessionState = session;
         this.localizedState = {};
       } catch (err) {
