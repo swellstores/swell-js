@@ -34,6 +34,7 @@ function methods(request, opt) {
     state: null,
     menuState: null,
     paymentState: null,
+    subscriptionState: null,
     sessionState: null,
     locale: null,
     localizedState: {},
@@ -41,6 +42,7 @@ function methods(request, opt) {
       this.state = null;
       this.menuState = null;
       this.paymentState = null;
+      this.subscriptionState = null;
       this.sessionState = null;
       this.localizedState = {};
       return this.get();
@@ -168,6 +170,14 @@ function methods(request, opt) {
         def: def
       });
     },
+    subscriptions: function subscriptions() {
+      var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      return this.getState('/settings/subscriptions', 'subscriptionState', {
+        id: id,
+        def: def
+      });
+    },
     session: function session() {
       var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
       var def = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
@@ -195,7 +205,7 @@ function methods(request, opt) {
     },
     load: function () {
       var _load = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-        var _yield$request, settings, menus, payments, session;
+        var _yield$request, settings, menus, payments, subscriptions, session;
 
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
@@ -210,26 +220,28 @@ function methods(request, opt) {
                 settings = _yield$request.settings;
                 menus = _yield$request.menus;
                 payments = _yield$request.payments;
+                subscriptions = _yield$request.subscriptions;
                 session = _yield$request.session;
                 this.state = settings;
                 this.menuState = menus;
                 this.paymentState = payments;
+                this.subscriptionState = subscriptions;
                 this.sessionState = session;
                 this.localizedState = {};
-                _context.next = 18;
+                _context.next = 20;
                 break;
 
-              case 15:
-                _context.prev = 15;
+              case 17:
+                _context.prev = 17;
                 _context.t0 = _context["catch"](0);
                 console.error("Swell: unable to loading settings (".concat(_context.t0, ")"));
 
-              case 18:
+              case 20:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 15]]);
+        }, _callee, this, [[0, 17]]);
       }));
 
       function load() {
