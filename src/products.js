@@ -94,7 +94,7 @@ function findVariantWithOptionValueIds(product, ids) {
     if (variants.length > 0) {
       for (const variant of variants) {
         const variantObj = toSnake(variant);
-        const matched = isEqual(variantObj.option_value_ids.sort(), ids.sort())
+        const matched = isEqual(variantObj.option_value_ids.sort(), ids.sort());
         if (matched) {
           return variant;
         }
@@ -140,7 +140,8 @@ function calculateVariation(input, options) {
       variation.orig_price = variant.orig_price || product.orig_price;
       variation.stock_status = variant.stock_status;
       variation.stock_level = variant.stock_level || 0;
-      variation.images = variant.images && variant.images.length ? variant.images : product.images;
+      variation.images =
+        (variant.images && variant.images.length ? variant.images : product.images) || [];
     }
   }
   if (optionPrice > 0) {

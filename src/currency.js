@@ -72,9 +72,9 @@ function methods(request, opt) {
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
 
       let formatAmount = amount;
-      if ((type === 'display' || params.rate) && typeof formatRate === 'number') {
+      if ((type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
         // Convert the price currency into the display currency
-        formatAmount = amount * formatRate;
+        formatAmount = this.applyRounding(amount * formatRate, state);
       }
 
       let formatter;
@@ -103,6 +103,44 @@ function methods(request, opt) {
       }
       return String(amount);
     },
+
+    applyRounding(value, config) {
+      if (!config || !config.round) {
+        return value;
+      }
+
+      const scale = config.decimals;
+      const fraction = config.round_interval === 'fraction' ? (config.round_fraction || 0) : 0;
+
+      let roundValue = ~~value;
+      let decimalValue = this.round(value, scale);
+
+      if (decimalValue === fraction) {
+        return roundValue + decimalValue;
+      }
+
+      const diff = this.round(decimalValue - fraction, 1);
+      const direction = config.round === 'nearest'
+        ? diff > 0 ? (diff >= 0.5 ? 'up' : 'down') : (diff <= -0.5 ? 'down' : 'up')
+        : config.round;
+
+      switch (direction) {
+        case 'down':
+          roundValue = roundValue + fraction - (decimalValue > fraction ? 0 : 1);
+          break;
+        case 'up':
+        default:
+          roundValue = roundValue + fraction + (decimalValue > fraction ? 1 : 0);
+          break;
+      }
+
+      return this.round(roundValue, scale);
+    },
+
+    round(value, scale = 0) {
+      // TODO: this is unrealiable (but only used for display)
+      return Number(Number(value).toFixed(scale));
+    }
   };
 }
 
