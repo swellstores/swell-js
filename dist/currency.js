@@ -120,7 +120,7 @@ function methods(request, opt) {
 
       if ((type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
         // Convert the price currency into the display currency
-        formatAmount = amount * formatRate;
+        formatAmount = this.applyRounding(amount * formatRate, state);
       }
 
       var formatter;
@@ -145,6 +145,41 @@ function methods(request, opt) {
       }
 
       return String(amount);
+    },
+    applyRounding: function applyRounding(value, config) {
+      if (!config || !config.round) {
+        return value;
+      }
+
+      var scale = config.decimals;
+      var fraction = config.round_interval === 'fraction' ? config.round_fraction || 0 : 0;
+      var roundValue = ~~value;
+      var decimalValue = this.round(value, scale);
+
+      if (decimalValue === fraction) {
+        return roundValue + decimalValue;
+      }
+
+      var diff = this.round(decimalValue - fraction, 1);
+      var direction = config.round === 'nearest' ? diff > 0 ? diff >= 0.5 ? 'up' : 'down' : diff <= -0.5 ? 'down' : 'up' : config.round;
+
+      switch (direction) {
+        case 'down':
+          roundValue = roundValue + fraction - (decimalValue > fraction ? 0 : 1);
+          break;
+
+        case 'up':
+        default:
+          roundValue = roundValue + fraction + (decimalValue > fraction ? 1 : 0);
+          break;
+      }
+
+      return this.round(roundValue, scale);
+    },
+    round: function round(value) {
+      var scale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      // TODO: this is unrealiable (but only used for display)
+      return Number(Number(value).toFixed(scale));
     }
   };
 }
