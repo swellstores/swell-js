@@ -72,7 +72,11 @@ function methods(request, opt) {
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
 
       let formatAmount = amount;
-      if ((type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
+      if (
+        (type === 'display' || params.rate) &&
+        typeof formatAmount === 'number' &&
+        typeof formatRate === 'number'
+      ) {
         // Convert the price currency into the display currency
         formatAmount = this.applyRounding(amount * formatRate, state);
       }
@@ -96,7 +100,8 @@ function methods(request, opt) {
           return formatter.format(formatAmount);
         } else {
           // Otherwise return the currency symbol only, falling back to '$'
-          return get(formatter.formatToParts(0), '0.value', '$');
+          const symbol = get(formatter.formatToParts(0), '0.value', '$');
+          return symbol !== formatCode ? symbol : '';
         }
       } catch (err) {
         console.error(err);
@@ -110,7 +115,7 @@ function methods(request, opt) {
       }
 
       const scale = config.decimals;
-      const fraction = config.round_interval === 'fraction' ? (config.round_fraction || 0) : 0;
+      const fraction = config.round_interval === 'fraction' ? config.round_fraction || 0 : 0;
 
       let roundValue = ~~value;
       let decimalValue = this.round(value, scale);
@@ -120,9 +125,16 @@ function methods(request, opt) {
       }
 
       const diff = this.round(decimalValue - fraction, 1);
-      const direction = config.round === 'nearest'
-        ? diff > 0 ? (diff >= 0.5 ? 'up' : 'down') : (diff <= -0.5 ? 'down' : 'up')
-        : config.round;
+      const direction =
+        config.round === 'nearest'
+          ? diff > 0
+            ? diff >= 0.5
+              ? 'up'
+              : 'down'
+            : diff <= -0.5
+            ? 'down'
+            : 'up'
+          : config.round;
 
       switch (direction) {
         case 'down':
@@ -140,7 +152,7 @@ function methods(request, opt) {
     round(value, scale = 0) {
       // TODO: this is unrealiable (but only used for display)
       return Number(Number(value).toFixed(scale));
-    }
+    },
   };
 }
 
