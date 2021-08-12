@@ -28,8 +28,6 @@ var _require = require('./utils'),
     toCamelPath = _require.toCamelPath,
     getOptions = _require.getOptions;
 
-var DEBUG = false; // true to enable debug logs
-
 var RECORD_TIMEOUT = 5000;
 var VALUES = {
   /*
@@ -43,21 +41,23 @@ var VALUES = {
   }
   */
 };
-
-function debug() {
-  if (DEBUG) {
-    var _console;
-
-    (_console = console).log.apply(_console, arguments);
-  }
-}
-
 var cacheApi = {
+  options: {
+    enabled: true,
+    debug: false
+  },
+  debug: function debug() {
+    if (this.options.debug) {
+      var _console;
+
+      (_console = console).log.apply(_console, arguments);
+    }
+  },
   values: function values(_ref) {
     var model = _ref.model,
         id = _ref.id;
     var setValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-    debug.apply(void 0, ['cache.values'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.values'].concat(Array.prototype.slice.call(arguments)));
 
     if (setValues !== undefined) {
       for (var key in setValues) {
@@ -70,7 +70,7 @@ var cacheApi = {
     return get(VALUES, "".concat(model, ".").concat(id), {});
   },
   preset: function preset(details) {
-    debug.apply(void 0, ['cache.preset'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.preset'].concat(Array.prototype.slice.call(arguments)));
 
     var _this$values = this.values(details),
         _this$values$presets = _this$values.presets,
@@ -82,7 +82,7 @@ var cacheApi = {
     });
   },
   set: function set(details) {
-    debug.apply(void 0, ['cache.set'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.set'].concat(Array.prototype.slice.call(arguments)));
     var model = details.model,
         id = details.id,
         path = details.path,
@@ -147,7 +147,7 @@ var cacheApi = {
     }
   },
   get: function get(model, id) {
-    debug.apply(void 0, ['cache.get'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.get'].concat(Array.prototype.slice.call(arguments)));
 
     var _this$values3 = this.values({
       model: model,
@@ -156,7 +156,7 @@ var cacheApi = {
         data = _this$values3.data,
         recordTimer = _this$values3.recordTimer;
 
-    debug.apply(void 0, ['cache.get:data+recordTimer'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.get:data+recordTimer'].concat(Array.prototype.slice.call(arguments)));
 
     if (recordTimer) {
       return data;
@@ -165,7 +165,7 @@ var cacheApi = {
   setRecord: function setRecord(record, details) {
     var _this = this;
 
-    debug.apply(void 0, ['cache.setRecord'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.setRecord'].concat(Array.prototype.slice.call(arguments)));
 
     var _this$values4 = this.values(details),
         recordTimer = _this$values4.recordTimer,
@@ -219,28 +219,33 @@ var cacheApi = {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              debug.apply(void 0, ['cache.getFetch'].concat(Array.prototype.slice.call(_args)));
+              if (!this.options.enabled) {
+                _context.next = 5;
+                break;
+              }
+
+              this.debug.apply(this, ['cache.getFetch'].concat(Array.prototype.slice.call(_args)));
               value = this.get(model, id);
 
               if (!(value !== undefined)) {
-                _context.next = 4;
+                _context.next = 5;
                 break;
               }
 
               return _context.abrupt("return", value);
 
-            case 4:
-              _context.next = 6;
+            case 5:
+              _context.next = 7;
               return fetch();
 
-            case 6:
+            case 7:
               record = _context.sent;
               return _context.abrupt("return", this.setRecord(record, {
                 model: model,
                 id: id
               }));
 
-            case 8:
+            case 9:
             case "end":
               return _context.stop();
           }
@@ -257,7 +262,7 @@ var cacheApi = {
   clear: function clear() {
     var model = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
     var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-    debug.apply(void 0, ['cache.clear'].concat(Array.prototype.slice.call(arguments)));
+    this.debug.apply(this, ['cache.clear'].concat(Array.prototype.slice.call(arguments)));
 
     if (model) {
       if (id) {

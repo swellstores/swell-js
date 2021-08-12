@@ -138,7 +138,8 @@ function methods(request, opt) {
           return formatter.format(formatAmount);
         } else {
           // Otherwise return the currency symbol only, falling back to '$'
-          return get(formatter.formatToParts(0), '0.value', '$');
+          var symbol = get(formatter.formatToParts(0), '0.value', '$');
+          return symbol !== formatCode ? symbol : '';
         }
       } catch (err) {
         console.error(err);
