@@ -135,7 +135,7 @@ async function render(request, cart, payMethods, params) {
       if (!window.paypal) {
         await loadScript(
           'paypal-sdk',
-          `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&vault=true`,
+          `https://www.paypal.com/sdk/js?currency=${cart.currency}&client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&vault=true`,
         );
       }
       if (!window.braintree) {
@@ -155,7 +155,7 @@ async function render(request, cart, payMethods, params) {
       if (!window.paypal) {
         await loadScript(
           'paypal-sdk',
-          `https://www.paypal.com/sdk/js?client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize`,
+          `https://www.paypal.com/sdk/js?currency=${cart.currency}&client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize`,
         );
       }
       await payPalButton(request, cart, payMethods, params);
