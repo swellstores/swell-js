@@ -15,4 +15,28 @@ describe('cache', () => {
       expect(record).toEqual({});
     });
   });
+
+  describe('getFetch', () => {
+    it('should request from API just once, when cache is enabled', async () => {
+      api.cache.options.enabled = true;
+      await api.content.get('pages', 'slug');
+
+      api.cache.set({ model: 'content_pages', id: 'slug', value: {} });
+
+      await api.content.get('pages', 'slug');
+
+      expect(fetch.mock.calls.length).toEqual(1);
+    });
+
+    it('should request from API everytime, when cache is not enabled', async () => {
+      api.cache.options.enabled = false;
+      await api.content.get('pages', 'slug');
+
+      api.cache.set({ model: 'content_pages', id: 'slug', value: {} });
+
+      await api.content.get('pages', 'slug');
+
+      expect(fetch.mock.calls.length).toEqual(2);
+    });
+  });
 });

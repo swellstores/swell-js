@@ -1,7 +1,5 @@
 const { get, set, merge, toCamel, toCamelPath, getOptions } = require('./utils');
 
-const DEBUG = false; // true to enable debug logs
-
 const RECORD_TIMEOUT = 5000;
 
 let VALUES = {
@@ -17,15 +15,20 @@ let VALUES = {
 */
 };
 
-function debug(...args) {
-  if (DEBUG) {
-    console.log(...args);
-  }
-}
-
 const cacheApi = {
+  options: {
+    enabled: true,
+    debug: false,
+  },
+
+  debug(...args) {
+    if (this.options.debug) {
+      console.log(...args);
+    }
+  },
+
   values({ model, id }, setValues = undefined) {
-    debug('cache.values', ...arguments);
+    this.debug('cache.values', ...arguments);
     if (setValues !== undefined) {
       for (let key in setValues) {
         set(VALUES, `${model}.${id}.${key}`, setValues[key]);
@@ -36,14 +39,14 @@ const cacheApi = {
   },
 
   preset(details) {
-    debug('cache.preset', ...arguments);
+    this.debug('cache.preset', ...arguments);
     const { presets = [] } = this.values(details);
     presets.push(details);
     this.values(details, { presets });
   },
 
   set(details) {
-    debug('cache.set', ...arguments);
+    this.debug('cache.set', ...arguments);
     let { model, id, path, value } = details;
     let { data = {}, record, presets } = this.values(details);
 
@@ -93,16 +96,16 @@ const cacheApi = {
   },
 
   get(model, id) {
-    debug('cache.get', ...arguments);
+    this.debug('cache.get', ...arguments);
     const { data, recordTimer } = this.values({ model, id });
-    debug('cache.get:data+recordTimer', ...arguments);
+    this.debug('cache.get:data+recordTimer', ...arguments);
     if (recordTimer) {
       return data;
     }
   },
 
   setRecord(record, details) {
-    debug('cache.setRecord', ...arguments);
+    this.debug('cache.setRecord', ...arguments);
     let { recordTimer, presets } = this.values(details);
 
     if (recordTimer) {
@@ -129,17 +132,21 @@ const cacheApi = {
   },
 
   async getFetch(model, id, fetch) {
-    debug('cache.getFetch', ...arguments);
-    const value = this.get(model, id);
-    if (value !== undefined) {
-      return value;
+    if (this.options.enabled) {
+      this.debug('cache.getFetch', ...arguments);
+      const value = this.get(model, id);
+
+      if (value !== undefined) {
+        return value;
+      }
     }
+
     const record = await fetch();
     return this.setRecord(record, { model, id });
   },
 
   clear(model = undefined, id = undefined) {
-    debug('cache.clear', ...arguments);
+    this.debug('cache.clear', ...arguments);
     if (model) {
       if (id) {
         set(VALUES, `${model}.${id}`, undefined);
