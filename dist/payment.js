@@ -411,7 +411,7 @@ function _render() {
             }
 
             _context7.next = 41;
-            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?client-id=".concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&vault=true"));
+            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?currency=".concat(cart.currency, "&client-id=").concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&vault=true"));
 
           case 41:
             if (window.braintree) {
@@ -446,7 +446,7 @@ function _render() {
             }
 
             _context7.next = 54;
-            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?client-id=".concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&intent=authorize"));
+            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?currency=".concat(cart.currency, "&client-id=").concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&intent=authorize"));
 
           case 54:
             _context7.next = 56;
