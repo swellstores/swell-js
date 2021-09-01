@@ -37,13 +37,13 @@ function methods(request, opt) {
       return this.state;
     },
 
-    set(code) {
+    set(code = 'USD') {
       this.code = code;
       this.locale = opt.api.settings.get(
         'store.locale',
         typeof navigator === 'object' ? navigator.language : 'en-US',
       );
-      this.state = find(this.list(), { code }) || {};
+      this.state = find(this.list(), { code }) || { code };
       try {
         this.formatter = new Intl.NumberFormat(this.locale, {
           style: 'currency',
@@ -62,10 +62,10 @@ function methods(request, opt) {
       let state = this.get();
       if (params.code && params.code !== state.code) {
         const list = this.list();
-        state = find(list, { code: params.code }) || {};
+        state = find(list, { code: params.code }) || { code: params.code };
       }
 
-      const { code, rate, decimals, type } = state;
+      const { code = 'USD', type, decimals, rate } = state;
       const formatCode = params.code || code;
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;

@@ -80,7 +80,9 @@ function methods(request, opt) {
       this.locale = opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US');
       this.state = find(this.list(), {
         code: code
-      }) || {};
+      }) || {
+        code: code
+      };
 
       try {
         this.formatter = new Intl.NumberFormat(this.locale, {
@@ -108,10 +110,12 @@ function methods(request, opt) {
       }
 
       var _state = state,
-          code = _state.code,
-          rate = _state.rate,
+          _state$code = _state.code,
+          code = _state$code === void 0 ? 'USD' : _state$code,
+          _state$type = _state.type,
+          type = _state$type === void 0 ? 'priced' : _state$type,
           decimals = _state.decimals,
-          type = _state.type;
+          rate = _state.rate;
       var formatCode = params.code || code;
       var formatRate = params.rate || rate;
       var formatLocale = params.locale || this.locale;
