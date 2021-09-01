@@ -75,7 +75,8 @@ function methods(request, opt) {
 
       return this.state;
     },
-    set: function set(code) {
+    set: function set() {
+      var code = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'USD';
       this.code = code;
       this.locale = opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US');
       this.state = find(this.list(), {
@@ -106,14 +107,15 @@ function methods(request, opt) {
         var list = this.list();
         state = find(list, {
           code: params.code
-        }) || {};
+        }) || {
+          code: params.code
+        };
       }
 
       var _state = state,
           _state$code = _state.code,
           code = _state$code === void 0 ? 'USD' : _state$code,
-          _state$type = _state.type,
-          type = _state$type === void 0 ? 'priced' : _state$type,
+          type = _state.type,
           decimals = _state.decimals,
           rate = _state.rate;
       var formatCode = params.code || code;
