@@ -285,5 +285,23 @@ describe('currency', () => {
 
       expect(formatted).toEqual('€1.00');
     });
+
+    it('should default to hyphenated locale', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: { locale: 'en_US' } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
+
+    it('should default to en-US locale if setting is invalid', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: { locale: 'NO IDEA' } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
   });
 });

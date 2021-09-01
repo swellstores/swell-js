@@ -78,21 +78,28 @@ function methods(request, opt) {
     set: function set() {
       var code = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'USD';
       this.code = code;
-      this.locale = opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US');
       this.state = find(this.list(), {
         code: code
       }) || {
         code: code
       };
+      this.locale = String(opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US')).replace('_', '-');
+      var formatterProps = {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'symbol',
+        minimumFractionDigits: this.state.decimals,
+        maximumFractionDigits: this.state.decimals
+      };
 
       try {
-        this.formatter = new Intl.NumberFormat(this.locale, {
-          style: 'currency',
-          currency: code,
-          currencyDisplay: 'symbol',
-          minimumFractionDigits: this.state.decimals,
-          maximumFractionDigits: this.state.decimals
-        });
+        try {
+          this.formatter = new Intl.NumberFormat(this.locale, formatterProps);
+        } catch (err) {
+          if (err.message.indexOf('Invalid language tag') >= 0) {
+            this.formatter = new Intl.NumberFormat('en-US', formatterProps);
+          }
+        }
       } catch (err) {
         console.error(err);
       }

@@ -39,22 +39,35 @@ function methods(request, opt) {
 
     set(code = 'USD') {
       this.code = code;
-      this.locale = opt.api.settings.get(
-        'store.locale',
-        typeof navigator === 'object' ? navigator.language : 'en-US',
-      );
       this.state = find(this.list(), { code }) || { code };
+
+      this.locale = String(
+        opt.api.settings.get(
+          'store.locale',
+          typeof navigator === 'object' ? navigator.language : 'en-US',
+        ),
+      ).replace('_', '-');
+
+      const formatterProps = {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'symbol',
+        minimumFractionDigits: this.state.decimals,
+        maximumFractionDigits: this.state.decimals,
+      };
+
       try {
-        this.formatter = new Intl.NumberFormat(this.locale, {
-          style: 'currency',
-          currency: code,
-          currencyDisplay: 'symbol',
-          minimumFractionDigits: this.state.decimals,
-          maximumFractionDigits: this.state.decimals,
-        });
+        try {
+          this.formatter = new Intl.NumberFormat(this.locale, formatterProps);
+        } catch (err) {
+          if (err.message.indexOf('Invalid language tag') >= 0) {
+            this.formatter = new Intl.NumberFormat('en-US', formatterProps);
+          }
+        }
       } catch (err) {
         console.error(err);
       }
+
       return this.state;
     },
 
