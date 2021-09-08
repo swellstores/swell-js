@@ -54,7 +54,6 @@ describe('currency', () => {
     api.settings.state = JSON.parse(JSON.stringify(mockSettingState));
     api.currency.code = null;
     api.currency.state = null;
-    api.currency.formatter = null;
   });
 
   describe('methods', () => {
@@ -297,9 +296,18 @@ describe('currency', () => {
 
     it('should default to en-US locale if setting is invalid', async () => {
       api.currency.code = 'EUR';
-      api.settings.state = { store: { locale: 'NO IDEA' } };
+      api.settings.state = { store: { locale: 'INVALID' } };
       api.settings.localizedState = {};
       const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
+
+    it('should default to en-US locale if setting is invalid calling format()', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: {} };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1, { locale: 'INVALID' });
 
       expect(formatted).toEqual('€1.00');
     });

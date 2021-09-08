@@ -16,12 +16,13 @@ var _require2 = require('./cookie'),
     getCookie = _require2.getCookie,
     setCookie = _require2.setCookie;
 
+var FORMATTERS = {};
+
 function methods(request, opt) {
   return {
     code: null,
     state: null,
     locale: null,
-    formatter: null,
     list: function list() {
       return opt.api.settings.get('store.currencies', []);
     },
@@ -83,27 +84,7 @@ function methods(request, opt) {
       }) || {
         code: code
       };
-      this.locale = String(opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US')).replace('_', '-');
-      var formatterProps = {
-        style: 'currency',
-        currency: code,
-        currencyDisplay: 'symbol',
-        minimumFractionDigits: this.state.decimals,
-        maximumFractionDigits: this.state.decimals
-      };
-
-      try {
-        try {
-          this.formatter = new Intl.NumberFormat(this.locale, formatterProps);
-        } catch (err) {
-          if (err.message.indexOf('Invalid language tag') >= 0) {
-            this.formatter = new Intl.NumberFormat('en-US', formatterProps);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-
+      this.locale = String(opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US'));
       return this.state;
     },
     format: function format(amount) {
@@ -136,17 +117,13 @@ function methods(request, opt) {
         formatAmount = this.applyRounding(amount * formatRate, state);
       }
 
-      var formatter;
+      var formatter = this.formatter({
+        code: formatCode,
+        locale: formatLocale,
+        decimals: formatDecimals
+      });
 
       try {
-        formatter = formatCode === this.state.code && formatLocale === this.locale && formatDecimals === this.state.decimals && this.formatter ? this.formatter : new Intl.NumberFormat(formatLocale, {
-          style: 'currency',
-          currency: formatCode,
-          currencyDisplay: 'symbol',
-          minimumFractionDigits: formatDecimals,
-          maximumFractionDigits: formatDecimals
-        });
-
         if (typeof formatAmount === 'number') {
           return formatter.format(formatAmount);
         } else {
@@ -155,10 +132,44 @@ function methods(request, opt) {
           return symbol !== formatCode ? symbol : '';
         }
       } catch (err) {
-        console.error(err);
+        console.warn(err);
       }
 
       return String(amount);
+    },
+    formatter: function formatter(_ref) {
+      var code = _ref.code,
+          locale = _ref.locale,
+          decimals = _ref.decimals;
+      var key = [code, locale, decimals].join('|');
+
+      if (FORMATTERS[key]) {
+        return FORMATTERS[key];
+      }
+
+      var formatLocale = String(locale || '').replace('_', '-') || 'en-US';
+      var formatDecimals = typeof decimals === 'number' ? decimals : undefined;
+      var props = {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'symbol',
+        minimumFractionDigits: formatDecimals,
+        maximumFractionDigits: formatDecimals
+      };
+
+      try {
+        try {
+          FORMATTERS[key] = new Intl.NumberFormat(formatLocale, props);
+        } catch (err) {
+          if (err.message.indexOf('Invalid language tag') >= 0) {
+            FORMATTERS[key] = new Intl.NumberFormat('en-US', props);
+          }
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+
+      return FORMATTERS[key];
     },
     applyRounding: function applyRounding(value, config) {
       if (!config || !config.round) {
