@@ -56,13 +56,6 @@ function methods(request) {
       return this.requestStateChange('put', '/account', data);
     },
     login: function login(email, password) {
-      if (password && password.password_token) {
-        return this.requestStateChange('post', '/account/login', {
-          email: email,
-          password_token: password.password_token
-        });
-      }
-
       return this.requestStateChange('post', '/account/login', {
         email: email,
         password: password
