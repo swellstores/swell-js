@@ -1,6 +1,7 @@
 const { reduce, find, uniq, defaultMethods, toSnake, toCamel, isEqual } = require('./utils');
 const cache = require('./cache');
 const attributesApi = require('./attributes');
+const { cloneWith, snakeCase } = require('lodash');
 
 let OPTIONS;
 
@@ -277,7 +278,7 @@ function getAttributes(products) {
         for (let id in product.attributes) {
           if (!product.attributes[id]) continue;
           const value = product.attributes[id].value;
-          let attr = find(attributes, { id });
+          let attr = find(attributes, { id: snakeCase(id) });
           if (attr) {
             attr.values = uniq([...attr.values, ...(value instanceof Array ? value : [value])]);
           } else {

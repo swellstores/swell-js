@@ -36,6 +36,48 @@ const mockProductWithOptions = {
   },
 };
 
+const mockProductsWithAttributes = [
+  {
+    name: 'Product One',
+    attributes: {
+      origin: {
+        name: 'Origin',
+        type: 'select',
+        visible: true,
+        filterable: true,
+        id: 'origin',
+        value: 'Honduras',
+      },
+    },
+  },
+  {
+    name: 'Product Two',
+    attributes: {
+      spacedAttribute: {
+        name: 'Spaced Attribute',
+        type: 'text',
+        visible: true,
+        filterable: true,
+        id: 'spaced_attribute',
+        value: 'One',
+      },
+    },
+  },
+  {
+    name: 'Product Three',
+    attributes: {
+      spacedAttribute: {
+        name: 'Spaced Attribute',
+        type: 'text',
+        visible: true,
+        filterable: true,
+        id: 'spaced_attribute',
+        value: 'Two',
+      },
+    },
+  },
+];
+
 describe('products', () => {
   let methods;
   beforeEach(() => {
@@ -167,6 +209,32 @@ describe('products', () => {
           stock_status: 'out_of_stock',
         });
       });
+    });
+  });
+
+  describe('attributes', () => {
+    it('should return unique key attributes', () => {
+      const attributes = methods.attributes(mockProductsWithAttributes);
+      expect(attributes).toEqual([
+        {
+          name: 'Origin',
+          type: 'select',
+          visible: true,
+          filterable: true,
+          id: 'origin',
+          value: undefined,
+          values: ['Honduras'],
+        },
+        {
+          name: 'Spaced Attribute',
+          type: 'text',
+          visible: true,
+          filterable: true,
+          id: 'spaced_attribute',
+          value: undefined,
+          values: ['One', 'Two'],
+        },
+      ]);
     });
   });
 });
