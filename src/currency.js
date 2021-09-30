@@ -1,12 +1,13 @@
 const { get, find } = require('./utils');
 const { getCookie, setCookie } = require('./cookie');
 
+const FORMATTERS = {};
+
 function methods(request, opt) {
   return {
     code: null,
     state: null,
     locale: null,
-    formatter: null,
 
     list() {
       return opt.api.settings.get('store.currencies', []);
@@ -37,24 +38,15 @@ function methods(request, opt) {
       return this.state;
     },
 
-    set(code) {
+    set(code = 'USD') {
       this.code = code;
-      this.locale = opt.api.settings.get(
-        'store.locale',
-        typeof navigator === 'object' ? navigator.language : 'en-US',
+      this.state = find(this.list(), { code }) || { code };
+      this.locale = String(
+        opt.api.settings.get(
+          'store.locale',
+          typeof navigator === 'object' ? navigator.language : 'en-US',
+        ),
       );
-      this.state = find(this.list(), { code }) || {};
-      try {
-        this.formatter = new Intl.NumberFormat(this.locale, {
-          style: 'currency',
-          currency: code,
-          currencyDisplay: 'symbol',
-          minimumFractionDigits: this.state.decimals,
-          maximumFractionDigits: this.state.decimals,
-        });
-      } catch (err) {
-        console.error(err);
-      }
       return this.state;
     },
 
@@ -62,10 +54,10 @@ function methods(request, opt) {
       let state = this.get();
       if (params.code && params.code !== state.code) {
         const list = this.list();
-        state = find(list, { code: params.code }) || {};
+        state = find(list, { code: params.code }) || { code: params.code };
       }
 
-      const { code, rate, decimals, type } = state;
+      const { code = 'USD', type, decimals, rate } = state;
       const formatCode = params.code || code;
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
@@ -81,21 +73,12 @@ function methods(request, opt) {
         formatAmount = this.applyRounding(amount * formatRate, state);
       }
 
-      let formatter;
+      const formatter = this.formatter({
+        code: formatCode,
+        locale: formatLocale,
+        decimals: formatDecimals,
+      });
       try {
-        formatter =
-          formatCode === this.state.code &&
-          formatLocale === this.locale &&
-          formatDecimals === this.state.decimals &&
-          this.formatter
-            ? this.formatter
-            : new Intl.NumberFormat(formatLocale, {
-                style: 'currency',
-                currency: formatCode,
-                currencyDisplay: 'symbol',
-                minimumFractionDigits: formatDecimals,
-                maximumFractionDigits: formatDecimals,
-              });
         if (typeof formatAmount === 'number') {
           return formatter.format(formatAmount);
         } else {
@@ -104,9 +87,41 @@ function methods(request, opt) {
           return symbol !== formatCode ? symbol : '';
         }
       } catch (err) {
-        console.error(err);
+        console.warn(err);
       }
+
       return String(amount);
+    },
+
+    formatter({ code, locale, decimals }) {
+      const key = [code, locale, decimals].join('|');
+      if (FORMATTERS[key]) {
+        return FORMATTERS[key];
+      }
+
+      const formatLocale = String(locale || '').replace('_', '-') || 'en-US';
+      const formatDecimals = typeof decimals === 'number' ? decimals : undefined;
+      const props = {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'symbol',
+        minimumFractionDigits: formatDecimals,
+        maximumFractionDigits: formatDecimals,
+      };
+
+      try {
+        try {
+          FORMATTERS[key] = new Intl.NumberFormat(formatLocale, props);
+        } catch (err) {
+          if (err.message.indexOf('Invalid language tag') >= 0) {
+            FORMATTERS[key] = new Intl.NumberFormat('en-US', props);
+          }
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+
+      return FORMATTERS[key];
     },
 
     applyRounding(value, config) {

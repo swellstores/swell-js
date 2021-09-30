@@ -38,7 +38,7 @@ const mockSettingState = {
         type: 'display',
         round: 'up',
         round_interval: 'fraction',
-        round_fraction: 0.25
+        round_fraction: 0.25,
       },
     ],
     locale: 'en-US',
@@ -248,6 +248,68 @@ describe('currency', () => {
       const symbol = api.currency.format();
 
       expect(symbol).toEqual('€');
+    });
+
+    it('should default to USD format when state is empty', async () => {
+      api.currency.code = null;
+      api.currency.state = null;
+      api.settings.state = {};
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('$1.00');
+    });
+
+    it('should default to USD format when params are empty', async () => {
+      api.settings.state = {};
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1, {});
+
+      expect(formatted).toEqual('$1.00');
+    });
+
+    it('should default to currency setting when currency list is empty', async () => {
+      api.settings.state = { store: { currency: 'AUD', currencies: [] } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('A$1.00');
+    });
+
+    it('should use currency code state when currency list is empty', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: { currencies: [] } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
+
+    it('should default to hyphenated locale', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: { locale: 'en_US' } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
+
+    it('should default to en-US locale if setting is invalid', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: { locale: 'INVALID' } };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1);
+
+      expect(formatted).toEqual('€1.00');
+    });
+
+    it('should default to en-US locale if setting is invalid calling format()', async () => {
+      api.currency.code = 'EUR';
+      api.settings.state = { store: {} };
+      api.settings.localizedState = {};
+      const formatted = api.currency.format(1, { locale: 'INVALID' });
+
+      expect(formatted).toEqual('€1.00');
     });
   });
 });

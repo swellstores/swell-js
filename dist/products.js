@@ -35,6 +35,10 @@ var cache = require('./cache');
 
 var attributesApi = require('./attributes');
 
+var _require2 = require('lodash'),
+    cloneWith = _require2.cloneWith,
+    snakeCase = _require2.snakeCase;
+
 var OPTIONS;
 
 function methods(request, opt) {
@@ -417,7 +421,7 @@ function getAttributes(products) {
             if (!product.attributes[id]) continue;
             var value = product.attributes[id].value;
             var attr = find(attributes, {
-              id: id
+              id: snakeCase(id)
             });
 
             if (attr) {
