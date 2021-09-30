@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skypack Example</title>
+    <script type="module">
+      import swell from 'https://cdn.skypack.dev/swell-js';
+
+      window.swell = swell;
+
+      swell.init('YOUR_STORE_ID_HERE', 'YOUR_PUBLIC_KEY_HERE', {
+        useCamelCase: true,
+        url: 'YOUR_STORE_URL_HERE',
+      });
+
+      swell.products
+        .list({
+          category: 'equipment',
+          limit: 25,
+          page: 1,
+        })
+        .then((response) => {
+          const el = document.getElementById('products');
+          el.innerHTML = JSON.stringify(response.results, null, '  ');
+        });
+    </script>
+    <style>
+      #products {
+        margin: auto;
+        max-width: 80ch;
+      }
+    </style>
+  </head>
+  <body>
+    <pre id="products">Getting products...</pre>
+  </body>
+</html>
