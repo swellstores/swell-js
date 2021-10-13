@@ -210,6 +210,141 @@ describe('products', () => {
         });
       });
     });
+
+    describe('with purchase options', () => {
+      const mockProductWithPurchaseOptions = {
+        ...mockProductWithOptions,
+        price: 5,
+        sale_price: 5,
+        orig_price: 10,
+        variants: {
+          results: [
+            {
+              ...mockProductWithOptions.variants.results[0],
+              price: 9,
+              sale_price: 9,
+              orig_price: 15,
+            },
+          ],
+        },
+        purchase_options: {
+          standard: {
+            price: 9,
+            sale_price: 8,
+            orig_price: 10,
+          },
+          subscription: {
+            plans: [
+              {
+                id: 111,
+                price: 8,
+                sale_price: 7,
+                orig_price: 9,
+              },
+              {
+                id: 222,
+                price: 7,
+                sale_price: 6,
+                orig_price: 8,
+              },
+            ],
+          },
+        },
+      };
+
+      it('should return pricing from first subscription plan', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], 'subscription');
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 8,
+          sale_price: 7,
+          orig_price: 9,
+        });
+      });
+
+      it('should return pricing from a specific subscription plan', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
+          type: 'subscription',
+          plan: 222,
+        });
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 7,
+          sale_price: 6,
+          orig_price: 8,
+        });
+      });
+
+      it('should return pricing from a specific subscription plan id', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
+          type: 'subscription',
+          plan_id: 222,
+        });
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 7,
+          sale_price: 6,
+          orig_price: 8,
+        });
+      });
+
+      it('should return pricing from standard purchase option', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], 'standard');
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 9,
+          sale_price: 8,
+          orig_price: 10,
+        });
+      });
+
+      it('should return pricing from standard purchase option type', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], { type: 'standard' });
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 9,
+          sale_price: 8,
+          orig_price: 10,
+        });
+      });
+
+      it('should throw an error if the plan is not found', () => {
+        expect(() => {
+          methods.variation(mockProductWithPurchaseOptions, [], {
+            type: 'subscription',
+            plan: 'xxx',
+          });
+        }).toThrowError(`Subscription purchase plan 'xxx' not found`);
+      });
+
+      it('should throw an error if the purchase option is not found', () => {
+        expect(() => {
+          methods.variation(mockProductWithPurchaseOptions, [], { type: 'what' });
+        }).toThrowError(`Product purchase option 'what' not found`);
+      });
+
+      it('should return variant + option price with addon option', () => {
+        const options = [
+          { id: 'x', value: '1' },
+          { id: 'y', value: '2' },
+          { id: 'z', value: 'stuff' },
+        ];
+        const variation = methods.variation(mockProductWithPurchaseOptions, options, 'subscription');
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 11,
+          sale_price: 10,
+          orig_price: 12,
+          stock_status: 'out_of_stock',
+        });
+      });
+    });
   });
 
   describe('attributes', () => {
