@@ -247,6 +247,12 @@ describe('products', () => {
                 sale_price: 6,
                 orig_price: 8,
               },
+              {
+                id: 'monthly',
+                price: 6,
+                sale_price: 5,
+                orig_price: 7,
+              },
             ],
           },
         },
@@ -274,6 +280,19 @@ describe('products', () => {
           price: 7,
           sale_price: 6,
           orig_price: 8,
+        });
+      });
+
+      it('should return pricing from a specific subscription plan with omited type', () => {
+        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
+          plan: 'monthly',
+        });
+
+        expect(variation).toEqual({
+          ...mockProductWithPurchaseOptions,
+          price: 6,
+          sale_price: 5,
+          orig_price: 7,
         });
       });
 

@@ -180,10 +180,15 @@ function calculateVariation(input, options, purchaseOption) {
 }
 
 function findPurchaseOption(product, purchaseOption) {
+  const plan = get(purchaseOption, 'plan_id', get(purchaseOption, 'plan'));
   const type = get(
     purchaseOption,
     'type',
-    typeof purchaseOption === 'string' ? purchaseOption : 'standard',
+    typeof purchaseOption === 'string'
+      ? purchaseOption
+      : plan !== undefined
+      ? 'subscription'
+      : 'standard',
   );
   let option = get(product, `purchase_options.${type}`);
   if (!option && type !== 'standard') {
@@ -191,24 +196,21 @@ function findPurchaseOption(product, purchaseOption) {
   }
   if (option) {
     if (option.plans) {
-      const planId = get(purchaseOption, 'plan_id', get(purchaseOption, 'plan'));
-      if (planId !== undefined) {
-        option = find(option.plans, { id: planId });
+      if (plan !== undefined) {
+        option = find(option.plans, { id: plan });
         if (!option) {
-          throw new Error(`Subscription purchase plan '${planId}' not found or not active`);
+          throw new Error(`Subscription purchase plan '${plan}' not found or not active`);
         }
       } else {
         option = option.plans[0];
       }
     }
-    if (option) {
-      return {
-        ...option,
-        price: typeof option.price === 'number' ? option.price : product.price,
-        sale_price: typeof option.sale_price === 'number' ? option.sale_price : product.sale_price,
-        orig_price: typeof option.orig_price === 'number' ? option.orig_price : product.orig_price,
-      };
-    }
+    return {
+      ...option,
+      price: typeof option.price === 'number' ? option.price : product.price,
+      sale_price: typeof option.sale_price === 'number' ? option.sale_price : product.sale_price,
+      orig_price: typeof option.orig_price === 'number' ? option.orig_price : product.orig_price,
+    };
   }
   return {
     type: 'standard',
