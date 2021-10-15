@@ -23,21 +23,19 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _require = require('./utils'),
+    get = _require.get,
     reduce = _require.reduce,
     find = _require.find,
     uniq = _require.uniq,
     defaultMethods = _require.defaultMethods,
     toSnake = _require.toSnake,
     toCamel = _require.toCamel,
-    isEqual = _require.isEqual;
+    isEqual = _require.isEqual,
+    snakeCase = _require.snakeCase;
 
 var cache = require('./cache');
 
 var attributesApi = require('./attributes');
-
-var _require2 = require('lodash'),
-    cloneWith = _require2.cloneWith,
-    snakeCase = _require2.snakeCase;
 
 var OPTIONS;
 
@@ -185,13 +183,14 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculateVariation(input, options) {
+function calculateVariation(input, options, purchaseOption) {
   var product = OPTIONS.useCamelCase ? toSnake(input) : input;
+  var purchaseOp = findPurchaseOption(product, purchaseOption);
 
   var variation = _objectSpread(_objectSpread({}, product), {}, {
-    price: product.price || 0,
-    sale_price: product.sale_price,
-    orig_price: product.orig_price,
+    price: purchaseOp.price || 0,
+    sale_price: purchaseOp.sale_price,
+    orig_price: purchaseOp.orig_price,
     stock_status: product.stock_status
   });
 
@@ -225,10 +224,17 @@ function calculateVariation(input, options) {
     var variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
 
     if (variant) {
+      var variantPurchaseOp = purchaseOp;
+
+      try {
+        variantPurchaseOp = findPurchaseOption(variant, purchaseOption);
+      } catch (err) {// noop
+      }
+
       variation.variant_id = variant.id;
-      variation.price = variant.price || 0;
-      variation.sale_price = variant.sale_price || product.sale_price;
-      variation.orig_price = variant.orig_price || product.orig_price;
+      variation.price = variantPurchaseOp.price || 0;
+      variation.sale_price = variantPurchaseOp.sale_price || purchaseOp.sale_price;
+      variation.orig_price = variantPurchaseOp.orig_price || purchaseOp.orig_price;
       variation.stock_status = variant.stock_status;
       variation.stock_level = variant.stock_level || 0;
       variation.images = (variant.images && variant.images.length ? variant.images : product.images) || [];
@@ -256,6 +262,45 @@ function calculateVariation(input, options) {
   }
 
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
+}
+
+function findPurchaseOption(product, purchaseOption) {
+  var plan = get(purchaseOption, 'plan_id', get(purchaseOption, 'plan'));
+  var type = get(purchaseOption, 'type', typeof purchaseOption === 'string' ? purchaseOption : plan !== undefined ? 'subscription' : 'standard');
+  var option = get(product, "purchase_options.".concat(type));
+
+  if (!option && type !== 'standard') {
+    throw new Error("Product purchase option '".concat(type, "' not found or not active"));
+  }
+
+  if (option) {
+    if (option.plans) {
+      if (plan !== undefined) {
+        option = find(option.plans, {
+          id: plan
+        });
+
+        if (!option) {
+          throw new Error("Subscription purchase plan '".concat(plan, "' not found or not active"));
+        }
+      } else {
+        option = option.plans[0];
+      }
+    }
+
+    return _objectSpread(_objectSpread({}, option), {}, {
+      price: typeof option.price === 'number' ? option.price : product.price,
+      sale_price: typeof option.sale_price === 'number' ? option.sale_price : product.sale_price,
+      orig_price: typeof option.orig_price === 'number' ? option.orig_price : product.orig_price
+    });
+  }
+
+  return {
+    type: 'standard',
+    price: product.price,
+    sale_price: product.sale_price,
+    orig_price: product.orig_price
+  };
 }
 
 function getFilterableAttributeFilters(_x, _x2, _x3) {
