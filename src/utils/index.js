@@ -258,6 +258,7 @@ module.exports = {
   isFunction,
   isObject,
   isEqual,
+  snakeCase,
   map,
   reduce,
   base64Encode,

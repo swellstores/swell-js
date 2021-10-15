@@ -1,7 +1,16 @@
-const { reduce, find, uniq, defaultMethods, toSnake, toCamel, isEqual } = require('./utils');
+const {
+  get,
+  reduce,
+  find,
+  uniq,
+  defaultMethods,
+  toSnake,
+  toCamel,
+  isEqual,
+  snakeCase,
+} = require('./utils');
 const cache = require('./cache');
 const attributesApi = require('./attributes');
-const { cloneWith, snakeCase } = require('lodash');
 
 let OPTIONS;
 
@@ -110,13 +119,14 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculateVariation(input, options) {
+function calculateVariation(input, options, purchaseOption) {
   const product = OPTIONS.useCamelCase ? toSnake(input) : input;
+  const purchaseOp = findPurchaseOption(product, purchaseOption);
   const variation = {
     ...product,
-    price: product.price || 0,
-    sale_price: product.sale_price,
-    orig_price: product.orig_price,
+    price: purchaseOp.price || 0,
+    sale_price: purchaseOp.sale_price,
+    orig_price: purchaseOp.orig_price,
     stock_status: product.stock_status,
   };
   let optionPrice = 0;
@@ -135,10 +145,16 @@ function calculateVariation(input, options) {
   if (variantOptionValueIds.length > 0) {
     const variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
     if (variant) {
+      let variantPurchaseOp = purchaseOp;
+      try {
+        variantPurchaseOp = findPurchaseOption(variant, purchaseOption);
+      } catch (err) {
+        // noop
+      }
       variation.variant_id = variant.id;
-      variation.price = variant.price || 0;
-      variation.sale_price = variant.sale_price || product.sale_price;
-      variation.orig_price = variant.orig_price || product.orig_price;
+      variation.price = variantPurchaseOp.price || 0;
+      variation.sale_price = variantPurchaseOp.sale_price || purchaseOp.sale_price;
+      variation.orig_price = variantPurchaseOp.orig_price || purchaseOp.orig_price;
       variation.stock_status = variant.stock_status;
       variation.stock_level = variant.stock_level || 0;
       variation.images =
@@ -161,6 +177,47 @@ function calculateVariation(input, options) {
     delete variation.orig_price;
   }
   return OPTIONS.useCamelCase ? toCamel(variation) : variation;
+}
+
+function findPurchaseOption(product, purchaseOption) {
+  const plan = get(purchaseOption, 'plan_id', get(purchaseOption, 'plan'));
+  const type = get(
+    purchaseOption,
+    'type',
+    typeof purchaseOption === 'string'
+      ? purchaseOption
+      : plan !== undefined
+      ? 'subscription'
+      : 'standard',
+  );
+  let option = get(product, `purchase_options.${type}`);
+  if (!option && type !== 'standard') {
+    throw new Error(`Product purchase option '${type}' not found or not active`);
+  }
+  if (option) {
+    if (option.plans) {
+      if (plan !== undefined) {
+        option = find(option.plans, { id: plan });
+        if (!option) {
+          throw new Error(`Subscription purchase plan '${plan}' not found or not active`);
+        }
+      } else {
+        option = option.plans[0];
+      }
+    }
+    return {
+      ...option,
+      price: typeof option.price === 'number' ? option.price : product.price,
+      sale_price: typeof option.sale_price === 'number' ? option.sale_price : product.sale_price,
+      orig_price: typeof option.orig_price === 'number' ? option.orig_price : product.orig_price,
+    };
+  }
+  return {
+    type: 'standard',
+    price: product.price,
+    sale_price: product.sale_price,
+    orig_price: product.orig_price,
+  };
 }
 
 async function getFilterableAttributeFilters(request, products, options) {
