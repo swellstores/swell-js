@@ -58,13 +58,17 @@ function methods(request, opt) {
       }
 
       const { code = 'USD', type, decimals, rate } = state;
-      const formatCode = params.code || code;
-      const formatRate = params.rate || rate;
-      const formatLocale = params.locale || this.locale;
+      const {
+        shouldApplyConvert = true,
+        code: formatCode = code,
+        rate: formatRate = rate,
+        locale: formatLocale = this.locale,
+      } = params;
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
 
       let formatAmount = amount;
       if (
+        shouldApplyConvert &&
         (type === 'display' || params.rate) &&
         typeof formatAmount === 'number' &&
         typeof formatRate === 'number'
