@@ -157,6 +157,13 @@ describe('currency', () => {
 
       expect(formatted).toEqual('$0.77');
     });
+    
+    it('should not convert amount by selected display currency when according params flag is false', async () => {
+      await api.currency.select('USD');
+      const formatted = api.currency.format(1, { shouldApplyConvert: false });
+
+      expect(formatted).toEqual('$1.00');
+    });
 
     it('should convert amount by selected display currency with rounding (nearest whole)', async () => {
       const config = api.currency.list().find((curr) => curr.code === 'CNY');
