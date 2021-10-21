@@ -27,7 +27,8 @@ var _require = require('./utils'),
     merge = _require.merge,
     toCamel = _require.toCamel,
     isObject = _require.isObject,
-    cloneDeep = _require.cloneDeep;
+    cloneDeep = _require.cloneDeep,
+    camelCase = _require.camelCase;
 
 function methods(request, opt) {
   return {
@@ -36,7 +37,6 @@ function methods(request, opt) {
     paymentState: null,
     subscriptionState: null,
     sessionState: null,
-    locale: null,
     localizedState: {},
     refresh: function refresh() {
       this.state = null;
@@ -72,26 +72,23 @@ function methods(request, opt) {
       return this.getLocalizedState(stateName, id, def);
     },
     getLocalizedState: function getLocalizedState(stateName, id, def) {
-      if (!this.locale) {
-        this.locale = opt.api.locale.selected();
-      }
-
+      var locale = this.getCurrentLocale();
       var ls = this.localizedState;
 
-      if (ls.code !== this.locale) {
-        ls.code = this.locale;
-        delete ls[this.locale];
+      if (ls.code !== locale) {
+        ls.code = locale;
+        delete ls[locale];
       }
 
-      if (!ls[this.locale]) {
-        ls[this.locale] = {};
+      if (!ls[locale]) {
+        ls[locale] = {};
       }
 
-      if (!ls[this.locale][stateName]) {
-        ls[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      if (!ls[locale][stateName]) {
+        ls[locale][stateName] = this.decodeLocale(this[stateName]);
       }
 
-      return id ? get(ls[this.locale][stateName], id, def) : ls[this.locale][stateName];
+      return id ? get(ls[locale][stateName], id, def) : ls[locale][stateName];
     },
     findState: function findState(uri, stateName) {
       var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
@@ -118,6 +115,9 @@ function methods(request, opt) {
         def: def
       });
     },
+    getCurrentLocale: function getCurrentLocale() {
+      return opt.api.locale.selected();
+    },
     getStoreLocale: function getStoreLocale() {
       return get(this.state, 'store.locale');
     },
@@ -128,28 +128,20 @@ function methods(request, opt) {
       var model = _ref3.model,
           path = _ref3.path,
           value = _ref3.value;
+      var locale = this.getCurrentLocale();
       var stateName = model ? "".concat(model.replace(/s$/, ''), "State") : 'state';
       var useCamelCase = opt.useCamelCase;
       var mergeData = {};
-
-      if (model === 'menus') {
-        if (path !== undefined) {
-          _set(mergeData, path || '', value);
-        } else {
-          mergeData = value;
-        }
-      } else {
-        _set(mergeData, path || '', value);
-      }
+      if (path) _set(mergeData, path, value);else mergeData = value;
 
       if (useCamelCase) {
         mergeData = toCamel(mergeData);
       }
 
-      this[stateName] = merge(this[stateName], mergeData);
+      this[stateName] = merge(this[stateName] || {}, mergeData);
 
-      if (this.localizedState[this.locale]) {
-        this.localizedState[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      if (this.localizedState[locale]) {
+        this.localizedState[locale][stateName] = this.decodeLocale(this[stateName]);
       }
     },
     menus: function menus() {
@@ -187,6 +179,8 @@ function methods(request, opt) {
       });
     },
     decodeLocale: function decodeLocale(values) {
+      var locale = this.getCurrentLocale();
+
       if (!values || (0, _typeof2["default"])(values) !== 'object') {
         return values;
       }
@@ -201,7 +195,7 @@ function methods(request, opt) {
         configs = {};
       }
 
-      return decodeLocaleObjects(cloneDeep(values), this.locale, configs);
+      return decodeLocaleObjects(cloneDeep(values), locale, configs, opt);
     },
     load: function () {
       var _load = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
@@ -222,12 +216,26 @@ function methods(request, opt) {
                 payments = _yield$request.payments;
                 subscriptions = _yield$request.subscriptions;
                 session = _yield$request.session;
-                this.state = settings;
-                this.menuState = menus;
-                this.paymentState = payments;
-                this.subscriptionState = subscriptions;
-                this.sessionState = session;
                 this.localizedState = {};
+                this.set({
+                  value: settings
+                });
+                this.set({
+                  model: 'menus',
+                  value: menus
+                });
+                this.set({
+                  model: 'payments',
+                  value: payments
+                });
+                this.set({
+                  model: 'subscriptions',
+                  value: subscriptions
+                });
+                this.set({
+                  model: 'session',
+                  value: session
+                });
                 _context.next = 20;
                 break;
 
@@ -253,32 +261,32 @@ function methods(request, opt) {
   };
 }
 
-function decodeLocaleObjects(values, locale, configs) {
+function decodeLocaleObjects(values, locale, configs, opt) {
   if (isObject(values)) {
     var keys = Object.keys(values);
 
     for (var _i = 0, _keys = keys; _i < _keys.length; _i++) {
       var key = _keys[_i];
 
-      if (key == '$locale') {
-        decodeLocaleValue(locale, values, key, configs);
+      if (key === '$locale') {
+        decodeLocaleValue(locale, values, key, configs, opt);
         delete values.$locale;
       }
 
       if (values[key] !== undefined) {
-        values[key] = decodeLocaleObjects(values[key], locale, configs);
+        values[key] = decodeLocaleObjects(values[key], locale, configs, opt);
       }
     }
   } else if (values instanceof Array) {
     for (var i = 0; i < values.length; i++) {
-      values[i] = decodeLocaleObjects(values[i], locale, configs);
+      values[i] = decodeLocaleObjects(values[i], locale, configs, opt);
     }
   }
 
   return values;
 }
 
-function decodeLocaleValue(locale, values, key, configs) {
+function decodeLocaleValue(locale, values, key, configs, opt) {
   if (!locale || !isObject(values[key])) {
     return;
   }
@@ -290,10 +298,11 @@ function decodeLocaleValue(locale, values, key, configs) {
   for (var _i2 = 0, _localeKeys = localeKeys; _i2 < _localeKeys.length; _i2++) {
     var localeKey = _localeKeys[_i2];
     var shortKey = localeKey.replace(/\-.+$/, '');
+    var transformedLocale = opt.useCamelCase ? camelCase(locale) : locale;
 
-    if (localeKey === locale || shortKey === locale) {
-      returnLocaleKey = localeKey;
-      returnLocaleConfig = configs[localeKey];
+    if (localeKey === locale || localeKey === transformedLocale || shortKey === transformedLocale) {
+      returnLocaleKey = locale;
+      returnLocaleConfig = configs[locale];
     }
   } // Find configured locale for fallback
 

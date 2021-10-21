@@ -1,4 +1,4 @@
-const { get, find, set, merge, toCamel, isObject, cloneDeep } = require('./utils');
+const { get, find, set, merge, toCamel, isObject, cloneDeep, camelCase } = require('./utils');
 
 function methods(request, opt) {
   return {
@@ -7,8 +7,6 @@ function methods(request, opt) {
     paymentState: null,
     subscriptionState: null,
     sessionState: null,
-
-    locale: null,
     localizedState: {},
 
     refresh() {
@@ -35,21 +33,20 @@ function methods(request, opt) {
     },
 
     getLocalizedState(stateName, id, def) {
-      if (!this.locale) {
-        this.locale = opt.api.locale.selected();
-      }
+      const locale = this.getCurrentLocale();
+
       const ls = this.localizedState;
-      if (ls.code !== this.locale) {
-        ls.code = this.locale;
-        delete ls[this.locale];
+      if (ls.code !== locale) {
+        ls.code = locale;
+        delete ls[locale];
       }
-      if (!ls[this.locale]) {
-        ls[this.locale] = {};
+      if (!ls[locale]) {
+        ls[locale] = {};
       }
-      if (!ls[this.locale][stateName]) {
-        ls[this.locale][stateName] = this.decodeLocale(this[stateName]);
+      if (!ls[locale][stateName]) {
+        ls[locale][stateName] = this.decodeLocale(this[stateName]);
       }
-      return id ? get(ls[this.locale][stateName], id, def) : ls[this.locale][stateName];
+      return id ? get(ls[locale][stateName], id, def) : ls[locale][stateName];
     },
 
     findState(uri, stateName, { where = undefined, def = undefined } = {}) {
@@ -64,6 +61,10 @@ function methods(request, opt) {
       return this.getState('/settings', 'state', { id, def });
     },
 
+    getCurrentLocale() {
+      return opt.api.locale.selected();
+    },
+
     getStoreLocale() {
       return get(this.state, 'store.locale');
     },
@@ -73,24 +74,23 @@ function methods(request, opt) {
     },
 
     set({ model, path, value }) {
+      const locale = this.getCurrentLocale();
       const stateName = model ? `${model.replace(/s$/, '')}State` : 'state';
       const { useCamelCase } = opt;
+
       let mergeData = {};
-      if (model === 'menus') {
-        if (path !== undefined) {
-          set(mergeData, path || '', value);
-        } else {
-          mergeData = value;
-        }
-      } else {
-        set(mergeData, path || '', value);
-      }
+
+      if (path) set(mergeData, path, value);
+      else mergeData = value;
+
       if (useCamelCase) {
         mergeData = toCamel(mergeData);
       }
-      this[stateName] = merge(this[stateName], mergeData);
-      if (this.localizedState[this.locale]) {
-        this.localizedState[this.locale][stateName] = this.decodeLocale(this[stateName]);
+
+      this[stateName] = merge(this[stateName] || {}, mergeData);
+
+      if (this.localizedState[locale]) {
+        this.localizedState[locale][stateName] = this.decodeLocale(this[stateName]);
       }
     },
 
@@ -111,9 +111,12 @@ function methods(request, opt) {
     },
 
     decodeLocale(values) {
+      const locale = this.getCurrentLocale();
+
       if (!values || typeof values !== 'object') {
         return values;
       }
+
       let configs = this.getStoreLocales();
       if (configs) {
         configs = configs.reduce(
@@ -126,7 +129,8 @@ function methods(request, opt) {
       } else {
         configs = {};
       }
-      return decodeLocaleObjects(cloneDeep(values), this.locale, configs);
+
+      return decodeLocaleObjects(cloneDeep(values), locale, configs, opt);
     },
 
     async load() {
@@ -135,12 +139,32 @@ function methods(request, opt) {
           'get',
           '/settings/all',
         );
-        this.state = settings;
-        this.menuState = menus;
-        this.paymentState = payments;
-        this.subscriptionState = subscriptions;
-        this.sessionState = session;
+
         this.localizedState = {};
+
+        this.set({
+          value: settings,
+        });
+
+        this.set({
+          model: 'menus',
+          value: menus,
+        });
+
+        this.set({
+          model: 'payments',
+          value: payments,
+        });
+
+        this.set({
+          model: 'subscriptions',
+          value: subscriptions,
+        });
+
+        this.set({
+          model: 'session',
+          value: session,
+        });
       } catch (err) {
         console.error(`Swell: unable to loading settings (${err})`);
       }
@@ -148,27 +172,27 @@ function methods(request, opt) {
   };
 }
 
-function decodeLocaleObjects(values, locale, configs) {
+function decodeLocaleObjects(values, locale, configs, opt) {
   if (isObject(values)) {
     const keys = Object.keys(values);
     for (let key of keys) {
-      if (key == '$locale') {
-        decodeLocaleValue(locale, values, key, configs);
+      if (key === '$locale') {
+        decodeLocaleValue(locale, values, key, configs, opt);
         delete values.$locale;
       }
       if (values[key] !== undefined) {
-        values[key] = decodeLocaleObjects(values[key], locale, configs);
+        values[key] = decodeLocaleObjects(values[key], locale, configs, opt);
       }
     }
   } else if (values instanceof Array) {
     for (var i = 0; i < values.length; i++) {
-      values[i] = decodeLocaleObjects(values[i], locale, configs);
+      values[i] = decodeLocaleObjects(values[i], locale, configs, opt);
     }
   }
   return values;
 }
 
-function decodeLocaleValue(locale, values, key, configs) {
+function decodeLocaleValue(locale, values, key, configs, opt) {
   if (!locale || !isObject(values[key])) {
     return;
   }
@@ -178,9 +202,11 @@ function decodeLocaleValue(locale, values, key, configs) {
   const localeKeys = Object.keys(values[key]);
   for (let localeKey of localeKeys) {
     const shortKey = localeKey.replace(/\-.+$/, '');
-    if (localeKey === locale || shortKey === locale) {
-      returnLocaleKey = localeKey;
-      returnLocaleConfig = configs[localeKey];
+    const transformedLocale = opt.useCamelCase ? camelCase(locale) : locale;
+
+    if (localeKey === locale || localeKey === transformedLocale || shortKey === transformedLocale) {
+      returnLocaleKey = locale;
+      returnLocaleConfig = configs[locale];
     }
   }
 

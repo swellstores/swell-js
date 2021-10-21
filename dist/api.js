@@ -121,19 +121,19 @@ function _request() {
     var id,
         data,
         opt,
+        allOptions,
+        session,
+        locale,
+        currency,
+        baseUrl,
         reqMethod,
         reqUrl,
         reqData,
-        allOptions,
-        baseUrl,
         reqBody,
         exQuery,
         _reqUrl$split,
         _reqUrl$split2,
         fullQuery,
-        session,
-        locale,
-        currency,
         reqHeaders,
         response,
         responseSession,
@@ -149,6 +149,11 @@ function _request() {
             id = _args.length > 2 && _args[2] !== undefined ? _args[2] : undefined;
             data = _args.length > 3 && _args[3] !== undefined ? _args[3] : undefined;
             opt = _args.length > 4 && _args[4] !== undefined ? _args[4] : undefined;
+            allOptions = _objectSpread(_objectSpread({}, options), opt);
+            session = allOptions.session || getCookie('swell-session');
+            locale = allOptions.locale || getCookie('swell-locale');
+            currency = allOptions.currency || getCookie('swell-currency');
+            baseUrl = "".concat(allOptions.url).concat(allOptions.base || '', "/api");
             reqMethod = String(method).toLowerCase();
             reqUrl = url;
             reqData = id;
@@ -158,8 +163,6 @@ function _request() {
               reqData = data;
             }
 
-            allOptions = _objectSpread(_objectSpread({}, options), opt);
-            baseUrl = "".concat(allOptions.url).concat(allOptions.base || '', "/api");
             reqUrl = allOptions.fullUrl || "".concat(baseUrl, "/").concat(trimBoth(reqUrl));
             reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;
 
@@ -174,9 +177,6 @@ function _request() {
               reqBody = JSON.stringify(reqData);
             }
 
-            session = allOptions.session || getCookie('swell-session');
-            locale = allOptions.locale || getCookie('swell-locale');
-            currency = allOptions.currency || getCookie('swell-currency');
             reqHeaders = _objectSpread(_objectSpread(_objectSpread({
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(base64Encode(String(allOptions.key)))
