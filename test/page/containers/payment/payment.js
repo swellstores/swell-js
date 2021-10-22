@@ -23,6 +23,7 @@ import StripeIDeal from './stripe-ideal';
 import StripeKlarna from './stripe-klarna';
 import StripeBancontact from './stripe-bancontact';
 import Quickpay from './quickpay';
+import Paysafecard from './paysafecard';
 import Info from '../../components/info';
 
 const styles = {
@@ -170,6 +171,15 @@ class Payment extends React.Component {
       case 'quickpay':
         return (
           <Quickpay
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'paysafecard':
+        return (
+          <Paysafecard
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}

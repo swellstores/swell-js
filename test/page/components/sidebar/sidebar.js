@@ -110,6 +110,7 @@ class Sidebar extends React.Component {
           'Stripe-Klarna',
           'Stripe-Bancontact',
           'Quickpay',
+          'Paysafecard',
           'Square',
           'Braintree',
         ],

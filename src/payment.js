@@ -21,6 +21,7 @@ const {
   createQuickpayCard,
   getQuickpayCardDetais,
 } = require('./utils/quickpay');
+const { createPaysafecardPayment } = require('./utils/paysafecard');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -388,7 +389,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
       get(params, 'card.onError') ||
       get(params, 'ideal.onError') ||
       get(params, 'klarna.onError') ||
-      get(params, 'bancontact.onError');
+      get(params, 'bancontact.onError') ||
+      get(params, 'paysafecard.onError');
     if (isFunction(errorHandler)) {
       return errorHandler(error);
     }
@@ -571,19 +573,39 @@ async function paymentTokenize(request, params, payMethods, cart) {
             .then(() => window.location.replace(source.redirect.url))
             .catch((err) => onError(err));
     }
+  } else if (params.paysafecard && payMethods.paysafecard) {
+    const intent = await createPaysafecardPayment(cart, methods(request).createIntent).catch(
+      onError,
+    );
+    if (!intent) {
+      return;
+    }
+
+    await cartApi.methods(request, options).update({
+      billing: {
+        method: 'paysafecard',
+        intent: {
+          paysafecard: {
+            id: intent.id,
+          },
+        },
+      },
+    });
+
+    return window.location.replace(intent.redirect.auth_url);
   }
 }
 
 async function handleRedirect(request, params, cart) {
   const onError = (error) => {
-    const errorHandler = get(params, 'card.onError');
+    const errorHandler = get(params, 'card.onError') || get(params, 'paysafecard.onError');
     if (isFunction(errorHandler)) {
       return errorHandler(error);
     }
     throw new Error(error.message);
   };
   const onSuccess = (result) => {
-    const successHandler = get(params, 'card.onSuccess');
+    const successHandler = get(params, 'card.onSuccess') || get(params, 'paysafecard.onSuccess');
     if (isFunction(successHandler)) {
       return successHandler(result);
     }
@@ -596,6 +618,8 @@ async function handleRedirect(request, params, cart) {
   let result;
   if (gateway === 'quickpay') {
     result = await handleQuickpayRedirectAction(request, cart, params, queryParams);
+  } else if (gateway === 'paysafecard') {
+    result = await handlePaysafecardRedirectAction(request, cart, params, queryParams);
   }
 
   if (!result) {
@@ -635,6 +659,39 @@ async function handleQuickpayRedirectAction(request, cart, params, queryParams) 
       };
     default:
       return { error: { message: `Unknown redirect status: ${status}.` } };
+  }
+}
+
+async function handlePaysafecardRedirectAction(request, cart) {
+  const paymentId = get(cart, 'billing.intent.paysafecard.id');
+  if (!paymentId) {
+    return {
+      error: {
+        message: 'Paysafecard payment ID not defined.',
+      },
+    };
+  }
+
+  const intent = await methods(request).updateIntent({
+    gateway: 'paysafecard',
+    intent: { payment_id: paymentId },
+  });
+
+  if (!intent) {
+    return;
+  }
+  switch (intent.status) {
+    case 'AUTHORIZED':
+      return { success: true };
+    case 'CANCELED_CUSTOMER':
+      return {
+        error: {
+          message:
+            'We are unable to authenticate your payment method. Please choose a different payment method and try again.',
+        },
+      };
+    default:
+      return { error: { message: `Unknown redirect status: ${intent.status}.` } };
   }
 }
 
