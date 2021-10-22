@@ -2,7 +2,13 @@ const get = require('lodash/get');
 const toLower = require('lodash/toLower');
 const cartApi = require('./cart');
 const settingsApi = require('./settings');
-const { isFunction, vaultRequest, toSnake } = require('./utils');
+const {
+  isFunction,
+  vaultRequest,
+  toSnake,
+  getLocationParams,
+  removeUrlParams,
+} = require('./utils');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -10,6 +16,11 @@ const {
   createBancontactSource,
   stripeAmountByCurrency,
 } = require('./utils/stripe');
+const {
+  createQuickpayPayment,
+  createQuickpayCard,
+  getQuickpayCardDetais,
+} = require('./utils/quickpay');
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -18,7 +29,7 @@ const API = {};
 let options = null;
 
 function methods(request, opts) {
-  options = opts;
+  options = opts || options;
 
   return {
     params: null,
@@ -57,6 +68,14 @@ function methods(request, opts) {
       return await paymentTokenize(request, params || this.params, payMethods, cart);
     },
 
+    async handleRedirect(params) {
+      const cart = toSnake(await cartApi.methods(request, options).get());
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+      return await handleRedirect(request, params || this.params, cart);
+    },
+
     async createIntent(data) {
       const intent = await vaultRequest('post', '/intent', data);
       if (intent.errors) {
@@ -81,6 +100,19 @@ function methods(request, opts) {
         throw err;
       }
       return intent;
+    },
+
+    async authorizeGateway(data) {
+      const authorization = await vaultRequest('post', '/authorization', data);
+      if (authorization.errors) {
+        const param = Object.keys(authorization.errors)[0];
+        const err = new Error(authorization.errors[param].message || 'Unknown error');
+        err.code = 'vault_error';
+        err.status = 402;
+        err.param = param;
+        throw err;
+      }
+      return authorization;
     },
   };
 }
@@ -412,6 +444,28 @@ async function paymentTokenize(request, params, payMethods, cart) {
               .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
               .catch((err) => onError(err));
       }
+    } else if (payMethods.card.gateway === 'quickpay') {
+      const intent = await createQuickpayPayment(cart, methods(request).createIntent).catch(
+        onError,
+      );
+      if (!intent) {
+        return;
+      } else if (intent.error) {
+        return onError(intent.error);
+      }
+
+      await cartApi.methods(request, options).update({
+        billing: {
+          method: 'card',
+          intent: {
+            quickpay: {
+              id: intent,
+            },
+          },
+        },
+      });
+
+      createQuickpayCard(methods(request).authorizeGateway).catch(onError);
     }
   } else if (params.ideal && payMethods.ideal) {
     if (
@@ -517,6 +571,70 @@ async function paymentTokenize(request, params, payMethods, cart) {
             .then(() => window.location.replace(source.redirect.url))
             .catch((err) => onError(err));
     }
+  }
+}
+
+async function handleRedirect(request, params, cart) {
+  const onError = (error) => {
+    const errorHandler = get(params, 'card.onError');
+    if (isFunction(errorHandler)) {
+      return errorHandler(error);
+    }
+    throw new Error(error.message);
+  };
+  const onSuccess = (result) => {
+    const successHandler = get(params, 'card.onSuccess');
+    if (isFunction(successHandler)) {
+      return successHandler(result);
+    }
+    console.log(result);
+  };
+
+  const queryParams = getLocationParams(window.location);
+  removeUrlParams();
+  const { gateway } = queryParams;
+  let result;
+  if (gateway === 'quickpay') {
+    result = await handleQuickpayRedirectAction(request, cart, params, queryParams);
+  }
+
+  if (!result) {
+    return;
+  } else if (result.error) {
+    return onError(result.error);
+  } else {
+    return onSuccess(result);
+  }
+}
+
+async function handleQuickpayRedirectAction(request, cart, params, queryParams) {
+  const { redirect_status: status, card_id: id } = queryParams;
+
+  switch (status) {
+    case 'succeeded':
+      const card = await getQuickpayCardDetais(id, methods(request).authorizeGateway);
+      if (!card) {
+        return;
+      } else if (card.error) {
+        return card;
+      } else {
+        await cartApi.methods(request, options).update({
+          billing: {
+            method: 'card',
+            card,
+          },
+        });
+        return { success: true };
+      }
+    case 'canceled':
+      return {
+        error: {
+          message:
+            'We are unable to authenticate your payment method. Please choose a different payment method and try again.',
+        },
+      };
+    default:
+      return { error: { message: `Unknown redirect status: ${status}.` } };
   }
 }
 

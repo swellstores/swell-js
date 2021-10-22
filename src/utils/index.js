@@ -236,6 +236,22 @@ function base64Encode(string) {
   return Buffer.from(string).toString('base64');
 }
 
+function getLocationParams(location) {
+  const url = location.search;
+  const query = url.substr(1);
+  const result = {};
+  query.split('&').forEach(function (part) {
+    const item = part.split('=');
+    result[item[0]] = decodeURIComponent(item[1]);
+  });
+  return result;
+}
+
+function removeUrlParams() {
+  const url = window.location.origin + window.location.pathname;
+  window.history.pushState({ path: url }, '', url);
+}
+
 module.exports = {
   set,
   get,
@@ -264,4 +280,6 @@ module.exports = {
   base64Encode,
   defaultMethods,
   vaultRequest,
+  getLocationParams,
+  removeUrlParams,
 };

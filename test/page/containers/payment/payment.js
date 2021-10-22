@@ -22,6 +22,7 @@ import Stripe from './stripe';
 import StripeIDeal from './stripe-ideal';
 import StripeKlarna from './stripe-klarna';
 import StripeBancontact from './stripe-bancontact';
+import Quickpay from './quickpay';
 import Info from '../../components/info';
 
 const styles = {
@@ -160,6 +161,15 @@ class Payment extends React.Component {
       case 'stripe-bancontact':
         return (
           <StripeBancontact
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'quickpay':
+        return (
+          <Quickpay
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}
