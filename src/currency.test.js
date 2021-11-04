@@ -128,7 +128,7 @@ describe('currency', () => {
     });
 
     it('should format currency value by code', async () => {
-      const formatted = api.currency.format(1, { convert: true, code: 'USD' });
+      const formatted = api.currency.format(1, { code: 'USD' });
 
       expect(formatted).toEqual('$0.77');
     });
@@ -146,14 +146,14 @@ describe('currency', () => {
     });
 
     it('should convert amount by explicit rate', async () => {
-      const formatted = api.currency.format(1, { convert: true, rate: 0.5 });
+      const formatted = api.currency.format(1, { rate: 0.5 });
 
       expect(formatted).toEqual('A$0.50');
     });
 
     it('should convert amount by selected display currency', async () => {
       await api.currency.select('USD');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('$0.77');
     });
@@ -172,7 +172,7 @@ describe('currency', () => {
       config.round_fraction = 1;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥11.0000');
     });
@@ -184,7 +184,7 @@ describe('currency', () => {
       config.round_fraction = 1;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥11.0000');
     });
@@ -196,7 +196,7 @@ describe('currency', () => {
       config.round_fraction = 1;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥10.0000');
     });
@@ -208,7 +208,7 @@ describe('currency', () => {
       config.round_fraction = 0.25;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥10.2500');
     });
@@ -220,7 +220,7 @@ describe('currency', () => {
       config.round_fraction = 0.25;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥10.2500');
     });
@@ -232,7 +232,7 @@ describe('currency', () => {
       config.round_fraction = 0.25;
 
       await api.currency.select('CNY');
-      const formatted = api.currency.format(1, { convert: true });
+      const formatted = api.currency.format(1);
 
       expect(formatted).toEqual('CN¥9.2500');
     });

@@ -62,7 +62,7 @@ function methods(request, opt) {
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
-      const { convert = false } = params;
+      const { convert = true } = params;
 
       let formatAmount = amount;
       if (
