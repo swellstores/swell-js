@@ -62,6 +62,7 @@ function methods(request, opt) {
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
+      const { formatToNumber = false } = params;
 
       let formatAmount = amount;
       if (
@@ -80,7 +81,7 @@ function methods(request, opt) {
       });
       try {
         if (typeof formatAmount === 'number') {
-          return formatter.format(formatAmount);
+          return formatToNumber ? formatAmount : formatter.format(formatAmount);
         } else {
           // Otherwise return the currency symbol only, falling back to '$'
           const symbol = get(formatter.formatToParts(0), '0.value', '$');
@@ -90,7 +91,7 @@ function methods(request, opt) {
         console.warn(err);
       }
 
-      return String(amount);
+      return formatToNumber ? Number(amount) : String(amount);
     },
 
     formatter({ code, locale, decimals }) {
