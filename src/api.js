@@ -101,6 +101,16 @@ const api = {
 };
 
 async function request(method, url, id = undefined, data = undefined, opt = undefined) {
+  const allOptions = {
+    ...options,
+    ...opt,
+  };
+
+  const session = allOptions.session || getCookie('swell-session');
+  const locale = allOptions.locale || getCookie('swell-locale');
+  const currency = allOptions.currency || getCookie('swell-currency');
+
+  const baseUrl = `${allOptions.url}${allOptions.base || ''}/api`;
   const reqMethod = String(method).toLowerCase();
 
   let reqUrl = url;
@@ -110,13 +120,6 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     reqUrl = [trimEnd(url), trimStart(id)].join('/');
     reqData = data;
   }
-
-  const allOptions = {
-    ...options,
-    ...opt,
-  };
-
-  const baseUrl = `${allOptions.url}${allOptions.base || ''}/api`;
 
   reqUrl = allOptions.fullUrl || `${baseUrl}/${trimBoth(reqUrl)}`;
   reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;
@@ -130,10 +133,6 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   } else {
     reqBody = JSON.stringify(reqData);
   }
-
-  const session = allOptions.session || getCookie('swell-session');
-  const locale = allOptions.locale || getCookie('swell-locale');
-  const currency = allOptions.currency || getCookie('swell-currency');
 
   const reqHeaders = {
     'Content-Type': 'application/json',

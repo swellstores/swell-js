@@ -35,6 +35,7 @@ describe('settings', () => {
         }),
       );
 
+      api.locale.select('en');
       let test = await api.settings.get('test');
       expect(test).toEqual('hellooo');
 
@@ -64,6 +65,7 @@ describe('settings', () => {
         },
       };
 
+      api.locale.select('en');
       let test = await api.settings.get('test');
       expect(test).toEqual('hellooo');
 
@@ -101,6 +103,7 @@ describe('settings', () => {
         },
       ];
 
+      api.locale.select('en');
       let test = await api.settings.get('test');
       expect(test).toEqual('hellooo');
       let menu = await api.settings.menus('header');
@@ -124,6 +127,7 @@ describe('settings', () => {
         },
       };
 
+      api.locale.select('en');
       let test = await api.settings.get('store.name');
       expect(test).toEqual('test store');
 
