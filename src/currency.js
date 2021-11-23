@@ -62,9 +62,11 @@ function methods(request, opt) {
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
       const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
+      const { convert = true } = params;
 
       let formatAmount = amount;
       if (
+        convert &&
         (type === 'display' || params.rate) &&
         typeof formatAmount === 'number' &&
         typeof formatRate === 'number'
