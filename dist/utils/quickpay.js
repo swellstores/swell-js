@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createQuickpayCard = createQuickpayCard;
-exports.getQuickpayCardDetais = getQuickpayCardDetais;
 exports.createQuickpayPayment = createQuickpayPayment;
+exports.getQuickpayCardDetais = getQuickpayCardDetais;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
