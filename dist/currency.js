@@ -110,9 +110,11 @@ function methods(request, opt) {
       var formatRate = params.rate || rate;
       var formatLocale = params.locale || this.locale;
       var formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
+      var _params$convert = params.convert,
+          convert = _params$convert === void 0 ? true : _params$convert;
       var formatAmount = amount;
 
-      if ((type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
+      if (convert && (type === 'display' || params.rate) && typeof formatAmount === 'number' && typeof formatRate === 'number') {
         // Convert the price currency into the display currency
         formatAmount = this.applyRounding(amount * formatRate, state);
       }
