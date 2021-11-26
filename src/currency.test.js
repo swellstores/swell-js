@@ -318,11 +318,5 @@ describe('currency', () => {
 
       expect(formatted).toEqual('€1.00');
     });
-
-    it('should convert amount to number when formatToNumber flag is true', async () => {
-      const formatted = api.currency.format(1, { formatToNumber: true });
-
-      expect(formatted).toEqual(1);
-    });
   });
 });

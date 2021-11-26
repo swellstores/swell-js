@@ -271,7 +271,7 @@ async function payPalButton(request, cart, payMethods, params) {
 
   const { totalDue } = getTotalsDueRemaining(cart);
 
-  if (totalDue <= 0) {
+  if (!(totalDue > 0)) {
     throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
   }
 
@@ -293,7 +293,7 @@ async function payPalButton(request, cart, payMethods, params) {
             purchase_units: [
               {
                 amount: {
-                  value: totalDue,
+                  value: +totalDue.toFixed(2),
                   currency_code: cart.currency,
                 },
               },
