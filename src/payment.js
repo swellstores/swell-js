@@ -269,6 +269,12 @@ async function payPalButton(request, cart, payMethods, params) {
     return isFunction(successHandler) && successHandler();
   };
 
+  const { totalDue } = getTotalsDueRemaining(cart);
+
+  if (!(totalDue > 0)) {
+    throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
+  }
+
   paypal
     .Buttons(
       {
@@ -287,7 +293,7 @@ async function payPalButton(request, cart, payMethods, params) {
             purchase_units: [
               {
                 amount: {
-                  value: cart.grand_total,
+                  value: +totalDue.toFixed(2),
                   currency_code: cart.currency,
                 },
               },
@@ -693,6 +699,42 @@ async function handlePaysafecardRedirectAction(request, cart) {
     default:
       return { error: { message: `Unknown redirect status: ${intent.status}.` } };
   }
+}
+
+function getTotalsDueRemaining(cart) {
+  const { grand_total, account, account_credit_amount, giftcards } = cart;
+
+  let totalDue = grand_total;
+  let totalRemaining = 0;
+  let totalRemainingGiftcard = 0;
+  let totalRemainingAccount = 0;
+
+  if (giftcards && giftcards.length > 0) {
+    for (let gc of giftcards) {
+      totalDue -= gc.amount;
+    }
+    if (totalDue < 0) {
+      totalRemainingGiftcard = -totalDue;
+    }
+  }
+
+  const accountCreditAmount =
+    typeof account_credit_amount === 'number'
+      ? account_credit_amount
+      : account && account.balance;
+  if (accountCreditAmount > 0) {
+    totalDue -= accountCreditAmount;
+    if (totalDue < 0) {
+      totalRemainingAccount = -totalDue - totalRemainingGiftcard;
+    }
+  }
+
+  if (totalDue < 0) {
+    totalRemaining = -totalDue;
+    totalDue = 0;
+  }
+
+  return { totalDue, totalRemaining, totalRemainingGiftcard, totalRemainingAccount };
 }
 
 module.exports = {
