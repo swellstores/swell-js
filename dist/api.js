@@ -246,7 +246,7 @@ function _request() {
 
 if (typeof window !== 'undefined') {
   window.swell = {
-    version: '3.12.1'
+    version: '3.12.2'
   };
 }
 

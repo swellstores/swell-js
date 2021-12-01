@@ -12,6 +12,12 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 var get = require('lodash/get');
 
 var toLower = require('lodash/toLower');
@@ -652,7 +658,7 @@ function payPalButton(_x16, _x17, _x18, _x19) {
 
 function _payPalButton() {
   _payPalButton = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(request, cart, payMethods, params) {
-    var paypal, _params$paypal, locale, style, elementId, onError, onSuccess;
+    var paypal, _params$paypal, locale, style, elementId, onError, onSuccess, _getTotalsDueRemainin, totalDue;
 
     return _regenerator["default"].wrap(function _callee11$(_context11) {
       while (1) {
@@ -678,6 +684,16 @@ function _payPalButton() {
               return isFunction(successHandler) && successHandler();
             };
 
+            _getTotalsDueRemainin = getTotalsDueRemaining(cart), totalDue = _getTotalsDueRemainin.totalDue;
+
+            if (totalDue > 0) {
+              _context11.next = 9;
+              break;
+            }
+
+            throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
+
+          case 9:
             paypal.Buttons({
               locale: locale || 'en_US',
               style: style || {
@@ -693,7 +709,7 @@ function _payPalButton() {
                   intent: 'AUTHORIZE',
                   purchase_units: [{
                     amount: {
-                      value: cart.grand_total,
+                      value: +totalDue.toFixed(2),
                       currency_code: cart.currency
                     }
                   }]
@@ -728,7 +744,7 @@ function _payPalButton() {
               }
             }, onError).render(elementId || '#paypal-button');
 
-          case 7:
+          case 10:
           case "end":
             return _context11.stop();
         }
@@ -1475,6 +1491,59 @@ function _handlePaysafecardRedirectAction() {
     }, _callee16);
   }));
   return _handlePaysafecardRedirectAction.apply(this, arguments);
+}
+
+function getTotalsDueRemaining(cart) {
+  var grand_total = cart.grand_total,
+      account = cart.account,
+      account_credit_amount = cart.account_credit_amount,
+      giftcards = cart.giftcards;
+  var totalDue = grand_total;
+  var totalRemaining = 0;
+  var totalRemainingGiftcard = 0;
+  var totalRemainingAccount = 0;
+
+  if (giftcards && giftcards.length > 0) {
+    var _iterator = _createForOfIteratorHelper(giftcards),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var gc = _step.value;
+        totalDue -= gc.amount;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    if (totalDue < 0) {
+      totalRemainingGiftcard = -totalDue;
+    }
+  }
+
+  var accountCreditAmount = typeof account_credit_amount === 'number' ? account_credit_amount : account && account.balance;
+
+  if (accountCreditAmount > 0) {
+    totalDue -= accountCreditAmount;
+
+    if (totalDue < 0) {
+      totalRemainingAccount = -totalDue - totalRemainingGiftcard;
+    }
+  }
+
+  if (totalDue < 0) {
+    totalRemaining = -totalDue;
+    totalDue = 0;
+  }
+
+  return {
+    totalDue: totalDue,
+    totalRemaining: totalRemaining,
+    totalRemainingGiftcard: totalRemainingGiftcard,
+    totalRemainingAccount: totalRemainingAccount
+  };
 }
 
 module.exports = {
