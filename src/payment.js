@@ -223,7 +223,7 @@ const loadScript = async (id, src) => {
 async function stripeElements(request, payMethods, params) {
   const { publishable_key } = payMethods.card;
   const stripe = window.Stripe(publishable_key);
-  const elements = stripe.elements();
+  const elements = stripe.elements(params.config);
   const createElement = (type) => {
     const elementParams = get(params, `card[${type}]`) || params.card || params.ideal;
     const elementOptions = elementParams.options || {};
@@ -719,9 +719,7 @@ function getTotalsDueRemaining(cart) {
   }
 
   const accountCreditAmount =
-    typeof account_credit_amount === 'number'
-      ? account_credit_amount
-      : account && account.balance;
+    typeof account_credit_amount === 'number' ? account_credit_amount : account && account.balance;
   if (accountCreditAmount > 0) {
     totalDue -= accountCreditAmount;
     if (totalDue < 0) {
