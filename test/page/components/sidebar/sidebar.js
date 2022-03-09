@@ -113,6 +113,7 @@ class Sidebar extends React.Component {
           'Paysafecard',
           'Square',
           'Braintree',
+          'Klarna',
         ],
       },
     ].map((item, index) =>

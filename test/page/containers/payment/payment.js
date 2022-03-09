@@ -24,6 +24,7 @@ import StripeKlarna from './stripe-klarna';
 import StripeBancontact from './stripe-bancontact';
 import Quickpay from './quickpay';
 import Paysafecard from './paysafecard';
+import Klarna from './klarna';
 import Info from '../../components/info';
 
 const styles = {
@@ -180,6 +181,15 @@ class Payment extends React.Component {
       case 'paysafecard':
         return (
           <Paysafecard
+            cart={cart}
+            onCartUpdate={onCartUpdate}
+            onOrderSubmit={onOrderSubmit}
+            onError={onError}
+          />
+        );
+      case 'klarna':
+        return (
+          <Klarna
             cart={cart}
             onCartUpdate={onCartUpdate}
             onOrderSubmit={onOrderSubmit}
