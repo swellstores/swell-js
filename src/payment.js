@@ -310,9 +310,11 @@ async function payPalButton(request, cart, payMethods, params) {
                 'purchase_units[0].payments.authorizations[0].id',
               );
               return cartApi.methods(request).update({
-                account: {
-                  email: payer.email_address,
-                },
+                ...(!cart.account_logged_in && {
+                  account: {
+                    email: payer.email_address,
+                  },
+                }),
                 billing: { method: 'paypal', paypal: { authorization_id: authorizationID } },
                 shipping: {
                   name: shipping.name.full_name,
