@@ -8,11 +8,11 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -47,6 +47,9 @@ var _require3 = require('./utils/quickpay'),
 
 var _require4 = require('./utils/paysafecard'),
     createPaysafecardPayment = _require4.createPaysafecardPayment;
+
+var _require5 = require('./utils/klarna'),
+    createKlarnaSession = _require5.createKlarnaSession;
 
 var LOADING_SCRIPTS = {};
 var CARD_ELEMENTS = {};
@@ -611,7 +614,7 @@ function _stripeElements() {
           case 0:
             publishable_key = payMethods.card.publishable_key;
             stripe = window.Stripe(publishable_key);
-            elements = stripe.elements();
+            elements = stripe.elements(params.config);
 
             createElement = function createElement(type) {
               var elementParams = get(params, "card[".concat(type, "]")) || params.card || params.ideal;
@@ -720,10 +723,11 @@ function _payPalButton() {
                   var payer = authorization.payer;
                   var shipping = get(authorization, 'purchase_units[0].shipping');
                   var authorizationID = get(authorization, 'purchase_units[0].payments.authorizations[0].id');
-                  return cartApi.methods(request).update({
+                  return cartApi.methods(request).update(_objectSpread(_objectSpread({}, !cart.account_logged_in && {
                     account: {
                       email: payer.email_address
-                    },
+                    }
+                  }), {}, {
                     billing: {
                       method: 'paypal',
                       paypal: {
@@ -739,7 +743,7 @@ function _payPalButton() {
                       zip: shipping.address.postal_code,
                       country: shipping.address.country_code
                     }
-                  });
+                  }));
                 }).then(onSuccess)["catch"](onError);
               }
             }, onError).render(elementId || '#paypal-button');
@@ -846,7 +850,7 @@ function paymentTokenize(_x24, _x25, _x26, _x27) {
 
 function _paymentTokenize() {
   _paymentTokenize = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee13(request, params, payMethods, cart) {
-    var onError, stripe, paymentMethod, currency, amount, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _intent, _yield$createIDealPay, _error, _paymentMethod, _currency, _amount, _intent2, publishable_key, _stripe, settings, _yield$createKlarnaSo, _error2, source, _publishable_key, _stripe2, _yield$createBanconta, _error3, _source, _intent3;
+    var onError, stripe, paymentMethod, currency, amount, stripeCustomer, intent, _yield$stripe$confirm, paymentIntent, error, _intent, _yield$createIDealPay, _error, _paymentMethod, _currency, _amount, _intent2, session, publishable_key, _stripe, settings, _yield$createKlarnaSo, _error2, source, _publishable_key, _stripe2, _yield$createBanconta, _error3, _source, _intent3;
 
     return _regenerator["default"].wrap(function _callee13$(_context13) {
       while (1) {
@@ -1015,7 +1019,7 @@ function _paymentTokenize() {
             createQuickpayCard(methods(request).authorizeGateway)["catch"](onError);
 
           case 48:
-            _context13.next = 121;
+            _context13.next = 128;
             break;
 
           case 50:
@@ -1108,44 +1112,59 @@ function _paymentTokenize() {
             return _context13.abrupt("return", _context13.t5);
 
           case 75:
-            _context13.next = 121;
+            _context13.next = 128;
             break;
 
           case 77:
             if (!(params.klarna && payMethods.klarna)) {
-              _context13.next = 97;
+              _context13.next = 104;
               break;
             }
 
+            if (!(payMethods.klarna.gateway === 'klarna')) {
+              _context13.next = 85;
+              break;
+            }
+
+            _context13.next = 81;
+            return createKlarnaSession(cart, methods(request).createIntent)["catch"](function (err) {
+              return onError(err);
+            });
+
+          case 81:
+            session = _context13.sent;
+            return _context13.abrupt("return", session && window.location.replace(session.redirect_url));
+
+          case 85:
             if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
-              _context13.next = 95;
+              _context13.next = 102;
               break;
             }
 
             if (window.Stripe) {
-              _context13.next = 82;
+              _context13.next = 89;
               break;
             }
 
-            _context13.next = 82;
+            _context13.next = 89;
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
-          case 82:
+          case 89:
             publishable_key = payMethods.card.publishable_key;
             _stripe = window.Stripe(publishable_key);
             _context13.t6 = toSnake;
-            _context13.next = 87;
+            _context13.next = 94;
             return settingsApi.methods(request, options).get();
 
-          case 87:
+          case 94:
             _context13.t7 = _context13.sent;
             settings = (0, _context13.t6)(_context13.t7);
-            _context13.next = 91;
+            _context13.next = 98;
             return createKlarnaSource(_stripe, _objectSpread(_objectSpread({}, cart), {}, {
               settings: settings.store
             }));
 
-          case 91:
+          case 98:
             _yield$createKlarnaSo = _context13.sent;
             _error2 = _yield$createKlarnaSo.error;
             source = _yield$createKlarnaSo.source;
@@ -1159,36 +1178,36 @@ function _paymentTokenize() {
               return onError(err);
             }));
 
-          case 95:
-            _context13.next = 121;
+          case 102:
+            _context13.next = 128;
             break;
 
-          case 97:
+          case 104:
             if (!(params.bancontact && payMethods.bancontact)) {
-              _context13.next = 112;
+              _context13.next = 119;
               break;
             }
 
             if (!(payMethods.card && payMethods.card.gateway === 'stripe')) {
-              _context13.next = 110;
+              _context13.next = 117;
               break;
             }
 
             if (window.Stripe) {
-              _context13.next = 102;
+              _context13.next = 109;
               break;
             }
 
-            _context13.next = 102;
+            _context13.next = 109;
             return loadScript('stripe-js', 'https://js.stripe.com/v3/');
 
-          case 102:
+          case 109:
             _publishable_key = payMethods.card.publishable_key;
             _stripe2 = window.Stripe(_publishable_key);
-            _context13.next = 106;
+            _context13.next = 113;
             return createBancontactSource(_stripe2, cart);
 
-          case 106:
+          case 113:
             _yield$createBanconta = _context13.sent;
             _error3 = _yield$createBanconta.error;
             _source = _yield$createBanconta.source;
@@ -1202,31 +1221,31 @@ function _paymentTokenize() {
               return onError(err);
             }));
 
-          case 110:
-            _context13.next = 121;
+          case 117:
+            _context13.next = 128;
             break;
 
-          case 112:
+          case 119:
             if (!(params.paysafecard && payMethods.paysafecard)) {
-              _context13.next = 121;
+              _context13.next = 128;
               break;
             }
 
-            _context13.next = 115;
+            _context13.next = 122;
             return createPaysafecardPayment(cart, methods(request).createIntent)["catch"](onError);
 
-          case 115:
+          case 122:
             _intent3 = _context13.sent;
 
             if (_intent3) {
-              _context13.next = 118;
+              _context13.next = 125;
               break;
             }
 
             return _context13.abrupt("return");
 
-          case 118:
-            _context13.next = 120;
+          case 125:
+            _context13.next = 127;
             return cartApi.methods(request, options).update({
               billing: {
                 method: 'paysafecard',
@@ -1238,10 +1257,10 @@ function _paymentTokenize() {
               }
             });
 
-          case 120:
+          case 127:
             return _context13.abrupt("return", window.location.replace(_intent3.redirect.auth_url));
 
-          case 121:
+          case 128:
           case "end":
             return _context13.stop();
         }
@@ -1263,7 +1282,7 @@ function _handleRedirect3() {
         switch (_context14.prev = _context14.next) {
           case 0:
             onError = function onError(error) {
-              var errorHandler = get(params, 'card.onError') || get(params, 'paysafecard.onError');
+              var errorHandler = get(params, 'card.onError') || get(params, 'paysafecard.onError') || get(params, 'klarna.onError');
 
               if (isFunction(errorHandler)) {
                 return errorHandler(error);
@@ -1273,7 +1292,7 @@ function _handleRedirect3() {
             };
 
             onSuccess = function onSuccess(result) {
-              var successHandler = get(params, 'card.onSuccess') || get(params, 'paysafecard.onSuccess');
+              var successHandler = get(params, 'card.onSuccess') || get(params, 'paysafecard.onSuccess') || get(params, 'klarna.onSuccess');
 
               if (isFunction(successHandler)) {
                 return successHandler(result);
@@ -1296,12 +1315,12 @@ function _handleRedirect3() {
 
           case 8:
             result = _context14.sent;
-            _context14.next = 15;
+            _context14.next = 21;
             break;
 
           case 11:
             if (!(gateway === 'paysafecard')) {
-              _context14.next = 15;
+              _context14.next = 17;
               break;
             }
 
@@ -1310,27 +1329,41 @@ function _handleRedirect3() {
 
           case 14:
             result = _context14.sent;
+            _context14.next = 21;
+            break;
 
-          case 15:
+          case 17:
+            if (!(gateway === 'klarna_direct')) {
+              _context14.next = 21;
+              break;
+            }
+
+            _context14.next = 20;
+            return handleDirectKlarnaRedirectAction(request, cart, params, queryParams);
+
+          case 20:
+            result = _context14.sent;
+
+          case 21:
             if (result) {
-              _context14.next = 19;
+              _context14.next = 25;
               break;
             }
 
             return _context14.abrupt("return");
 
-          case 19:
+          case 25:
             if (!result.error) {
-              _context14.next = 23;
+              _context14.next = 29;
               break;
             }
 
             return _context14.abrupt("return", onError(result.error));
 
-          case 23:
+          case 29:
             return _context14.abrupt("return", onSuccess(result));
 
-          case 24:
+          case 30:
           case "end":
             return _context14.stop();
         }
@@ -1491,6 +1524,56 @@ function _handlePaysafecardRedirectAction() {
     }, _callee16);
   }));
   return _handlePaysafecardRedirectAction.apply(this, arguments);
+}
+
+function handleDirectKlarnaRedirectAction(_x37, _x38, _x39, _x40) {
+  return _handleDirectKlarnaRedirectAction.apply(this, arguments);
+}
+
+function _handleDirectKlarnaRedirectAction() {
+  _handleDirectKlarnaRedirectAction = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee17(request, cart, params, queryParams) {
+    var authorization_token;
+    return _regenerator["default"].wrap(function _callee17$(_context17) {
+      while (1) {
+        switch (_context17.prev = _context17.next) {
+          case 0:
+            authorization_token = queryParams.authorization_token;
+
+            if (authorization_token) {
+              _context17.next = 3;
+              break;
+            }
+
+            return _context17.abrupt("return", {
+              error: {
+                message: 'We are unable to authenticate your payment method. Please choose a different payment method and try again.'
+              }
+            });
+
+          case 3:
+            _context17.next = 5;
+            return cartApi.methods(request, options).update({
+              billing: {
+                method: 'klarna',
+                klarna: {
+                  token: authorization_token
+                }
+              }
+            });
+
+          case 5:
+            return _context17.abrupt("return", {
+              success: true
+            });
+
+          case 6:
+          case "end":
+            return _context17.stop();
+        }
+      }
+    }, _callee17);
+  }));
+  return _handleDirectKlarnaRedirectAction.apply(this, arguments);
 }
 
 function getTotalsDueRemaining(cart) {
