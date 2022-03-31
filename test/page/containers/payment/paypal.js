@@ -21,7 +21,7 @@ class PayPal extends React.Component {
           label: 'buynow',
           tagline: false,
         },
-        onSuccess: () => onOrderSubmit(),
+        onSuccess: onOrderSubmit,
         onError: (err) => onError(err.message),
       },
     });

@@ -189,7 +189,7 @@ async function render(request, cart, payMethods, params) {
       if (!window.paypal) {
         await loadScript(
           'paypal-sdk',
-          `https://www.paypal.com/sdk/js?currency=${cart.currency}&client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize`,
+          `https://www.paypal.com/sdk/js?currency=${cart.currency}&client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize&commit=false`,
         );
       }
       await payPalButton(request, cart, payMethods, params);
@@ -302,21 +302,22 @@ async function payPalButton(request, cart, payMethods, params) {
           }),
         onApprove: (data, actions) =>
           actions.order
-            .authorize()
-            .then((authorization) => {
-              const payer = authorization.payer;
-              const shipping = get(authorization, 'purchase_units[0].shipping');
-              const authorizationID = get(
-                authorization,
-                'purchase_units[0].payments.authorizations[0].id',
-              );
+            .get()
+            .then((order) => {
+              const orderId = order.id;
+              const payer = order.payer;
+              const shipping = get(order, 'purchase_units[0].shipping');
+
               return cartApi.methods(request).update({
                 ...(!cart.account_logged_in && {
                   account: {
                     email: payer.email_address,
                   },
                 }),
-                billing: { method: 'paypal', paypal: { authorization_id: authorizationID } },
+                billing: {
+                  method: 'paypal',
+                  paypal: { order_id: orderId },
+                },
                 shipping: {
                   name: shipping.name.full_name,
                   address1: shipping.address.address_line_1,
