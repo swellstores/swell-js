@@ -550,7 +550,7 @@ function _render() {
             }
 
             _context9.next = 54;
-            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?currency=".concat(cart.currency, "&client-id=").concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&intent=authorize"));
+            return loadScript('paypal-sdk', "https://www.paypal.com/sdk/js?currency=".concat(cart.currency, "&client-id=").concat(payMethods.paypal.client_id, "&merchant-id=").concat(payMethods.paypal.merchant_id, "&intent=authorize&commit=false"));
 
           case 54:
             _context9.next = 56;
@@ -719,10 +719,10 @@ function _payPalButton() {
                 });
               },
               onApprove: function onApprove(data, actions) {
-                return actions.order.authorize().then(function (authorization) {
-                  var payer = authorization.payer;
-                  var shipping = get(authorization, 'purchase_units[0].shipping');
-                  var authorizationID = get(authorization, 'purchase_units[0].payments.authorizations[0].id');
+                return actions.order.get().then(function (order) {
+                  var orderId = order.id;
+                  var payer = order.payer;
+                  var shipping = get(order, 'purchase_units[0].shipping');
                   return cartApi.methods(request).update(_objectSpread(_objectSpread({}, !cart.account_logged_in && {
                     account: {
                       email: payer.email_address
@@ -731,7 +731,7 @@ function _payPalButton() {
                     billing: {
                       method: 'paypal',
                       paypal: {
-                        authorization_id: authorizationID
+                        order_id: orderId
                       }
                     },
                     shipping: {
