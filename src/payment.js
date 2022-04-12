@@ -394,6 +394,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 }
 
 async function paymentTokenize(request, params, payMethods, cart) {
+  const { totalDue } = getTotalsDueRemaining(cart);
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -406,6 +407,12 @@ async function paymentTokenize(request, params, payMethods, cart) {
     }
     throw new Error(error.message);
   };
+  const onSuccess = (result) => {
+    const successHandler = get(params, 'card.onSuccess') || get(params, 'ideal.onSuccess');
+    if (isFunction(successHandler)) {
+      return successHandler(result);
+    }
+  };
 
   if (!params) {
     return onError({ message: 'Tokenization parameters not passed' });
@@ -417,10 +424,21 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
+      } else if (totalDue < 1) {
+        return cartApi
+          .methods(request, options)
+          .update({
+            billing: {
+              method: 'card',
+              card: paymentMethod,
+            },
+          })
+          .then(onSuccess)
+          .catch(onError);
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, get(cart, 'grand_total', 0));
+      const amount = stripeAmountByCurrency(currency, totalDue);
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -435,7 +453,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               ...(stripeCustomer ? { customer: stripeCustomer } : {}),
             },
           })
-          .catch((err) => onError(err)),
+          .catch(onError),
       );
 
       if (intent && intent.status === 'requires_confirmation') {
@@ -453,8 +471,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
                   },
                 },
               })
-              .then(() => isFunction(params.card.onSuccess) && params.card.onSuccess())
-              .catch((err) => onError(err));
+              .then(onSuccess)
+              .catch(onError);
       }
     } else if (payMethods.card.gateway === 'quickpay') {
       const intent = await createQuickpayPayment(cart, methods(request).createIntent).catch(
@@ -497,7 +515,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'eur'));
-      const amount = stripeAmountByCurrency(currency, get(cart, 'grand_total', 0));
+      const amount = stripeAmountByCurrency(currency, totalDue);
       const intent = toSnake(
         await methods(request)
           .createIntent({
@@ -512,7 +530,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               return_url: window.location.href,
             },
           })
-          .catch((err) => onError(err)),
+          .catch(onError),
       );
 
       if (intent) {
@@ -527,7 +545,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               intent: { stripe: { id: intent.id } },
             },
           })
-          .catch((err) => onError(err));
+          .catch(onError);
 
         return (
           (intent.status === 'requires_action' || intent.status === 'requires_source_action') &&
@@ -537,9 +555,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
     }
   } else if (params.klarna && payMethods.klarna) {
     if (payMethods.klarna.gateway === 'klarna') {
-      const session = await createKlarnaSession(cart, methods(request).createIntent).catch((err) =>
-        onError(err),
-      );
+      const session = await createKlarnaSession(cart, methods(request).createIntent).catch(onError);
       return session && window.location.replace(session.redirect_url);
     } else if (payMethods.card && payMethods.card.gateway === 'stripe') {
       if (!window.Stripe) {
@@ -564,7 +580,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               },
             })
             .then(() => window.location.replace(source.redirect.url))
-            .catch((err) => onError(err));
+            .catch(onError);
     }
   } else if (params.bancontact && payMethods.bancontact) {
     if (payMethods.card && payMethods.card.gateway === 'stripe') {
@@ -586,7 +602,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               },
             })
             .then(() => window.location.replace(source.redirect.url))
-            .catch((err) => onError(err));
+            .catch(onError);
     }
   } else if (params.paysafecard && payMethods.paysafecard) {
     const intent = await createPaysafecardPayment(cart, methods(request).createIntent).catch(
@@ -630,7 +646,6 @@ async function handleRedirect(request, params, cart) {
     if (isFunction(successHandler)) {
       return successHandler(result);
     }
-    console.log(result);
   };
 
   const queryParams = getLocationParams(window.location);
