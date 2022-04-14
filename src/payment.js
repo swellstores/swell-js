@@ -37,6 +37,10 @@ function methods(request, opts) {
     params: null,
     methodSettings: null,
 
+    get(id) {
+      return request('get', '/payments', id);
+    },
+
     async methods() {
       if (this.methodSettings) {
         return this.methodSettings;
@@ -76,6 +80,18 @@ function methods(request, opts) {
         throw new Error('Cart not found');
       }
       return await handleRedirect(request, params || this.params, cart);
+    },
+
+    async authenticate(id) {
+      const payment = await this.get(id);
+      if (!payment) {
+        throw new Error('Payment not found');
+      }
+      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
+      if (payMethods.error) {
+        throw new Error(payMethods.error);
+      }
+      return await authenticate(request, payment, payMethods);
     },
 
     async createIntent(data) {
@@ -754,6 +770,44 @@ async function handleDirectKlarnaRedirectAction(request, cart, params, queryPara
     },
   });
   return { success: true };
+}
+
+async function authenticate(request, payment, payMethods) {
+  const { method, gateway } = payment;
+  if (method === 'card') {
+    const cardMethod = payMethods.card;
+    if (!cardMethod) {
+      console.error(
+        `Authenticate error: credit card payments are disabled. See Payment settings in the Swell dashboard for details.`,
+      );
+    } else if (gateway === 'stripe' && cardMethod.gateway === 'stripe') {
+      if (!window.Stripe) {
+        await loadScript('stripe-js', 'https://js.stripe.com/v3/');
+      }
+      return authenticateStripeCard(request, payment, payMethods);
+    }
+  }
+}
+
+async function authenticateStripeCard(request, payment, payMethods) {
+  const { transaction_id: id, card: { token } = {} } = payment;
+  const { publishable_key } = payMethods.card;
+  const intent = await methods(request, options)
+    .updateIntent({
+      gateway: 'stripe',
+      intent: { id, payment_method: token },
+    })
+    .catch((error) => ({
+      error,
+    }));
+  if (intent.error) {
+    return intent;
+  }
+  const stripe = window.Stripe(publishable_key);
+  const actionResult = await stripe.confirmCardPayment(intent.client_secret);
+  return actionResult.error
+    ? { error: { message: actionResult.error.message, code: actionResult.error.code } }
+    : { status: actionResult.status };
 }
 
 function getTotalsDueRemaining(cart) {
