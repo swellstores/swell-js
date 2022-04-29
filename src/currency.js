@@ -1,4 +1,4 @@
-const { get, find } = require('./utils');
+const { get, find, round } = require('./utils');
 const { getCookie, setCookie } = require('./cookie');
 
 const FORMATTERS = {};
@@ -15,17 +15,19 @@ function methods(request, opt) {
 
     async select(currency) {
       this.set(currency);
-      setCookie('swell-currency', currency);
-      return await request('put', '/session', { currency });
+
+      return request('put', '/session', { currency });
     },
 
     selected() {
-      if (this.code) {
-        return this.code;
+      if (!this.code) {
+        this.set(
+          getCookie('swell-currency') ||
+          opt.api.settings.get('store.currency')
+        );
       }
-      const storeCurrency = opt.api.settings.get('store.currency');
-      const cookieCurrency = getCookie('swell-currency');
-      return cookieCurrency || storeCurrency;
+
+      return this.code;
     },
 
     get() {
@@ -41,12 +43,16 @@ function methods(request, opt) {
     set(code = 'USD') {
       this.code = code;
       this.state = find(this.list(), { code }) || { code };
+
       this.locale = String(
         opt.api.settings.get(
           'store.locale',
           typeof navigator === 'object' ? navigator.language : 'en-US',
         ),
       );
+
+      setCookie('swell-currency', code);
+
       return this.state;
     },
 
@@ -96,13 +102,24 @@ function methods(request, opt) {
     },
 
     formatter({ code, locale, decimals }) {
+      locale = String(locale || '').replace('_', '-');
+
       const key = [code, locale, decimals].join('|');
+
       if (FORMATTERS[key]) {
         return FORMATTERS[key];
       }
 
-      const formatLocale = String(locale || '').replace('_', '-') || 'en-US';
+      const formatLocales = [];
+
+      if (locale) {
+        formatLocales.push(locale);
+      }
+
+      formatLocales.push('en-US');
+
       const formatDecimals = typeof decimals === 'number' ? decimals : undefined;
+
       const props = {
         style: 'currency',
         currency: code,
@@ -113,7 +130,7 @@ function methods(request, opt) {
 
       try {
         try {
-          FORMATTERS[key] = new Intl.NumberFormat(formatLocale, props);
+          FORMATTERS[key] = new Intl.NumberFormat(formatLocales, props);
         } catch (err) {
           if (err.message.indexOf('Invalid language tag') >= 0) {
             FORMATTERS[key] = new Intl.NumberFormat('en-US', props);
@@ -166,10 +183,7 @@ function methods(request, opt) {
       return this.round(roundValue, scale);
     },
 
-    round(value, scale = 0) {
-      // TODO: this is unrealiable (but only used for display)
-      return Number(Number(value).toFixed(scale));
-    },
+    round,
   };
 }
 

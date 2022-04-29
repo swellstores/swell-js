@@ -135,12 +135,22 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   }
 
   const reqHeaders = {
+    Accept: 'application/json',
     'Content-Type': 'application/json',
     Authorization: `Basic ${base64Encode(String(allOptions.key))}`,
-    ...(session ? { 'X-Session': session } : {}),
-    ...(locale ? { 'X-Locale': locale } : {}),
-    ...(currency ? { 'X-Currency': currency } : {}),
   };
+
+  if (session) {
+    reqHeaders['X-Session'] = session;
+  }
+
+  if (locale) {
+    reqHeaders['X-Locale'] = locale;
+  }
+
+  if (currency) {
+    reqHeaders['X-Currency'] = currency;
+  }
 
   const response = await fetch(reqUrl, {
     method: reqMethod,
@@ -149,6 +159,7 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     credentials: 'include',
     mode: 'cors',
   });
+
   const responseSession = response.headers.get('X-Session');
 
   if (typeof responseSession === 'string' && session !== responseSession) {
