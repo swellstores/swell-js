@@ -3,6 +3,7 @@ const set = require('lodash/set');
 const get = require('lodash/get');
 const uniq = require('lodash/uniq');
 const find = require('lodash/find');
+const round = require('lodash/round');
 const findIndex = require('lodash/findIndex');
 const camelCase = require('lodash/camelCase');
 const snakeCase = require('lodash/snakeCase');
@@ -257,6 +258,7 @@ module.exports = {
   get,
   uniq,
   find,
+  round,
   findIndex,
   camelCase,
   cloneDeep,
