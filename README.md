@@ -9,7 +9,7 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 - Resolve linked content to dynamically generate page URLs
 - Format prices in the store's currency
 
-> This SDK implements a subset of operations available in Swell's [Backend API](https://swell.store/docs/api) and is authorized with a public key + session token, making it safe to use in any context. You should only use the Backend API server-side, and keep your secret keys stored as environment variables.
+> This SDK implements a subset of operations available in Swell's [Backend API](https://developers.swell.is/backend-api/) and is authorized with a public key + session token, making it safe to use in any context. You should only use the Backend API server-side, and keep your secret keys stored as environment variables.
 
 **About Swell**
 
@@ -17,4 +17,4 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 
 ## Documentation
 
-📖  [**View Swell.js Documentation**](https://swell.store/docs/js/)
+📖  [**View Swell.js Documentation**](https://developers.swell.is/frontend-api/)
