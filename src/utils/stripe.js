@@ -262,7 +262,7 @@ function stripeAmountByCurrency(currency, amount) {
     'MGA', // Malagasy Ariary
     'RWF', // Rwandan Franc
     'VUV', // Vanuatu Vatu
-    'XOF' // West African Cfa Franc
+    'XOF', // West African Cfa Franc
   ];
   if (zeroDecimalCurrencies.includes(currency.toUpperCase())) {
     return amount;

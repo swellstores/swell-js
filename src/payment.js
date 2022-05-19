@@ -9,6 +9,7 @@ const {
   getLocationParams,
   removeUrlParams,
 } = require('./utils');
+const { getTrialItemsPriceTotal, getTrialAuthAmount } = require('./utils/cart');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -411,6 +412,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 
 async function paymentTokenize(request, params, payMethods, cart) {
   const { totalDue } = getTotalsDueRemaining(cart);
+  const trialAuthAmount = getTrialAuthAmount(cart.items);
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -440,7 +442,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
-      } else if (totalDue < 1) {
+      } else if (!trialAuthAmount && totalDue < 1) {
         return cartApi
           .methods(request, options)
           .update({
@@ -454,7 +456,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, totalDue);
+      const amount = stripeAmountByCurrency(currency, totalDue + trialAuthAmount);
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -483,7 +485,12 @@ async function paymentTokenize(request, params, payMethods, cart) {
                   method: 'card',
                   card: paymentMethod,
                   intent: {
-                    stripe: { id: paymentIntent.id },
+                    stripe: {
+                      id: paymentIntent.id,
+                      ...(trialAuthAmount && {
+                        authorization_amount: trialAuthAmount,
+                      }),
+                    },
                   },
                 },
               })
@@ -812,11 +819,16 @@ async function authenticateStripeCard(request, payment, payMethods) {
 
 function getTotalsDueRemaining(cart) {
   const { grand_total, account, account_credit_amount, giftcards } = cart;
+  const trialPrice = getTrialItemsPriceTotal(cart.items);
 
   let totalDue = grand_total;
   let totalRemaining = 0;
   let totalRemainingGiftcard = 0;
   let totalRemainingAccount = 0;
+
+  if (trialPrice) {
+    totalDue -= trialPrice;
+  }
 
   if (giftcards && giftcards.length > 0) {
     for (let gc of giftcards) {

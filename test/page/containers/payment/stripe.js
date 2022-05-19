@@ -53,10 +53,6 @@ class Stripe extends React.Component {
     this.renderStripeElements();
   }
 
-  componentDidUpdate() {
-    this.renderStripeElements();
-  }
-
   renderStripeElements() {
     const { type, font } = this.state;
     const options = {
@@ -124,11 +120,11 @@ class Stripe extends React.Component {
   }
 
   onChangeType(event, type) {
-    this.setState({ type });
+    this.setState({ type }, this.renderStripeElements);
   }
 
   onChangeFont(event, font) {
-    this.setState({ font });
+    this.setState({ font }, this.renderStripeElements);
   }
 
   render() {
