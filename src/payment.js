@@ -9,7 +9,6 @@ const {
   getLocationParams,
   removeUrlParams,
 } = require('./utils');
-const { getTrialItemsPriceTotal, getTrialAuthAmount } = require('./utils/cart');
 const {
   createPaymentMethod,
   createIDealPaymentMethod,
@@ -412,7 +411,6 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 
 async function paymentTokenize(request, params, payMethods, cart) {
   const { totalDue } = getTotalsDueRemaining(cart);
-  const trialAuthAmount = getTrialAuthAmount(cart.items);
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -442,7 +440,9 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
-      } else if (!trialAuthAmount && totalDue < 1) {
+      } else if (totalDue < 1) {
+        // should save payment method data when payment amount is less than 1
+        // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
         return cartApi
           .methods(request, options)
           .update({
@@ -456,7 +456,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, totalDue + trialAuthAmount);
+      const amount = stripeAmountByCurrency(
+        currency,
+        cart.trial ? cart.trial_initial_capture_total + cart.trial_auth_total : totalDue,
+      );
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -487,8 +490,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
                   intent: {
                     stripe: {
                       id: paymentIntent.id,
-                      ...(trialAuthAmount && {
-                        authorization_amount: trialAuthAmount,
+                      ...(cart.trial && {
+                        auth_amount: cart.trial_auth_total,
                       }),
                     },
                   },
@@ -819,16 +822,11 @@ async function authenticateStripeCard(request, payment, payMethods) {
 
 function getTotalsDueRemaining(cart) {
   const { grand_total, account, account_credit_amount, giftcards } = cart;
-  const trialPrice = getTrialItemsPriceTotal(cart.items);
 
   let totalDue = grand_total;
   let totalRemaining = 0;
   let totalRemainingGiftcard = 0;
   let totalRemainingAccount = 0;
-
-  if (trialPrice) {
-    totalDue -= trialPrice;
-  }
 
   if (giftcards && giftcards.length > 0) {
     for (let gc of giftcards) {
