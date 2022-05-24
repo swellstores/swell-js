@@ -441,6 +441,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
       } else if (totalDue < 1) {
+        // should save payment method data when payment amount is less than 1
+        // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
         return cartApi
           .methods(request, options)
           .update({
@@ -454,7 +456,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, totalDue);
+      const amount = stripeAmountByCurrency(
+        currency,
+        cart.trial ? cart.trial_initial_capture_total + cart.trial_auth_total : totalDue,
+      );
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -483,7 +488,12 @@ async function paymentTokenize(request, params, payMethods, cart) {
                   method: 'card',
                   card: paymentMethod,
                   intent: {
-                    stripe: { id: paymentIntent.id },
+                    stripe: {
+                      id: paymentIntent.id,
+                      ...(cart.trial && {
+                        auth_amount: cart.trial_auth_total,
+                      }),
+                    },
                   },
                 },
               })
