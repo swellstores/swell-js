@@ -985,7 +985,7 @@ function _paymentTokenize() {
 
           case 17:
             currency = toLower(get(cart, 'currency', 'usd'));
-            amount = stripeAmountByCurrency(currency, totalDue);
+            amount = stripeAmountByCurrency(currency, cart.trial ? cart.trial_initial_capture_total + cart.trial_auth_total : totalDue);
             stripeCustomer = get(cart, 'account.stripe_customer');
             _context14.t0 = toSnake;
             _context14.next = 23;
@@ -1035,9 +1035,11 @@ function _paymentTokenize() {
                 method: 'card',
                 card: paymentMethod,
                 intent: {
-                  stripe: {
+                  stripe: _objectSpread({
                     id: paymentIntent.id
-                  }
+                  }, cart.trial && {
+                    auth_amount: cart.trial_auth_total
+                  })
                 }
               }
             }).then(onSuccess)["catch"](onError);

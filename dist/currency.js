@@ -10,7 +10,8 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _require = require('./utils'),
     get = _require.get,
-    find = _require.find;
+    find = _require.find,
+    round = _require.round;
 
 var _require2 = require('./cookie'),
     getCookie = _require2.getCookie,
@@ -33,16 +34,11 @@ function methods(request, opt) {
             switch (_context.prev = _context.next) {
               case 0:
                 this.set(currency);
-                setCookie('swell-currency', currency);
-                _context.next = 4;
-                return request('put', '/session', {
+                return _context.abrupt("return", request('put', '/session', {
                   currency: currency
-                });
+                }));
 
-              case 4:
-                return _context.abrupt("return", _context.sent);
-
-              case 5:
+              case 2:
               case "end":
                 return _context.stop();
             }
@@ -57,13 +53,11 @@ function methods(request, opt) {
       return select;
     }(),
     selected: function selected() {
-      if (this.code) {
-        return this.code;
+      if (!this.code) {
+        this.set(getCookie('swell-currency') || opt.api.settings.get('store.currency'));
       }
 
-      var storeCurrency = opt.api.settings.get('store.currency');
-      var cookieCurrency = getCookie('swell-currency');
-      return cookieCurrency || storeCurrency;
+      return this.code;
     },
     get: function get() {
       if (!this.code) {
@@ -85,6 +79,7 @@ function methods(request, opt) {
         code: code
       };
       this.locale = String(opt.api.settings.get('store.locale', (typeof navigator === "undefined" ? "undefined" : (0, _typeof2["default"])(navigator)) === 'object' ? navigator.language : 'en-US'));
+      setCookie('swell-currency', code);
       return this.state;
     },
     format: function format(amount) {
@@ -143,13 +138,20 @@ function methods(request, opt) {
       var code = _ref.code,
           locale = _ref.locale,
           decimals = _ref.decimals;
+      locale = String(locale || '').replace('_', '-');
       var key = [code, locale, decimals].join('|');
 
       if (FORMATTERS[key]) {
         return FORMATTERS[key];
       }
 
-      var formatLocale = String(locale || '').replace('_', '-') || 'en-US';
+      var formatLocales = [];
+
+      if (locale) {
+        formatLocales.push(locale);
+      }
+
+      formatLocales.push('en-US');
       var formatDecimals = typeof decimals === 'number' ? decimals : undefined;
       var props = {
         style: 'currency',
@@ -161,7 +163,7 @@ function methods(request, opt) {
 
       try {
         try {
-          FORMATTERS[key] = new Intl.NumberFormat(formatLocale, props);
+          FORMATTERS[key] = new Intl.NumberFormat(formatLocales, props);
         } catch (err) {
           if (err.message.indexOf('Invalid language tag') >= 0) {
             FORMATTERS[key] = new Intl.NumberFormat('en-US', props);
@@ -203,11 +205,7 @@ function methods(request, opt) {
 
       return this.round(roundValue, scale);
     },
-    round: function round(value) {
-      var scale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-      // TODO: this is unrealiable (but only used for display)
-      return Number(Number(value).toFixed(scale));
-    }
+    round: round
   };
 }
 

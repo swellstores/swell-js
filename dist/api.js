@@ -177,17 +177,25 @@ function _request() {
               reqBody = JSON.stringify(reqData);
             }
 
-            reqHeaders = _objectSpread(_objectSpread(_objectSpread({
+            reqHeaders = {
+              Accept: 'application/json',
               'Content-Type': 'application/json',
               Authorization: "Basic ".concat(base64Encode(String(allOptions.key)))
-            }, session ? {
-              'X-Session': session
-            } : {}), locale ? {
-              'X-Locale': locale
-            } : {}), currency ? {
-              'X-Currency': currency
-            } : {});
-            _context.next = 18;
+            };
+
+            if (session) {
+              reqHeaders['X-Session'] = session;
+            }
+
+            if (locale) {
+              reqHeaders['X-Locale'] = locale;
+            }
+
+            if (currency) {
+              reqHeaders['X-Currency'] = currency;
+            }
+
+            _context.next = 21;
             return fetch(reqUrl, {
               method: reqMethod,
               headers: reqHeaders,
@@ -196,7 +204,7 @@ function _request() {
               mode: 'cors'
             });
 
-          case 18:
+          case 21:
             response = _context.sent;
             responseSession = response.headers.get('X-Session');
 
@@ -204,14 +212,14 @@ function _request() {
               setCookie('swell-session', responseSession);
             }
 
-            _context.next = 23;
+            _context.next = 26;
             return response.json();
 
-          case 23:
+          case 26:
             result = _context.sent;
 
             if (!(result && result.error)) {
-              _context.next = 32;
+              _context.next = 35;
               break;
             }
 
@@ -221,9 +229,9 @@ function _request() {
             err.param = result.error.param;
             throw err;
 
-          case 32:
+          case 35:
             if (response.ok) {
-              _context.next = 36;
+              _context.next = 39;
               break;
             }
 
@@ -231,10 +239,10 @@ function _request() {
             _err.code = 'connection_error';
             throw _err;
 
-          case 36:
+          case 39:
             return _context.abrupt("return", options.useCamelCase ? toCamel(result) : result);
 
-          case 37:
+          case 40:
           case "end":
             return _context.stop();
         }
@@ -246,7 +254,7 @@ function _request() {
 
 if (typeof window !== 'undefined') {
   window.swell = {
-    version: '3.14.0'
+    version: '3.15.0'
   };
 }
 

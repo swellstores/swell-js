@@ -18,6 +18,8 @@ var uniq = require('lodash/uniq');
 
 var find = require('lodash/find');
 
+var round = require('lodash/round');
+
 var findIndex = require('lodash/findIndex');
 
 var camelCase = require('lodash/camelCase');
@@ -313,6 +315,7 @@ module.exports = {
   get: get,
   uniq: uniq,
   find: find,
+  round: round,
   findIndex: findIndex,
   camelCase: camelCase,
   cloneDeep: cloneDeep,
