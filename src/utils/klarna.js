@@ -81,7 +81,7 @@ async function createKlarnaSession(cart, createIntent) {
   return createIntent({
     gateway: 'klarna',
     intent: {
-      locale: get(cart, 'settings.locale') || 'en-US',
+      locale: cart.display_locale || get(cart, 'settings.locale') || 'en-US',
       purchase_country: get(cart, 'billing.country') || get(cart, 'shipping.country'),
       purchase_currency: cart.currency,
       billing_address: mapAddressFields(cart, 'billing'),
