@@ -1,4 +1,4 @@
-const get = require('lodash/get');
+import get from 'lodash/get';
 
 export async function createPaysafecardPayment(cart, createIntent) {
   const returnUrl = window.location.origin + window.location.pathname;

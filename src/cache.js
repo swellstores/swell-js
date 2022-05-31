@@ -1,4 +1,4 @@
-const { get, set, merge, toCamel, toCamelPath, getOptions } = require('./utils');
+import { get, set, merge, toCamel, toCamelPath, getOptions } from './utils';
 
 const RECORD_TIMEOUT = 5000;
 
@@ -117,7 +117,10 @@ const cacheApi = {
     }, RECORD_TIMEOUT);
 
     // Record has to be null at minimum, not undefined
-    this.values(details, { record: record !== undefined ? record : null, recordTimer });
+    this.values(details, {
+      record: record !== undefined ? record : null,
+      recordTimer,
+    });
 
     if (presets) {
       for (let preset of presets) {
@@ -159,4 +162,4 @@ const cacheApi = {
   },
 };
 
-module.exports = cacheApi;
+export default cacheApi;

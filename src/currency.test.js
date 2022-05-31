@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 const mockSettingState = {
   store: {
@@ -78,7 +78,9 @@ describe('currency', () => {
       await api.currency.select('USD');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/session`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/session`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
     });
 

@@ -1,4 +1,4 @@
-const get = require('lodash/get');
+import get from 'lodash/get';
 
 function generateOrderId() {
   return Math.random().toString(36).substr(2, 9);
@@ -21,7 +21,10 @@ export async function createQuickpayCard(authorize) {
 }
 
 export async function getQuickpayCardDetais(id, authorize) {
-  return await authorize({ gateway: 'quickpay', params: { action: 'get', id } });
+  return await authorize({
+    gateway: 'quickpay',
+    params: { action: 'get', id },
+  });
 }
 
 export async function createQuickpayPayment(cart, createIntent) {

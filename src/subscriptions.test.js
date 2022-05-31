@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('cart', () => {
   beforeEach(() => {
@@ -10,7 +10,9 @@ describe('cart', () => {
       await api.subscriptions.get();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/subscriptions`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -18,7 +20,9 @@ describe('cart', () => {
       await api.subscriptions.get('12345');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/subscriptions/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });
@@ -28,10 +32,11 @@ describe('cart', () => {
       await api.subscriptions.list();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/subscriptions`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
-
   });
 
   describe('create', () => {
@@ -39,7 +44,9 @@ describe('cart', () => {
       await api.subscriptions.create({ product_id: '123' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/subscriptions`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -53,7 +60,9 @@ describe('cart', () => {
       await api.subscriptions.update('12345', { product_id: '123' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/subscriptions/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/subscriptions/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -87,7 +96,10 @@ describe('cart', () => {
         `https://test.swell.store/api/subscriptions/12345/items`,
       );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
-      expect(fetch.mock.calls[0][1]).toHaveProperty('body', JSON.stringify([{ quantity: 2 }]));
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify([{ quantity: 2 }]),
+      );
     });
   });
 
@@ -100,7 +112,10 @@ describe('cart', () => {
         `https://test.swell.store/api/subscriptions/12345/items/67890`,
       );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
-      expect(fetch.mock.calls[0][1]).toHaveProperty('body', JSON.stringify({ quantity: 2 }));
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ quantity: 2 }),
+      );
     });
   });
 

@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('api', () => {
   beforeEach(() => {
@@ -83,7 +83,9 @@ describe('api', () => {
       const result = await api.request('get', '///test///');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test',
+      );
     });
 
     it('should parse json response', async () => {
@@ -99,13 +101,22 @@ describe('api', () => {
       expect(fetch.mock.calls[0][1]).toHaveProperty('body', undefined);
 
       await api.request('put', '/test', { data: '123' });
-      expect(fetch.mock.calls[1][1]).toHaveProperty('body', JSON.stringify({ data: '123' }));
+      expect(fetch.mock.calls[1][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ data: '123' }),
+      );
 
       await api.request('post', '/test', { data: '123' });
-      expect(fetch.mock.calls[2][1]).toHaveProperty('body', JSON.stringify({ data: '123' }));
+      expect(fetch.mock.calls[2][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ data: '123' }),
+      );
 
       await api.request('delete', '/test', { data: '123' });
-      expect(fetch.mock.calls[3][1]).toHaveProperty('body', JSON.stringify({ data: '123' }));
+      expect(fetch.mock.calls[3][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ data: '123' }),
+      );
     });
   });
 
@@ -114,7 +125,9 @@ describe('api', () => {
       await api.get('/test');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test',
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -122,21 +135,27 @@ describe('api', () => {
       await api.get('/test', { foo: 'bar' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test?foo=bar');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test?foo=bar',
+      );
     });
 
     it('should make a GET request with ID', async () => {
       await api.get('/test', '12345');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test/12345');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test/12345',
+      );
     });
 
     it('should make a GET request with merged query string', async () => {
       await api.get('/test?one=two', { foo: 'bar' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test?one=two&foo=bar');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test?one=two&foo=bar',
+      );
     });
 
     it('should make a GET request with complex query string', async () => {
@@ -144,7 +163,7 @@ describe('api', () => {
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(
-        'https://test.swell.store/api/test?one=two&foo[0][id]=1&foo[1][id]=2',
+        'https://test.swell.store/api/test?one=two&foo%5B0%5D%5Bid%5D=1&foo%5B1%5D%5Bid%5D=2',
       );
     });
   });
@@ -154,7 +173,9 @@ describe('api', () => {
       await api.put('/test', { foo: 'bar' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test',
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
     });
   });
@@ -164,7 +185,9 @@ describe('api', () => {
       await api.post('/test', { foo: 'bar' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test',
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
     });
   });
@@ -174,7 +197,9 @@ describe('api', () => {
       await api.delete('/test', { foo: 'bar' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual('https://test.swell.store/api/test');
+      expect(fetch.mock.calls[0][0]).toEqual(
+        'https://test.swell.store/api/test',
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'delete');
     });
   });
@@ -187,7 +212,9 @@ describe('api', () => {
           await api[model].get();
 
           expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/${model}`);
+          expect(fetch.mock.calls[0][0]).toEqual(
+            `https://test.swell.store/api/${model}`,
+          );
           expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
         });
 
@@ -204,7 +231,9 @@ describe('api', () => {
           await api[model].get('12345');
 
           expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/${model}/12345`);
+          expect(fetch.mock.calls[0][0]).toEqual(
+            `https://test.swell.store/api/${model}/12345`,
+          );
         });
 
         it(`should make request to GET /${model}/id?query`, async () => {

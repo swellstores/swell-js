@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('account', () => {
   beforeEach(() => {
@@ -10,7 +10,9 @@ describe('account', () => {
       await api.account.get();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -26,7 +28,9 @@ describe('account', () => {
       await api.account.create({ name: 'Test Account' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -40,7 +44,9 @@ describe('account', () => {
       await api.account.update({ name: 'Test Update' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -54,7 +60,9 @@ describe('account', () => {
       await api.account.login();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/login`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/login`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
     });
   });
@@ -64,7 +72,9 @@ describe('account', () => {
       await api.account.logout();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/logout`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/logout`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
     });
   });
@@ -74,7 +84,9 @@ describe('account', () => {
       await api.account.recover({ email: 'customer@example.com' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/recover`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/recover`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -88,7 +100,9 @@ describe('account', () => {
       await api.account.listAddresses();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/addresses`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -97,7 +111,9 @@ describe('account', () => {
       await api.account.getAddresses();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/addresses`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });
@@ -107,7 +123,9 @@ describe('account', () => {
       await api.account.createAddress({ address1: 'Test street' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/addresses`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -121,7 +139,9 @@ describe('account', () => {
       await api.account.updateAddress('123', { address1: 'Test street' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/addresses/123`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/addresses/123`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -147,7 +167,9 @@ describe('account', () => {
       await api.account.listCards();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/cards`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -156,7 +178,9 @@ describe('account', () => {
       await api.account.getCards();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/cards`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });
@@ -166,7 +190,9 @@ describe('account', () => {
       await api.account.createCard({ token: 'tok_test' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/cards`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -180,7 +206,9 @@ describe('account', () => {
       await api.account.updateCard('123', { token: 'tok_test' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards/123`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/cards/123`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -194,7 +222,9 @@ describe('account', () => {
       await api.account.deleteCard('12345');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/cards/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/cards/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'delete');
     });
   });
@@ -204,7 +234,9 @@ describe('account', () => {
       await api.account.listOrders();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/orders`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -212,7 +244,9 @@ describe('account', () => {
       await api.account.listOrders({ page: 2 });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders?page=2`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/orders?page=2`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -221,7 +255,9 @@ describe('account', () => {
       await api.account.getOrders();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/account/orders`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/orders`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });

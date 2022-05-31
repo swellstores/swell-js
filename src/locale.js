@@ -1,5 +1,5 @@
-const { find } = require('./utils');
-const { getCookie, setCookie } = require('./cookie');
+import { find } from './utils';
+import { getCookie, setCookie } from './cookie';
 
 function methods(request, opt) {
   return {
@@ -45,6 +45,4 @@ function methods(request, opt) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

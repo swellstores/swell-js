@@ -1,4 +1,4 @@
-const { vaultRequest, toSnake } = require('./utils');
+import { vaultRequest, toSnake } from './utils';
 
 const cardApi = {
   async createToken(data) {
@@ -65,10 +65,7 @@ const cardApi = {
 
     // Convert 2 digit year
     if (year && year.length === 2 && /^\d+$/.test(year)) {
-      const prefix = new Date()
-        .getFullYear()
-        .toString()
-        .substring(0, 2);
+      const prefix = new Date().getFullYear().toString().substring(0, 2);
       year = prefix + year;
     }
 
@@ -134,8 +131,11 @@ const cardApi = {
   },
 
   validateCVC(val) {
-    return (val = String(val).trim()), /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
+    return (
+      (val = String(val).trim()),
+      /^\d+$/.test(val) && val.length >= 3 && val.length <= 4
+    );
   },
 };
 
-module.exports = cardApi;
+export default cardApi;

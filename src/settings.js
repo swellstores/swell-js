@@ -1,4 +1,13 @@
-const { get, find, set, merge, toCamel, isObject, cloneDeep, camelCase } = require('./utils');
+import {
+  get,
+  find,
+  set,
+  merge,
+  toCamel,
+  isObject,
+  cloneDeep,
+  camelCase,
+} from './utils';
 
 function methods(request, opt) {
   return {
@@ -19,7 +28,11 @@ function methods(request, opt) {
       return this.get();
     },
 
-    getState(uri, stateName, { id = undefined, def = undefined, refresh = false } = {}) {
+    getState(
+      uri,
+      stateName,
+      { id = undefined, def = undefined, refresh = false } = {},
+    ) {
       if (!this[stateName] || refresh) {
         this[stateName] = request('get', uri);
       }
@@ -90,12 +103,17 @@ function methods(request, opt) {
       this[stateName] = merge(this[stateName] || {}, mergeData);
 
       if (this.localizedState[locale]) {
-        this.localizedState[locale][stateName] = this.decodeLocale(this[stateName]);
+        this.localizedState[locale][stateName] = this.decodeLocale(
+          this[stateName],
+        );
       }
     },
 
     menus(id = undefined, def = undefined) {
-      return this.findState('/settings/menus', 'menuState', { where: { id }, def });
+      return this.findState('/settings/menus', 'menuState', {
+        where: { id },
+        def,
+      });
     },
 
     payments(id = undefined, def = undefined) {
@@ -103,7 +121,10 @@ function methods(request, opt) {
     },
 
     subscriptions(id = undefined, def = undefined) {
-      return this.getState('/settings/subscriptions', 'subscriptionState', { id, def });
+      return this.getState('/settings/subscriptions', 'subscriptionState', {
+        id,
+        def,
+      });
     },
 
     session(id = undefined, def = undefined) {
@@ -135,10 +156,8 @@ function methods(request, opt) {
 
     async load() {
       try {
-        const { settings, menus, payments, subscriptions, session } = await request(
-          'get',
-          '/settings/all',
-        );
+        const { settings, menus, payments, subscriptions, session } =
+          await request('get', '/settings/all');
 
         this.localizedState = {};
 
@@ -204,7 +223,11 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
     const shortKey = localeKey.replace(/\-.+$/, '');
     const transformedLocale = opt.useCamelCase ? camelCase(locale) : locale;
 
-    if (localeKey === locale || localeKey === transformedLocale || shortKey === transformedLocale) {
+    if (
+      localeKey === locale ||
+      localeKey === transformedLocale ||
+      shortKey === transformedLocale
+    ) {
       returnLocaleKey = locale;
       returnLocaleConfig = configs[locale];
     }
@@ -231,7 +254,10 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
     while (fallbackKey) {
       fallbackKeys = fallbackKeys || [];
       fallbackKeys.push(fallbackKey);
-      fallbackValues = { ...(values[key][fallbackKey] || {}), ...fallbackValues };
+      fallbackValues = {
+        ...(values[key][fallbackKey] || {}),
+        ...fallbackValues,
+      };
       fallbackKey = configs[fallbackKey] && configs[fallbackKey].fallback;
       if (origFallbackKey === fallbackKey) {
         break;
@@ -240,10 +266,14 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
   }
 
   // Merge locale value with fallbacks
-  let localeValues = { ...fallbackValues, ...(values[key][returnLocaleKey] || {}) };
+  let localeValues = {
+    ...fallbackValues,
+    ...(values[key][returnLocaleKey] || {}),
+  };
   const valueKeys = Object.keys(localeValues);
   for (let valueKey of valueKeys) {
-    const hasValue = localeValues[valueKey] !== null && localeValues[valueKey] !== '';
+    const hasValue =
+      localeValues[valueKey] !== null && localeValues[valueKey] !== '';
     let shouldFallback = fallbackKeys && !hasValue;
     if (shouldFallback) {
       for (let fallbackKey of fallbackKeys) {
@@ -270,6 +300,4 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
   }
 }
 
-module.exports = {
-  methods,
-};
+export default methods;
