@@ -1,4 +1,4 @@
-const products = require('./products');
+import products from './products';
 
 const mockRequest = jest.fn();
 const mockProductWithOptions = {
@@ -82,7 +82,7 @@ describe('products', () => {
   let methods;
   beforeEach(() => {
     mockRequest.mockReset();
-    methods = products.methods(mockRequest, {});
+    methods = products(mockRequest, {});
   });
 
   describe('methods', () => {
@@ -259,7 +259,11 @@ describe('products', () => {
       };
 
       it('should return pricing from first subscription plan', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], 'subscription');
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          'subscription',
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -270,10 +274,14 @@ describe('products', () => {
       });
 
       it('should return pricing from a specific subscription plan', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
-          type: 'subscription',
-          plan: 222,
-        });
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          {
+            type: 'subscription',
+            plan: 222,
+          },
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -284,9 +292,13 @@ describe('products', () => {
       });
 
       it('should return pricing from a specific subscription plan with omited type', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
-          plan: 'monthly',
-        });
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          {
+            plan: 'monthly',
+          },
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -297,10 +309,14 @@ describe('products', () => {
       });
 
       it('should return pricing from a specific subscription plan id', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], {
-          type: 'subscription',
-          plan_id: 222,
-        });
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          {
+            type: 'subscription',
+            plan_id: 222,
+          },
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -311,7 +327,11 @@ describe('products', () => {
       });
 
       it('should return pricing from standard purchase option', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], 'standard');
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          'standard',
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -322,7 +342,11 @@ describe('products', () => {
       });
 
       it('should return pricing from standard purchase option type', () => {
-        const variation = methods.variation(mockProductWithPurchaseOptions, [], { type: 'standard' });
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          [],
+          { type: 'standard' },
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,
@@ -343,7 +367,9 @@ describe('products', () => {
 
       it('should throw an error if the purchase option is not found', () => {
         expect(() => {
-          methods.variation(mockProductWithPurchaseOptions, [], { type: 'what' });
+          methods.variation(mockProductWithPurchaseOptions, [], {
+            type: 'what',
+          });
         }).toThrowError(`Product purchase option 'what' not found`);
       });
 
@@ -353,7 +379,11 @@ describe('products', () => {
           { id: 'y', value: '2' },
           { id: 'z', value: 'stuff' },
         ];
-        const variation = methods.variation(mockProductWithPurchaseOptions, options, 'subscription');
+        const variation = methods.variation(
+          mockProductWithPurchaseOptions,
+          options,
+          'subscription',
+        );
 
         expect(variation).toEqual({
           ...mockProductWithPurchaseOptions,

@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('content', () => {
   beforeEach(() => {
@@ -10,7 +10,9 @@ describe('content', () => {
       await api.content.list('pages');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/content/pages`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/content/pages`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -18,7 +20,9 @@ describe('content', () => {
       await api.content.list('pages', { query: 1 });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/content/pages?query=1`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/content/pages?query=1`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });
@@ -29,7 +33,7 @@ describe('content', () => {
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(
-        `https://test.swell.store/api/content/pages/slug?$preview=false`,
+        `https://test.swell.store/api/content/pages/slug?%24preview=false`,
       );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
@@ -39,7 +43,7 @@ describe('content', () => {
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(
-        `https://test.swell.store/api/content/pages/slug?$preview=false&query=1`,
+        `https://test.swell.store/api/content/pages/slug?%24preview=false&query=1`,
       );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });

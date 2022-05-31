@@ -1,5 +1,5 @@
-const { defaultMethods } = require('./utils');
-const cache = require('./cache');
+import { defaultMethods } from './utils';
+import cache from './cache';
 
 function methods(request) {
   const { get, list } = defaultMethods(request, '/categories', ['list', 'get']);
@@ -13,6 +13,4 @@ function methods(request) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

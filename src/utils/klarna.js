@@ -1,4 +1,7 @@
-const { map, get, reduce, toNumber } = require('lodash');
+import map from 'lodash/map';
+import get from 'lodash/get';
+import reduce from 'lodash/reduce';
+import toNumber from 'lodash/toNumber';
 
 const addressFieldsMap = {
   given_name: 'first_name',
@@ -37,7 +40,9 @@ function getOrderLines(cart) {
     reference: get(item, 'product.sku') || get(item, 'product.slug'),
     quantity: item.quantity,
     unit_price: Math.round(toNumber(item.price - item.discount_each) * 100),
-    total_amount: Math.round(toNumber(item.price_total - item.discount_total) * 100),
+    total_amount: Math.round(
+      toNumber(item.price_total - item.discount_total) * 100,
+    ),
     tax_rate: 0,
     total_tax_amount: 0,
   }));
@@ -82,7 +87,8 @@ async function createKlarnaSession(cart, createIntent) {
     gateway: 'klarna',
     intent: {
       locale: cart.display_locale || get(cart, 'settings.locale') || 'en-US',
-      purchase_country: get(cart, 'billing.country') || get(cart, 'shipping.country'),
+      purchase_country:
+        get(cart, 'billing.country') || get(cart, 'shipping.country'),
       purchase_currency: cart.currency,
       billing_address: mapAddressFields(cart, 'billing'),
       shipping_address: mapAddressFields(cart, 'shipping'),
@@ -99,6 +105,4 @@ async function createKlarnaSession(cart, createIntent) {
   });
 }
 
-module.exports = {
-  createKlarnaSession,
-};
+export { createKlarnaSession };

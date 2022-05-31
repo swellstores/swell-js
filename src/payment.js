@@ -1,28 +1,28 @@
-const get = require('lodash/get');
-const toLower = require('lodash/toLower');
-const cartApi = require('./cart');
-const settingsApi = require('./settings');
-const {
+import get from 'lodash/get';
+import toLower from 'lodash/toLower';
+import cartApi from './cart';
+import settingsApi from './settings';
+import {
   isFunction,
   vaultRequest,
   toSnake,
   getLocationParams,
   removeUrlParams,
-} = require('./utils');
-const {
+} from './utils';
+import {
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,
   createBancontactSource,
   stripeAmountByCurrency,
-} = require('./utils/stripe');
-const {
+} from './utils/stripe';
+import {
   createQuickpayPayment,
   createQuickpayCard,
   getQuickpayCardDetais,
-} = require('./utils/quickpay');
-const { createPaysafecardPayment } = require('./utils/paysafecard');
-const { createKlarnaSession } = require('./utils/klarna');
+} from './utils/quickpay';
+import { createPaysafecardPayment } from './utils/paysafecard';
+import { createKlarnaSession } from './utils/klarna';
 
 const LOADING_SCRIPTS = {};
 const CARD_ELEMENTS = {};
@@ -55,7 +55,9 @@ function methods(request, opts) {
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
+      const payMethods = toSnake(
+        await settingsApi.methods(request, options).payments(),
+      );
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -67,11 +69,18 @@ function methods(request, opts) {
       if (!cart) {
         throw new Error('Cart not found');
       }
-      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
+      const payMethods = toSnake(
+        await settingsApi.methods(request, options).payments(),
+      );
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
-      return await paymentTokenize(request, params || this.params, payMethods, cart);
+      return await paymentTokenize(
+        request,
+        params || this.params,
+        payMethods,
+        cart,
+      );
     },
 
     async handleRedirect(params) {
@@ -87,7 +96,9 @@ function methods(request, opts) {
       if (!payment) {
         throw new Error('Payment not found');
       }
-      const payMethods = toSnake(await settingsApi.methods(request, options).payments());
+      const payMethods = toSnake(
+        await settingsApi.methods(request, options).payments(),
+      );
       if (payMethods.error) {
         throw new Error(payMethods.error);
       }
@@ -124,7 +135,9 @@ function methods(request, opts) {
       const authorization = await vaultRequest('post', '/authorization', data);
       if (authorization.errors) {
         const param = Object.keys(authorization.errors)[0];
-        const err = new Error(authorization.errors[param].message || 'Unknown error');
+        const err = new Error(
+          authorization.errors[param].message || 'Unknown error',
+        );
         err.code = 'vault_error';
         err.status = 402;
         err.param = param;
@@ -242,7 +255,8 @@ async function stripeElements(request, payMethods, params) {
   const stripe = window.Stripe(publishable_key);
   const elements = stripe.elements(params.config);
   const createElement = (type) => {
-    const elementParams = get(params, `card[${type}]`) || params.card || params.ideal;
+    const elementParams =
+      get(params, `card[${type}]`) || params.card || params.ideal;
     const elementOptions = elementParams.options || {};
     const element = elements.create(type, elementOptions);
     element.mount(elementParams.elementId || `#${type}-element`);
@@ -289,7 +303,9 @@ async function payPalButton(request, cart, payMethods, params) {
   const { totalDue } = getTotalsDueRemaining(cart);
 
   if (!(totalDue > 0)) {
-    throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
+    throw new Error(
+      'Invalid PayPal button amount. Value should be greater than zero.',
+    );
   }
 
   paypal
@@ -354,7 +370,9 @@ async function payPalButton(request, cart, payMethods, params) {
 }
 
 async function braintreePayPalButton(request, cart, payMethods, params) {
-  const authorization = await vaultRequest('post', '/authorization', { gateway: 'braintree' });
+  const authorization = await vaultRequest('post', '/authorization', {
+    gateway: 'braintree',
+  });
   if (authorization.error) {
     throw new Error(authorization.error);
   }
@@ -383,10 +401,14 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then(({ nonce }) =>
-                cartApi.methods(request, options).update({ billing: { paypal: { nonce } } }),
+                cartApi
+                  .methods(request, options)
+                  .update({ billing: { paypal: { nonce } } }),
               )
               .then(
-                () => isFunction(params.paypal.onSuccess) && params.paypal.onSuccess(data, actions),
+                () =>
+                  isFunction(params.paypal.onSuccess) &&
+                  params.paypal.onSuccess(data, actions),
               )
               .catch(
                 isFunction(params.paypal.onError)
@@ -424,7 +446,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
     throw new Error(error.message);
   };
   const onSuccess = (result) => {
-    const successHandler = get(params, 'card.onSuccess') || get(params, 'ideal.onSuccess');
+    const successHandler =
+      get(params, 'card.onSuccess') || get(params, 'ideal.onSuccess');
     if (isFunction(successHandler)) {
       return successHandler(result);
     }
@@ -434,9 +457,17 @@ async function paymentTokenize(request, params, payMethods, cart) {
     return onError({ message: 'Tokenization parameters not passed' });
   }
   if (params.card && payMethods.card) {
-    if (payMethods.card.gateway === 'stripe' && CARD_ELEMENTS.stripe && API.stripe) {
+    if (
+      payMethods.card.gateway === 'stripe' &&
+      CARD_ELEMENTS.stripe &&
+      API.stripe
+    ) {
       const stripe = API.stripe;
-      const paymentMethod = await createPaymentMethod(stripe, CARD_ELEMENTS.stripe, cart);
+      const paymentMethod = await createPaymentMethod(
+        stripe,
+        CARD_ELEMENTS.stripe,
+        cart,
+      );
 
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
@@ -478,7 +509,9 @@ async function paymentTokenize(request, params, payMethods, cart) {
       );
 
       if (intent && intent.status === 'requires_confirmation') {
-        const { paymentIntent, error } = await stripe.confirmCardPayment(intent.client_secret);
+        const { paymentIntent, error } = await stripe.confirmCardPayment(
+          intent.client_secret,
+        );
         return error
           ? onError(error)
           : await cartApi
@@ -501,9 +534,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
               .catch(onError);
       }
     } else if (payMethods.card.gateway === 'quickpay') {
-      const intent = await createQuickpayPayment(cart, methods(request).createIntent).catch(
-        onError,
-      );
+      const intent = await createQuickpayPayment(
+        cart,
+        methods(request).createIntent,
+      ).catch(onError);
       if (!intent) {
         return;
       } else if (intent.error) {
@@ -574,14 +608,18 @@ async function paymentTokenize(request, params, payMethods, cart) {
           .catch(onError);
 
         return (
-          (intent.status === 'requires_action' || intent.status === 'requires_source_action') &&
+          (intent.status === 'requires_action' ||
+            intent.status === 'requires_source_action') &&
           (await API.stripe.handleCardAction(intent.client_secret))
         );
       }
     }
   } else if (params.klarna && payMethods.klarna) {
     if (payMethods.klarna.gateway === 'klarna') {
-      const session = await createKlarnaSession(cart, methods(request).createIntent).catch(onError);
+      const session = await createKlarnaSession(
+        cart,
+        methods(request).createIntent,
+      ).catch(onError);
       return session && window.location.replace(session.redirect_url);
     } else if (payMethods.card && payMethods.card.gateway === 'stripe') {
       if (!window.Stripe) {
@@ -589,7 +627,9 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
       const { publishable_key } = payMethods.card;
       const stripe = window.Stripe(publishable_key);
-      const settings = toSnake(await settingsApi.methods(request, options).get());
+      const settings = toSnake(
+        await settingsApi.methods(request, options).get(),
+      );
 
       const { error, source } = await createKlarnaSource(stripe, {
         ...cart,
@@ -631,9 +671,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
             .catch(onError);
     }
   } else if (params.paysafecard && payMethods.paysafecard) {
-    const intent = await createPaysafecardPayment(cart, methods(request).createIntent).catch(
-      onError,
-    );
+    const intent = await createPaysafecardPayment(
+      cart,
+      methods(request).createIntent,
+    ).catch(onError);
     if (!intent) {
       return;
     }
@@ -679,11 +720,26 @@ async function handleRedirect(request, params, cart) {
   const { gateway } = queryParams;
   let result;
   if (gateway === 'quickpay') {
-    result = await handleQuickpayRedirectAction(request, cart, params, queryParams);
+    result = await handleQuickpayRedirectAction(
+      request,
+      cart,
+      params,
+      queryParams,
+    );
   } else if (gateway === 'paysafecard') {
-    result = await handlePaysafecardRedirectAction(request, cart, params, queryParams);
+    result = await handlePaysafecardRedirectAction(
+      request,
+      cart,
+      params,
+      queryParams,
+    );
   } else if (gateway === 'klarna_direct') {
-    result = await handleDirectKlarnaRedirectAction(request, cart, params, queryParams);
+    result = await handleDirectKlarnaRedirectAction(
+      request,
+      cart,
+      params,
+      queryParams,
+    );
   }
 
   if (!result) {
@@ -695,12 +751,20 @@ async function handleRedirect(request, params, cart) {
   }
 }
 
-async function handleQuickpayRedirectAction(request, cart, params, queryParams) {
+async function handleQuickpayRedirectAction(
+  request,
+  cart,
+  params,
+  queryParams,
+) {
   const { redirect_status: status, card_id: id } = queryParams;
 
   switch (status) {
     case 'succeeded':
-      const card = await getQuickpayCardDetais(id, methods(request).authorizeGateway);
+      const card = await getQuickpayCardDetais(
+        id,
+        methods(request).authorizeGateway,
+      );
       if (!card) {
         return;
       } else if (card.error) {
@@ -755,11 +819,18 @@ async function handlePaysafecardRedirectAction(request, cart) {
         },
       };
     default:
-      return { error: { message: `Unknown redirect status: ${intent.status}.` } };
+      return {
+        error: { message: `Unknown redirect status: ${intent.status}.` },
+      };
   }
 }
 
-async function handleDirectKlarnaRedirectAction(request, cart, params, queryParams) {
+async function handleDirectKlarnaRedirectAction(
+  request,
+  cart,
+  params,
+  queryParams,
+) {
   const { authorization_token } = queryParams;
 
   if (!authorization_token) {
@@ -816,7 +887,12 @@ async function authenticateStripeCard(request, payment, payMethods) {
   const stripe = window.Stripe(publishable_key);
   const actionResult = await stripe.confirmCardPayment(intent.client_secret);
   return actionResult.error
-    ? { error: { message: actionResult.error.message, code: actionResult.error.code } }
+    ? {
+        error: {
+          message: actionResult.error.message,
+          code: actionResult.error.code,
+        },
+      }
     : { status: actionResult.status };
 }
 
@@ -838,7 +914,9 @@ function getTotalsDueRemaining(cart) {
   }
 
   const accountCreditAmount =
-    typeof account_credit_amount === 'number' ? account_credit_amount : account && account.balance;
+    typeof account_credit_amount === 'number'
+      ? account_credit_amount
+      : account && account.balance;
   if (accountCreditAmount > 0) {
     totalDue -= accountCreditAmount;
     if (totalDue < 0) {
@@ -851,9 +929,12 @@ function getTotalsDueRemaining(cart) {
     totalDue = 0;
   }
 
-  return { totalDue, totalRemaining, totalRemainingGiftcard, totalRemainingAccount };
+  return {
+    totalDue,
+    totalRemaining,
+    totalRemainingGiftcard,
+    totalRemainingAccount,
+  };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

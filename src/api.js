@@ -1,6 +1,6 @@
-const card = require('./card');
-const { getCookie, setCookie } = require('./cookie');
-const {
+import card from './card';
+import { getCookie, setCookie } from './cookie';
+import {
   setOptions,
   toCamel,
   toSnake,
@@ -9,19 +9,19 @@ const {
   trimEnd,
   stringifyQuery,
   base64Encode,
-} = require('./utils');
-const cache = require('./cache');
-const cart = require('./cart');
-const account = require('./account');
-const products = require('./products');
-const categories = require('./categories');
-const attributes = require('./attributes');
-const subscriptions = require('./subscriptions');
-const content = require('./content');
-const settings = require('./settings');
-const payment = require('./payment');
-const locale = require('./locale');
-const currency = require('./currency');
+} from './utils';
+import cache from './cache';
+import cart from './cart';
+import account from './account';
+import products from './products';
+import categories from './categories';
+import attributes from './attributes';
+import subscriptions from './subscriptions';
+import content from './content';
+import settings from './settings';
+import payment from './payment';
+import locale from './locale';
+import currency from './currency';
 
 require('isomorphic-fetch');
 
@@ -41,7 +41,9 @@ const api = {
     options.key = key;
     options.store = store;
     options.url = opt.url ? trimEnd(opt.url) : `https://${store}.swell.store`;
-    options.vaultUrl = opt.vaultUrl ? trimEnd(opt.vaultUrl) : `https://vault.schema.io`;
+    options.vaultUrl = opt.vaultUrl
+      ? trimEnd(opt.vaultUrl)
+      : `https://vault.schema.io`;
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
     options.previewContent = opt.previewContent || false;
@@ -77,30 +79,36 @@ const api = {
 
   card,
 
-  cart: cart.methods(request, options),
+  cart: cart(request, options),
 
-  account: account.methods(request, options),
+  account: account(request, options),
 
-  products: products.methods(request, options),
+  products: products(request, options),
 
-  categories: categories.methods(request, options),
+  categories: categories(request, options),
 
-  attributes: attributes.methods(request, options),
+  attributes: attributes(request, options),
 
-  subscriptions: subscriptions.methods(request, options),
+  subscriptions: subscriptions(request, options),
 
-  content: content.methods(request, options),
+  content: content(request, options),
 
-  settings: settings.methods(request, options),
+  settings: settings(request, options),
 
-  payment: payment.methods(request, options),
+  payment: payment(request, options),
 
-  locale: locale.methods(request, options),
+  locale: locale(request, options),
 
-  currency: currency.methods(request, options),
+  currency: currency(request, options),
 };
 
-async function request(method, url, id = undefined, data = undefined, opt = undefined) {
+async function request(
+  method,
+  url,
+  id = undefined,
+  data = undefined,
+  opt = undefined,
+) {
   const allOptions = {
     ...options,
     ...opt,
@@ -128,7 +136,9 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
   if (reqMethod === 'get') {
     let exQuery;
     [reqUrl, exQuery] = reqUrl.split('?');
-    const fullQuery = [exQuery, stringifyQuery(reqData)].join('&').replace(/^&/, '');
+    const fullQuery = [exQuery, stringifyQuery(reqData)]
+      .join('&')
+      .replace(/^&/, '');
     reqUrl = `${reqUrl}${fullQuery ? `?${fullQuery}` : ''}`;
   } else {
     reqBody = JSON.stringify(reqData);
@@ -175,7 +185,9 @@ async function request(method, url, id = undefined, data = undefined, opt = unde
     err.param = result.error.param;
     throw err;
   } else if (!response.ok) {
-    const err = new Error('A connection error occurred while making the request');
+    const err = new Error(
+      'A connection error occurred while making the request',
+    );
     err.code = 'connection_error';
     throw err;
   }
@@ -189,4 +201,4 @@ if (typeof window !== 'undefined') {
   };
 }
 
-module.exports = api;
+export default api;

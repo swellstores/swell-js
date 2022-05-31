@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('settings', () => {
   beforeEach(() => {
@@ -10,7 +10,9 @@ describe('settings', () => {
       await api.settings.get();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/settings`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/settings`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -155,7 +157,10 @@ describe('settings', () => {
       let test = await api.settings.get('store.name');
       expect(test).toEqual('test store');
 
-      api.settings.set({ path: 'store.$locale.en.name', value: 'test store 2' });
+      api.settings.set({
+        path: 'store.$locale.en.name',
+        value: 'test store 2',
+      });
 
       test = await api.settings.get('store.name');
       expect(test).toEqual('test store 2');
@@ -167,7 +172,9 @@ describe('settings', () => {
       await api.settings.payments();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/settings/payments`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/settings/payments`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 

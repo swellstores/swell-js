@@ -1,4 +1,4 @@
-const cache = require('./cache');
+import cache from './cache';
 
 function methods(request, opt) {
   return {
@@ -15,6 +15,4 @@ function methods(request, opt) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

@@ -1,5 +1,5 @@
-const { cloneDeep } = require('./utils');
-const { cleanProductOptions } = require('./products');
+import { cloneDeep } from './utils';
+import { cleanProductOptions } from './products';
 
 function methods(request, options) {
   return {
@@ -68,11 +68,19 @@ function methods(request, options) {
     },
 
     addItem(item, data) {
-      return this.requestStateChange('post', '/cart/items', this.getItemData(item, data));
+      return this.requestStateChange(
+        'post',
+        '/cart/items',
+        this.getItemData(item, data),
+      );
     },
 
     updateItem(id, item) {
-      return this.requestStateChange('put', `/cart/items/${id}`, this.getItemData(item));
+      return this.requestStateChange(
+        'put',
+        `/cart/items/${id}`,
+        this.getItemData(item),
+      );
     },
 
     setItems(input) {
@@ -120,7 +128,9 @@ function methods(request, options) {
 
     async getShippingRates() {
       await this.requestStateChange('get', '/cart/shipment-rating');
-      return this.state[options.useCamelCase ? 'shipmentRating' : 'shipment_rating'];
+      return this.state[
+        options.useCamelCase ? 'shipmentRating' : 'shipment_rating'
+      ];
     },
 
     async submitOrder() {
@@ -136,7 +146,9 @@ function methods(request, options) {
     async getOrder(checkoutId = undefined) {
       let result;
       if (checkoutId) {
-        result = await request('get', `/cart/order`, { checkout_id: checkoutId });
+        result = await request('get', `/cart/order`, {
+          checkout_id: checkoutId,
+        });
       } else {
         result = await request('get', `/cart/order`);
       }
@@ -151,6 +163,4 @@ function methods(request, options) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

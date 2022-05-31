@@ -1,4 +1,4 @@
-const {
+import {
   get,
   reduce,
   find,
@@ -8,9 +8,9 @@ const {
   toCamel,
   isEqual,
   snakeCase,
-} = require('./utils');
-const cache = require('./cache');
-const attributesApi = require('./attributes');
+} from './utils';
+import cache from './cache';
+import attributesApi from './attributes';
 
 let OPTIONS;
 
@@ -43,7 +43,9 @@ function getProductOptionIndex(product, filter = undefined) {
   if (!product.options) {
     return {};
   }
-  const productOptions = filter ? product.options.filter(filter) : product.options;
+  const productOptions = filter
+    ? product.options.filter(filter)
+    : product.options;
   return reduce(
     productOptions,
     (acc, op) => {
@@ -143,7 +145,10 @@ function calculateVariation(input, options, purchaseOption) {
     }
   }
   if (variantOptionValueIds.length > 0) {
-    const variant = findVariantWithOptionValueIds(product, variantOptionValueIds);
+    const variant = findVariantWithOptionValueIds(
+      product,
+      variantOptionValueIds,
+    );
     if (variant) {
       let variantPurchaseOp = purchaseOp;
       try {
@@ -153,12 +158,16 @@ function calculateVariation(input, options, purchaseOption) {
       }
       variation.variant_id = variant.id;
       variation.price = variantPurchaseOp.price || 0;
-      variation.sale_price = variantPurchaseOp.sale_price || purchaseOp.sale_price;
-      variation.orig_price = variantPurchaseOp.orig_price || purchaseOp.orig_price;
+      variation.sale_price =
+        variantPurchaseOp.sale_price || purchaseOp.sale_price;
+      variation.orig_price =
+        variantPurchaseOp.orig_price || purchaseOp.orig_price;
       variation.stock_status = variant.stock_status;
       variation.stock_level = variant.stock_level || 0;
       variation.images =
-        (variant.images && variant.images.length ? variant.images : product.images) || [];
+        (variant.images && variant.images.length
+          ? variant.images
+          : product.images) || [];
     }
   }
   if (optionPrice > 0) {
@@ -192,14 +201,18 @@ function findPurchaseOption(product, purchaseOption) {
   );
   let option = get(product, `purchase_options.${type}`);
   if (!option && type !== 'standard') {
-    throw new Error(`Product purchase option '${type}' not found or not active`);
+    throw new Error(
+      `Product purchase option '${type}' not found or not active`,
+    );
   }
   if (option) {
     if (option.plans) {
       if (plan !== undefined) {
         option = find(option.plans, { id: plan });
         if (!option) {
-          throw new Error(`Subscription purchase plan '${plan}' not found or not active`);
+          throw new Error(
+            `Subscription purchase plan '${plan}' not found or not active`,
+          );
         }
       } else {
         option = option.plans[0];
@@ -208,8 +221,14 @@ function findPurchaseOption(product, purchaseOption) {
     return {
       ...option,
       price: typeof option.price === 'number' ? option.price : product.price,
-      sale_price: typeof option.sale_price === 'number' ? option.sale_price : product.sale_price,
-      orig_price: typeof option.orig_price === 'number' ? option.orig_price : product.orig_price,
+      sale_price:
+        typeof option.sale_price === 'number'
+          ? option.sale_price
+          : product.sale_price,
+      orig_price:
+        typeof option.orig_price === 'number'
+          ? option.orig_price
+          : product.orig_price,
     };
   }
   return {
@@ -221,26 +240,33 @@ function findPurchaseOption(product, purchaseOption) {
 }
 
 async function getFilterableAttributeFilters(request, products, options) {
-  const { results: filterableAttributes } = await attributesApi.methods(request, OPTIONS).list({
-    filterable: true,
-  });
+  const { results: filterableAttributes } = await attributesApi
+    .methods(request, OPTIONS)
+    .list({
+      filterable: true,
+    });
 
   return getFilters(products, { ...options, filterableAttributes });
 }
 
 function getFilters(products, options = {}) {
   let attributes =
-    (options.attributes || options.attributes === undefined) && getAttributes(products);
+    (options.attributes || options.attributes === undefined) &&
+    getAttributes(products);
 
   if (options.filterableAttributes) {
     attributes = attributes.filter((productAttr) =>
-      options.filterableAttributes.find((filterableAttr) => productAttr.id === filterableAttr.id),
+      options.filterableAttributes.find(
+        (filterableAttr) => productAttr.id === filterableAttr.id,
+      ),
     );
   }
 
   const categories =
-    (options.categories || options.categories === undefined) && getCategories(products);
-  const priceRange = (options.price || options.price === undefined) && getPriceRange(products);
+    (options.categories || options.categories === undefined) &&
+    getCategories(products);
+  const priceRange =
+    (options.price || options.price === undefined) && getPriceRange(products);
 
   let filters = [];
 
@@ -309,7 +335,8 @@ function getFilters(products, options = {}) {
 
 function getCategories(products) {
   const categories = [];
-  const collection = (products && products.results) || (products.id ? [products] : products);
+  const collection =
+    (products && products.results) || (products.id ? [products] : products);
   if (collection instanceof Array) {
     for (let product of collection) {
       if (product.categories) {
@@ -328,7 +355,8 @@ function getCategories(products) {
 
 function getAttributes(products) {
   const attributes = [];
-  const collection = (products && products.results) || (products.id ? [products] : products);
+  const collection =
+    (products && products.results) || (products.id ? [products] : products);
   if (collection instanceof Array) {
     for (let product of collection) {
       if (product.attributes) {
@@ -337,7 +365,10 @@ function getAttributes(products) {
           const value = product.attributes[id].value;
           let attr = find(attributes, { id: snakeCase(id) });
           if (attr) {
-            attr.values = uniq([...attr.values, ...(value instanceof Array ? value : [value])]);
+            attr.values = uniq([
+              ...attr.values,
+              ...(value instanceof Array ? value : [value]),
+            ]);
           } else {
             attributes.push({
               ...product.attributes[id],
@@ -356,7 +387,8 @@ function getPriceRange(products) {
   let min;
   let max;
   let interval;
-  const collection = (products && products.results) || (products.id ? [products] : products);
+  const collection =
+    (products && products.results) || (products.id ? [products] : products);
   if (collection instanceof Array) {
     for (let product of collection) {
       if (max === undefined || product.price > max) {
@@ -394,8 +426,8 @@ function getPriceRange(products) {
   };
 }
 
-module.exports = {
-  methods,
+export {
+  methods as default,
   cleanProductOptions,
   getProductOptionIndex,
   getVariantOptionValueIds,

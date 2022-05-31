@@ -1,7 +1,7 @@
 global.fetch = require('jest-fetch-mock');
 global.window = {};
 
-const api = require('./api');
+import api from './api';
 
 let VAULT_RESPONSE;
 
@@ -86,7 +86,9 @@ describe('card', () => {
 
       it('should throw an of vault request returns errors', async () => {
         try {
-          VAULT_RESPONSE = { errors: { gateway: { code: 'INVALID', message: 'Test error' } } };
+          VAULT_RESPONSE = {
+            errors: { gateway: { code: 'INVALID', message: 'Test error' } },
+          };
           await api.card.createToken({
             cvc: 123,
             exp_month: 1,

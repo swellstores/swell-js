@@ -1,9 +1,9 @@
-const reduce = require('lodash/reduce');
-const isEmpty = require('lodash/isEmpty');
-const get = require('lodash/get');
-const toLower = require('lodash/toLower');
-const map = require('lodash/map');
-const toNumber = require('lodash/toNumber');
+import reduce from 'lodash/reduce';
+import isEmpty from 'lodash/isEmpty';
+import get from 'lodash/get';
+import toLower from 'lodash/toLower';
+import map from 'lodash/map';
+import toNumber from 'lodash/toNumber';
 
 const addressFieldsMap = {
   city: 'city',
@@ -116,7 +116,10 @@ function setKlarnaBillingShipping(source, data) {
       {},
     );
 
-  source.klarna = { ...source.klarna, ...fillValues(shippingNameFieldsMap, data.shipping) };
+  source.klarna = {
+    ...source.klarna,
+    ...fillValues(shippingNameFieldsMap, data.shipping),
+  };
   const shipping = fillValues(shippingFieldsMap, data.shipping);
   const shippingAddress = fillValues(addressFieldsMap, data.shipping);
   if (shipping || shippingAddress) {
@@ -271,7 +274,7 @@ function stripeAmountByCurrency(currency, amount) {
   }
 }
 
-module.exports = {
+export {
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,

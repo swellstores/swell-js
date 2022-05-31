@@ -1,5 +1,5 @@
-const { get, find, round } = require('./utils');
-const { getCookie, setCookie } = require('./cookie');
+import { get, find, round } from './utils';
+import { getCookie, setCookie } from './cookie';
 
 const FORMATTERS = {};
 
@@ -22,8 +22,7 @@ function methods(request, opt) {
     selected() {
       if (!this.code) {
         this.set(
-          getCookie('swell-currency') ||
-          opt.api.settings.get('store.currency')
+          getCookie('swell-currency') || opt.api.settings.get('store.currency'),
         );
       }
 
@@ -67,7 +66,8 @@ function methods(request, opt) {
       const formatCode = params.code || code;
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
-      const formatDecimals = typeof params.decimals === 'number' ? params.decimals : decimals;
+      const formatDecimals =
+        typeof params.decimals === 'number' ? params.decimals : decimals;
       const { convert = true } = params;
 
       let formatAmount = amount;
@@ -118,7 +118,8 @@ function methods(request, opt) {
 
       formatLocales.push('en-US');
 
-      const formatDecimals = typeof decimals === 'number' ? decimals : undefined;
+      const formatDecimals =
+        typeof decimals === 'number' ? decimals : undefined;
 
       const props = {
         style: 'currency',
@@ -149,7 +150,8 @@ function methods(request, opt) {
       }
 
       const scale = config.decimals;
-      const fraction = config.round_interval === 'fraction' ? config.round_fraction || 0 : 0;
+      const fraction =
+        config.round_interval === 'fraction' ? config.round_fraction || 0 : 0;
 
       let roundValue = ~~value;
       let decimalValue = this.round(value, scale);
@@ -172,11 +174,13 @@ function methods(request, opt) {
 
       switch (direction) {
         case 'down':
-          roundValue = roundValue + fraction - (decimalValue > fraction ? 0 : 1);
+          roundValue =
+            roundValue + fraction - (decimalValue > fraction ? 0 : 1);
           break;
         case 'up':
         default:
-          roundValue = roundValue + fraction + (decimalValue > fraction ? 1 : 0);
+          roundValue =
+            roundValue + fraction + (decimalValue > fraction ? 1 : 0);
           break;
       }
 
@@ -187,6 +191,4 @@ function methods(request, opt) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

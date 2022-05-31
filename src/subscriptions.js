@@ -1,9 +1,12 @@
-const { cleanProductOptions } = require('./products');
-const { defaultMethods } = require('./utils');
-const cache = require('./cache');
+import { cleanProductOptions } from './products';
+import { defaultMethods } from './utils';
+import cache from './cache';
 
 function methods(request) {
-  const { get, list } = defaultMethods(request, '/subscriptions', ['list', 'get']);
+  const { get, list } = defaultMethods(request, '/subscriptions', [
+    'list',
+    'get',
+  ]);
   return {
     get: (id, ...args) => {
       return cache.getFetch('subscriptions', id, () => get(id, ...args));
@@ -35,7 +38,11 @@ function methods(request) {
     },
 
     addItem(id, item) {
-      return request('post', `/subscriptions/${id}/items`, this.getCleanData(item));
+      return request(
+        'post',
+        `/subscriptions/${id}/items`,
+        this.getCleanData(item),
+      );
     },
 
     setItems(id, items) {
@@ -46,7 +53,11 @@ function methods(request) {
     },
 
     updateItem(id, itemId, item) {
-      return request('put', `/subscriptions/${id}/items/${itemId}`, this.getCleanData(item));
+      return request(
+        'put',
+        `/subscriptions/${id}/items/${itemId}`,
+        this.getCleanData(item),
+      );
     },
 
     removeItem(id, itemId) {
@@ -55,6 +66,4 @@ function methods(request) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;

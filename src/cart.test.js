@@ -1,4 +1,4 @@
-const api = require('./api');
+import api from './api';
 
 describe('cart', () => {
   beforeEach(() => {
@@ -10,7 +10,9 @@ describe('cart', () => {
       await api.cart.get();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -27,13 +29,17 @@ describe('cart', () => {
       await api.cart.get();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart?$cache=false`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart?%24cache=false`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
 
       await api.cart.get();
 
       expect(fetch.mock.calls.length).toEqual(2);
-      expect(fetch.mock.calls[1][0]).toEqual(`https://test.swell.store/api/cart`);
+      expect(fetch.mock.calls[1][0]).toEqual(
+        `https://test.swell.store/api/cart`,
+      );
       expect(fetch.mock.calls[1][1]).toHaveProperty('method', 'get');
     });
   });
@@ -43,35 +49,56 @@ describe('cart', () => {
       await api.cart.addItem({ product_id: '123' });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
-      expect(fetch.mock.calls[0][1]).toHaveProperty('body', JSON.stringify({ product_id: '123' }));
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ product_id: '123' }),
+      );
     });
 
     it('should make request to POST /cart/items with clean options', async () => {
       await api.cart.addItem({ product_id: '123', options: { color: 'red' } });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
-        JSON.stringify({ product_id: '123', options: [{ id: 'color', value: 'red' }] }),
+        JSON.stringify({
+          product_id: '123',
+          options: [{ id: 'color', value: 'red' }],
+        }),
       );
     });
 
     it('should not mutate input item request to POST /cart/items with clean options', async () => {
-      const item = { product_id: '123', options: [ { name: 'Size', value: '1 cup' } ] };
+      const item = {
+        product_id: '123',
+        options: [{ name: 'Size', value: '1 cup' }],
+      };
       await api.cart.addItem(item);
 
-      expect(item).toEqual({ product_id: '123', options: [ { name: 'Size', value: '1 cup' } ] });
+      expect(item).toEqual({
+        product_id: '123',
+        options: [{ name: 'Size', value: '1 cup' }],
+      });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
-        JSON.stringify({ product_id: '123', options: [{ id: 'Size', value: '1 cup' }] }),
+        JSON.stringify({
+          product_id: '123',
+          options: [{ id: 'Size', value: '1 cup' }],
+        }),
       );
     });
 
@@ -80,19 +107,32 @@ describe('cart', () => {
         .mockResponseOnce(
           () =>
             new Promise((resolve) =>
-              setTimeout(() => resolve({ body: JSON.stringify({ grand_total: 1000 }) }), 100),
+              setTimeout(
+                () => resolve({ body: JSON.stringify({ grand_total: 1000 }) }),
+                100,
+              ),
             ),
         )
         .mockResponseOnce(
           () =>
             new Promise((resolve) =>
-              resolve({ body: JSON.stringify({ ...(api.cart.state || {}), waited: true }) }),
+              resolve({
+                body: JSON.stringify({
+                  ...(api.cart.state || {}),
+                  waited: true,
+                }),
+              }),
             ),
         )
         .mockResponseOnce(
           () =>
             new Promise((resolve) =>
-              resolve({ body: JSON.stringify({ ...(api.cart.state || {}), again: true }) }),
+              resolve({
+                body: JSON.stringify({
+                  ...(api.cart.state || {}),
+                  again: true,
+                }),
+              }),
             ),
         );
 
@@ -103,7 +143,7 @@ describe('cart', () => {
         api.cart.addItem({ product_id: '124', options: { color: 'blue' } }),
       ]);
 
-      await api.cart.update({ again: true })
+      await api.cart.update({ again: true });
 
       expect(api.cart.state).toEqual({
         grand_total: 1000,
@@ -118,20 +158,29 @@ describe('cart', () => {
       await api.cart.setItems([{ quantity: 2 }]);
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
-      expect(fetch.mock.calls[0][1]).toHaveProperty('body', JSON.stringify([{ quantity: 2 }]));
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify([{ quantity: 2 }]),
+      );
     });
 
     it('should make request to PUT /cart/items with clean options', async () => {
       await api.cart.setItems([{ quantity: 2, options: { color: 'red' } }]);
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
-        JSON.stringify([{ quantity: 2, options: [{ id: 'color', value: 'red' }] }]),
+        JSON.stringify([
+          { quantity: 2, options: [{ id: 'color', value: 'red' }] },
+        ]),
       );
     });
   });
@@ -141,20 +190,33 @@ describe('cart', () => {
       await api.cart.updateItem('12345', { quantity: 2 });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items/12345`);
-      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
-      expect(fetch.mock.calls[0][1]).toHaveProperty('body', JSON.stringify({ quantity: 2 }));
-    });
-
-    it('should make request to PUT /cart/items/id with clean options', async () => {
-      await api.cart.updateItem('12345', { quantity: 2, options: { color: 'red' } });
-
-      expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
-        JSON.stringify({ quantity: 2, options: [{ id: 'color', value: 'red' }] }),
+        JSON.stringify({ quantity: 2 }),
+      );
+    });
+
+    it('should make request to PUT /cart/items/id with clean options', async () => {
+      await api.cart.updateItem('12345', {
+        quantity: 2,
+        options: { color: 'red' },
+      });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items/12345`,
+      );
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({
+          quantity: 2,
+          options: [{ id: 'color', value: 'red' }],
+        }),
       );
     });
   });
@@ -164,7 +226,9 @@ describe('cart', () => {
       await api.cart.removeItem('12345');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/items/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/items/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'delete');
     });
   });
@@ -174,7 +238,9 @@ describe('cart', () => {
       await api.cart.recover('12345');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/recover/12345`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/recover/12345`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
     });
   });
@@ -188,7 +254,9 @@ describe('cart', () => {
       });
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -202,7 +270,9 @@ describe('cart', () => {
       await api.cart.applyCoupon('FREESHIPPING');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/coupon`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/coupon`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'put');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -216,7 +286,9 @@ describe('cart', () => {
       await api.cart.removeCoupon();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/coupon`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/coupon`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'delete');
     });
   });
@@ -226,7 +298,9 @@ describe('cart', () => {
       await api.cart.applyGiftcard('XXX XXX XXX XXX');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/giftcards`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/giftcards`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
       expect(fetch.mock.calls[0][1]).toHaveProperty(
         'body',
@@ -252,7 +326,9 @@ describe('cart', () => {
       await api.cart.getShippingRates();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/shipment-rating`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/shipment-rating`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });
@@ -262,7 +338,9 @@ describe('cart', () => {
       await api.cart.submitOrder();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/order`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/order`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
     });
   });
@@ -272,7 +350,9 @@ describe('cart', () => {
       await api.cart.getOrder();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/order`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/order`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
 
@@ -292,7 +372,9 @@ describe('cart', () => {
       await api.cart.getSettings();
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][0]).toEqual(`https://test.swell.store/api/cart/settings`);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/cart/settings`,
+      );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
   });

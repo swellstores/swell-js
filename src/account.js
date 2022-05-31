@@ -24,9 +24,15 @@ function methods(request) {
 
     login(email, password) {
       if (password && password.password_token) {
-        return this.requestStateChange('post', '/account/login', { email, password_token: password.password_token });
+        return this.requestStateChange('post', '/account/login', {
+          email,
+          password_token: password.password_token,
+        });
       }
-      return this.requestStateChange('post', '/account/login', { email, password });
+      return this.requestStateChange('post', '/account/login', {
+        email,
+        password,
+      });
     },
 
     logout() {
@@ -91,6 +97,4 @@ function methods(request) {
   };
 }
 
-module.exports = {
-  methods,
-};
+export default methods;
