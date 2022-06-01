@@ -288,6 +288,7 @@ async function stripeElements(request, payMethods, params) {
 async function payPalButton(request, cart, payMethods, params) {
   const paypal = window.paypal;
   const { paypal: { locale, style, elementId } = {} } = params;
+  const { capture_total, currency, account_logged_in } = cart;
   const onError = (error) => {
     const errorHandler = get(params, 'paypal.onError');
     if (isFunction(errorHandler)) {
@@ -300,12 +301,8 @@ async function payPalButton(request, cart, payMethods, params) {
     return isFunction(successHandler) && successHandler();
   };
 
-  const { totalDue } = getTotalsDueRemaining(cart);
-
-  if (!(totalDue > 0)) {
-    throw new Error(
-      'Invalid PayPal button amount. Value should be greater than zero.',
-    );
+  if (!(capture_total > 0)) {
+    throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
   }
 
   paypal
@@ -326,8 +323,8 @@ async function payPalButton(request, cart, payMethods, params) {
             purchase_units: [
               {
                 amount: {
-                  value: +totalDue.toFixed(2),
-                  currency_code: cart.currency,
+                  value: +capture_total.toFixed(2),
+                  currency_code: currency,
                 },
               },
             ],
@@ -341,7 +338,7 @@ async function payPalButton(request, cart, payMethods, params) {
               const shipping = get(order, 'purchase_units[0].shipping');
 
               return cartApi.methods(request).update({
-                ...(!cart.account_logged_in && {
+                ...(!account_logged_in && {
                   account: {
                     email: payer.email_address,
                   },
@@ -432,7 +429,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
 }
 
 async function paymentTokenize(request, params, payMethods, cart) {
-  const { totalDue } = getTotalsDueRemaining(cart);
+  const { capture_total, auth_total } = cart;
   const onError = (error) => {
     const errorHandler =
       get(params, 'card.onError') ||
@@ -471,7 +468,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       if (paymentMethod.error) {
         return onError(paymentMethod.error);
-      } else if (totalDue < 1) {
+      } else if (capture_total < 1) {
         // should save payment method data when payment amount is less than 1
         // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
         return cartApi
@@ -487,10 +484,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(
-        currency,
-        cart.trial ? cart.trial_initial_capture_total + cart.trial_auth_total : totalDue,
-      );
+      const amount = stripeAmountByCurrency(currency, capture_total + auth_total);
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -523,8 +517,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
                   intent: {
                     stripe: {
                       id: paymentIntent.id,
-                      ...(cart.trial && {
-                        auth_amount: cart.trial_auth_total,
+                      ...(!!auth_total && {
+                        auth_amount: auth_total,
                       }),
                     },
                   },
@@ -575,7 +569,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'eur'));
-      const amount = stripeAmountByCurrency(currency, totalDue);
+      const amount = stripeAmountByCurrency(currency, capture_total);
       const intent = toSnake(
         await methods(request)
           .createIntent({
@@ -894,47 +888,6 @@ async function authenticateStripeCard(request, payment, payMethods) {
         },
       }
     : { status: actionResult.status };
-}
-
-function getTotalsDueRemaining(cart) {
-  const { grand_total, account, account_credit_amount, giftcards } = cart;
-
-  let totalDue = grand_total;
-  let totalRemaining = 0;
-  let totalRemainingGiftcard = 0;
-  let totalRemainingAccount = 0;
-
-  if (giftcards && giftcards.length > 0) {
-    for (let gc of giftcards) {
-      totalDue -= gc.amount;
-    }
-    if (totalDue < 0) {
-      totalRemainingGiftcard = -totalDue;
-    }
-  }
-
-  const accountCreditAmount =
-    typeof account_credit_amount === 'number'
-      ? account_credit_amount
-      : account && account.balance;
-  if (accountCreditAmount > 0) {
-    totalDue -= accountCreditAmount;
-    if (totalDue < 0) {
-      totalRemainingAccount = -totalDue - totalRemainingGiftcard;
-    }
-  }
-
-  if (totalDue < 0) {
-    totalRemaining = -totalDue;
-    totalDue = 0;
-  }
-
-  return {
-    totalDue,
-    totalRemaining,
-    totalRemainingGiftcard,
-    totalRemainingAccount,
-  };
 }
 
 export default methods;
