@@ -51,12 +51,12 @@ function methods(request, opts) {
 
     async createElements(elementParams) {
       this.params = elementParams || {};
-      const cart = toSnake(await cartApi.methods(request, options).get());
+      const cart = toSnake(await cartApi(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
       const payMethods = toSnake(
-        await settingsApi.methods(request, options).payments(),
+        await settingsApi(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -65,12 +65,12 @@ function methods(request, opts) {
     },
 
     async tokenize(params) {
-      const cart = toSnake(await cartApi.methods(request, options).get());
+      const cart = toSnake(await cartApi(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
       const payMethods = toSnake(
-        await settingsApi.methods(request, options).payments(),
+        await settingsApi(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -84,7 +84,7 @@ function methods(request, opts) {
     },
 
     async handleRedirect(params) {
-      const cart = toSnake(await cartApi.methods(request, options).get());
+      const cart = toSnake(await cartApi(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
@@ -97,7 +97,7 @@ function methods(request, opts) {
         throw new Error('Payment not found');
       }
       const payMethods = toSnake(
-        await settingsApi.methods(request, options).payments(),
+        await settingsApi(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -302,7 +302,9 @@ async function payPalButton(request, cart, payMethods, params) {
   };
 
   if (!(capture_total > 0)) {
-    throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
+    throw new Error(
+      'Invalid PayPal button amount. Value should be greater than zero.',
+    );
   }
 
   paypal
@@ -337,7 +339,7 @@ async function payPalButton(request, cart, payMethods, params) {
               const payer = order.payer;
               const shipping = get(order, 'purchase_units[0].shipping');
 
-              return cartApi.methods(request).update({
+              return cartApi(request).update({
                 ...(!account_logged_in && {
                   account: {
                     email: payer.email_address,
@@ -398,9 +400,9 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then(({ nonce }) =>
-                cartApi
-                  .methods(request, options)
-                  .update({ billing: { paypal: { nonce } } }),
+                cartApi(request, options).update({
+                  billing: { paypal: { nonce } },
+                }),
               )
               .then(
                 () =>
@@ -471,8 +473,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       } else if (capture_total < 1) {
         // should save payment method data when payment amount is less than 1
         // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
-        return cartApi
-          .methods(request, options)
+        return cartApi(request, options)
           .update({
             billing: {
               method: 'card',
@@ -484,7 +485,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, capture_total + auth_total);
+      const amount = stripeAmountByCurrency(
+        currency,
+        capture_total + auth_total,
+      );
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -508,8 +512,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         );
         return error
           ? onError(error)
-          : await cartApi
-              .methods(request, options)
+          : await cartApi(request, options)
               .update({
                 billing: {
                   method: 'card',
@@ -538,7 +541,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         return onError(intent.error);
       }
 
-      await cartApi.methods(request, options).update({
+      await cartApi(request, options).update({
         billing: {
           method: 'card',
           intent: {
@@ -588,8 +591,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       );
 
       if (intent) {
-        await cartApi
-          .methods(request, options)
+        await cartApi(request, options)
           .update({
             billing: {
               method: 'ideal',
@@ -621,9 +623,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
       const { publishable_key } = payMethods.card;
       const stripe = window.Stripe(publishable_key);
-      const settings = toSnake(
-        await settingsApi.methods(request, options).get(),
-      );
+      const settings = toSnake(await settingsApi(request, options).get());
 
       const { error, source } = await createKlarnaSource(stripe, {
         ...cart,
@@ -632,8 +632,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : cartApi
-            .methods(request, options)
+        : cartApi(request, options)
             .update({
               billing: {
                 method: 'klarna',
@@ -654,8 +653,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : cartApi
-            .methods(request, options)
+        : cartApi(request, options)
             .update({
               billing: {
                 method: 'bancontact',
@@ -673,7 +671,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       return;
     }
 
-    await cartApi.methods(request, options).update({
+    await cartApi(request, options).update({
       billing: {
         method: 'paysafecard',
         intent: {
@@ -764,7 +762,7 @@ async function handleQuickpayRedirectAction(
       } else if (card.error) {
         return card;
       } else {
-        await cartApi.methods(request, options).update({
+        await cartApi(request, options).update({
           billing: {
             method: 'card',
             card,
@@ -836,7 +834,7 @@ async function handleDirectKlarnaRedirectAction(
     };
   }
 
-  await cartApi.methods(request, options).update({
+  await cartApi(request, options).update({
     billing: {
       method: 'klarna',
       klarna: {
