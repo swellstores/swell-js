@@ -1,6 +1,6 @@
 import get from 'lodash/get';
 import toLower from 'lodash/toLower';
-import { m as methods$1 } from './cart-bdec9379.js';
+import { m as methods$1 } from './cart-21650912.js';
 import { m as methods$2 } from './settings-b1a4a4af.js';
 import { b as toSnake, v as vaultRequest, j as isFunction, o as getLocationParams, p as removeUrlParams } from './index-bce8d606.js';
 import reduce from 'lodash/reduce';
@@ -465,12 +465,12 @@ function methods(request, opts) {
 
     async createElements(elementParams) {
       this.params = elementParams || {};
-      const cart = toSnake(await methods$1.methods(request, options).get());
+      const cart = toSnake(await methods$1(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
       const payMethods = toSnake(
-        await methods$2.methods(request, options).payments(),
+        await methods$2(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -479,12 +479,12 @@ function methods(request, opts) {
     },
 
     async tokenize(params) {
-      const cart = toSnake(await methods$1.methods(request, options).get());
+      const cart = toSnake(await methods$1(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
       const payMethods = toSnake(
-        await methods$2.methods(request, options).payments(),
+        await methods$2(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -498,7 +498,7 @@ function methods(request, opts) {
     },
 
     async handleRedirect(params) {
-      const cart = toSnake(await methods$1.methods(request, options).get());
+      const cart = toSnake(await methods$1(request, options).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
@@ -511,7 +511,7 @@ function methods(request, opts) {
         throw new Error('Payment not found');
       }
       const payMethods = toSnake(
-        await methods$2.methods(request, options).payments(),
+        await methods$2(request, options).payments(),
       );
       if (payMethods.error) {
         throw new Error(payMethods.error);
@@ -716,7 +716,9 @@ async function payPalButton(request, cart, payMethods, params) {
   };
 
   if (!(capture_total > 0)) {
-    throw new Error('Invalid PayPal button amount. Value should be greater than zero.');
+    throw new Error(
+      'Invalid PayPal button amount. Value should be greater than zero.',
+    );
   }
 
   paypal
@@ -751,7 +753,7 @@ async function payPalButton(request, cart, payMethods, params) {
               const payer = order.payer;
               const shipping = get(order, 'purchase_units[0].shipping');
 
-              return methods$1.methods(request).update({
+              return methods$1(request).update({
                 ...(!account_logged_in && {
                   account: {
                     email: payer.email_address,
@@ -812,9 +814,9 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then(({ nonce }) =>
-                methods$1
-                  .methods(request, options)
-                  .update({ billing: { paypal: { nonce } } }),
+                methods$1(request, options).update({
+                  billing: { paypal: { nonce } },
+                }),
               )
               .then(
                 () =>
@@ -885,8 +887,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       } else if (capture_total < 1) {
         // should save payment method data when payment amount is less than 1
         // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
-        return methods$1
-          .methods(request, options)
+        return methods$1(request, options)
           .update({
             billing: {
               method: 'card',
@@ -898,7 +899,10 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
 
       const currency = toLower(get(cart, 'currency', 'usd'));
-      const amount = stripeAmountByCurrency(currency, capture_total + auth_total);
+      const amount = stripeAmountByCurrency(
+        currency,
+        capture_total + auth_total,
+      );
       const stripeCustomer = get(cart, 'account.stripe_customer');
       const intent = toSnake(
         await methods(request)
@@ -922,8 +926,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         );
         return error
           ? onError(error)
-          : await methods$1
-              .methods(request, options)
+          : await methods$1(request, options)
               .update({
                 billing: {
                   method: 'card',
@@ -952,7 +955,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         return onError(intent.error);
       }
 
-      await methods$1.methods(request, options).update({
+      await methods$1(request, options).update({
         billing: {
           method: 'card',
           intent: {
@@ -1002,8 +1005,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       );
 
       if (intent) {
-        await methods$1
-          .methods(request, options)
+        await methods$1(request, options)
           .update({
             billing: {
               method: 'ideal',
@@ -1035,9 +1037,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       }
       const { publishable_key } = payMethods.card;
       const stripe = window.Stripe(publishable_key);
-      const settings = toSnake(
-        await methods$2.methods(request, options).get(),
-      );
+      const settings = toSnake(await methods$2(request, options).get());
 
       const { error, source } = await createKlarnaSource(stripe, {
         ...cart,
@@ -1046,8 +1046,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : methods$1
-            .methods(request, options)
+        : methods$1(request, options)
             .update({
               billing: {
                 method: 'klarna',
@@ -1068,8 +1067,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : methods$1
-            .methods(request, options)
+        : methods$1(request, options)
             .update({
               billing: {
                 method: 'bancontact',
@@ -1087,7 +1085,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       return;
     }
 
-    await methods$1.methods(request, options).update({
+    await methods$1(request, options).update({
       billing: {
         method: 'paysafecard',
         intent: {
@@ -1175,7 +1173,7 @@ async function handleQuickpayRedirectAction(
       } else if (card.error) {
         return card;
       } else {
-        await methods$1.methods(request, options).update({
+        await methods$1(request, options).update({
           billing: {
             method: 'card',
             card,
@@ -1247,7 +1245,7 @@ async function handleDirectKlarnaRedirectAction(
     };
   }
 
-  await methods$1.methods(request, options).update({
+  await methods$1(request, options).update({
     billing: {
       method: 'klarna',
       klarna: {

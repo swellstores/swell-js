@@ -1,4 +1,4 @@
-export { b as calculateVariation, c as cleanProductOptions, m as default, f as findVariantWithOptions, g as getProductOptionIndex, a as getVariantOptionValueIds } from './products-a6a43be8.js';
+export { b as calculateVariation, c as cleanProductOptions, m as default, f as findVariantWithOptions, g as getProductOptionIndex, a as getVariantOptionValueIds } from './products-baf505e7.js';
 import './index-bce8d606.js';
 import 'qs';
 import 'lodash/set';

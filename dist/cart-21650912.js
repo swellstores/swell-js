@@ -11,7 +11,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import 'lodash/isEqual';
 import 'deepmerge';
 import 'object-keys-normalizer';
-import { c as cleanProductOptions } from './products-a6a43be8.js';
+import { c as cleanProductOptions } from './products-baf505e7.js';
 
 function methods(request, options) {
   return {

@@ -235,11 +235,10 @@ function findPurchaseOption(product, purchaseOption) {
 }
 
 async function getFilterableAttributeFilters(request, products, options) {
-  const { results: filterableAttributes } = await methods$1
-    .methods(request, OPTIONS)
-    .list({
-      filterable: true,
-    });
+  const { results: filterableAttributes } = await methods$1(
+    request).list({
+    filterable: true,
+  });
 
   return getFilters(products, { ...options, filterableAttributes });
 }

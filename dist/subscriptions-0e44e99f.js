@@ -1,4 +1,4 @@
-import { c as cleanProductOptions } from './products-a6a43be8.js';
+import { c as cleanProductOptions } from './products-baf505e7.js';
 import { d as defaultMethods } from './index-bce8d606.js';
 import { c as cacheApi } from './cache-54abc38e.js';
 
