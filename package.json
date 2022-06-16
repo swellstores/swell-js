@@ -6,6 +6,7 @@
     "type": "git",
     "url": "https://github.com/swellstores/swell-js"
   },
+  "license": "MIT",
   "main": "./dist/swell.umd.min.js",
   "module": "./dist/index.js",
   "browser": "./dist/swell.umd.min.js",
