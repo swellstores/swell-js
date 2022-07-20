@@ -285,10 +285,30 @@ async function stripeElements(request, payMethods, params) {
   }
 }
 
+/**
+ * Update cart email with paypal's when no email is present
+ */
+export async function shouldUsePayPalEmail(guest, request, options) {
+  // Only check if the email should be updated when the user is not logged in (guest user)
+  if (!guest) return false;
+
+  // Refetch to avoid stale data from the cart
+  const updatedCart = await cartApi(request, options).get();
+  const currentEmail = get(updatedCart, 'account.email');
+
+  // If no email is present, use paypal's email
+  if (!currentEmail) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 async function payPalButton(request, cart, payMethods, params) {
   const paypal = window.paypal;
   const { paypal: { locale, style, elementId } = {} } = params;
-  const { capture_total, currency, account_logged_in } = cart;
+  const { capture_total, currency, guest } = cart;
+
   const onError = (error) => {
     const errorHandler = get(params, 'paypal.onError');
     if (isFunction(errorHandler)) {
@@ -334,13 +354,19 @@ async function payPalButton(request, cart, payMethods, params) {
         onApprove: (data, actions) =>
           actions.order
             .get()
-            .then((order) => {
+            .then(async (order) => {
               const orderId = order.id;
               const payer = order.payer;
               const shipping = get(order, 'purchase_units[0].shipping');
 
+              const usePayPalEmail = await shouldUsePayPalEmail(
+                guest,
+                request,
+                options,
+              );
+
               return cartApi(request).update({
-                ...(!account_logged_in && {
+                ...(usePayPalEmail && {
                   account: {
                     email: payer.email_address,
                   },

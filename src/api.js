@@ -25,7 +25,7 @@ import currency from './currency';
 
 require('isomorphic-fetch');
 
-const options = {
+export const options = {
   store: null,
   key: null,
   url: null,
@@ -102,7 +102,7 @@ const api = {
   currency: currency(request, options),
 };
 
-async function request(
+export async function request(
   method,
   url,
   id = undefined,
