@@ -1,5 +1,5 @@
 import { shouldUsePayPalEmail } from './payment';
-import api, { options, request } from './api';
+import api from './api';
 
 describe('payment', () => {
   beforeEach(() => {
@@ -11,8 +11,8 @@ describe('payment', () => {
       const guest = false;
       const usePayPalEmail = await shouldUsePayPalEmail(
         guest,
-        request,
-        options,
+        api.request,
+        api.options,
       );
 
       expect(usePayPalEmail).toBe(false);
@@ -26,8 +26,8 @@ describe('payment', () => {
       const guest = true;
       const usePayPalEmail = await shouldUsePayPalEmail(
         guest,
-        request,
-        options,
+        api.request,
+        api.options,
       );
 
       expect(usePayPalEmail).toBe(false);
@@ -39,8 +39,8 @@ describe('payment', () => {
       const guest = true;
       const usePayPalEmail = await shouldUsePayPalEmail(
         guest,
-        request,
-        options,
+        api.request,
+        api.options,
       );
 
       expect(usePayPalEmail).toBe(true);
