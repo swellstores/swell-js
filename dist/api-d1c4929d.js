@@ -10,7 +10,7 @@ import { m as methods$4 } from './attributes-db35134e.js';
 import { m as methods$5 } from './subscriptions-0e44e99f.js';
 import { m as methods$6 } from './content-eb42ecce.js';
 import { m as methods$7 } from './settings-b1a4a4af.js';
-import { m as methods$8 } from './payment-4fd3868e.js';
+import { m as methods$8 } from './payment-fd4a2cbe.js';
 import { m as methods$9 } from './locale-9de8dba1.js';
 import { m as methods$a } from './currency-209bb202.js';
 

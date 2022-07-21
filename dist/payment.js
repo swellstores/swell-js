@@ -1,4 +1,4 @@
-export { m as default } from './payment-4fd3868e.js';
+export { m as default, s as shouldUsePayPalEmail } from './payment-fd4a2cbe.js';
 import 'lodash/get';
 import 'lodash/toLower';
 import './cart-21650912.js';
