@@ -1,5 +1,7 @@
 import { isServer } from './utils';
 
+const COOKIE_MAX_AGE = 604800; // 1 week
+
 function getCookie(name) {
   if (isServer()) {
     return undefined;
@@ -18,12 +20,11 @@ function setCookie(name, value, options = {}) {
     return;
   }
 
-  const date = new Date();
-
-  date.setDate(date.getDate() + 7); // 1 week
+  // default cookie options, which can be overridden
   options = {
     path: '/',
-    expires: date.toUTCString(),
+    'max-age': COOKIE_MAX_AGE,
+    samesite: 'lax',
     ...options,
   };
 
