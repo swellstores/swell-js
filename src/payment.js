@@ -247,12 +247,12 @@ async function stripeElements(request, payMethods, params) {
     const element = elements.create(type, elementOptions);
     element.mount(elementParams.elementId || `#${type}-element`);
 
-    elementParams.onChange && element.on('change', elementParams.onChange);
-    elementParams.onReady && element.on('ready', elementParams.onReady);
-    elementParams.onFocus && element.on('focus', elementParams.onFocus);
-    elementParams.onBlur && element.on('blur', elementParams.onBlur);
-    elementParams.onEscape && element.on('escape', elementParams.onEscape);
-    elementParams.onClick && element.on('click', elementParams.onClick);
+    elementParams.onChange && element.on('change', elementParams.onChange.bind(element));
+    elementParams.onReady && element.on('ready', elementParams.onReady.bind(element));
+    elementParams.onFocus && element.on('focus', elementParams.onFocus.bind(element));
+    elementParams.onBlur && element.on('blur', elementParams.onBlur.bind(element));
+    elementParams.onEscape && element.on('escape', elementParams.onEscape.bind(element));
+    elementParams.onClick && element.on('click', elementParams.onClick.bind(element));
 
     if (type === 'card' || type === 'cardNumber' || type === 'idealBank') {
       CARD_ELEMENTS.stripe = element;
