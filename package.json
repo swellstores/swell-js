@@ -2,6 +2,10 @@
   "name": "swell-js",
   "version": "3.17.5",
   "description": "Swell JS library for client-side stores",
+  "engines": {
+    "node": "14.19.1",
+    "npm": ">=8"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/swellstores/swell-js"
