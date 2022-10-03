@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "deepmerge": "4.2.2",
-    "isomorphic-fetch": "3.0.0",
+    "isomorphic-unfetch": "3.1.0",
     "lodash": "4.17.21",
     "object-keys-normalizer": "1.0.1",
     "qs": "6.10.3"

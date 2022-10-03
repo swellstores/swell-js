@@ -22,8 +22,7 @@ import settings from './settings';
 import payment from './payment';
 import locale from './locale';
 import currency from './currency';
-
-require('isomorphic-fetch');
+import 'isomorphic-unfetch'
 
 const options = {
   store: null,
