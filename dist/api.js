@@ -1,4 +1,4 @@
-export { a as default } from './api-d6447d7e.js';
+export { a as default } from './api-c9fbb688.js';
 import './card-2f5f9866.js';
 import './index-bce8d606.js';
 import 'qs';
@@ -32,3 +32,4 @@ import 'lodash/map';
 import 'lodash/toNumber';
 import './locale-bd31bf45.js';
 import './currency-0ff55be3.js';
+import 'isomorphic-unfetch';

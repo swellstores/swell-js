@@ -13,8 +13,7 @@ import { m as methods$7 } from './settings-b1a4a4af.js';
 import { m as methods$8 } from './payment-fd4a2cbe.js';
 import { m as methods$9 } from './locale-bd31bf45.js';
 import { m as methods$a } from './currency-0ff55be3.js';
-
-require('isomorphic-fetch');
+import 'isomorphic-unfetch';
 
 const options = {
   store: null,
