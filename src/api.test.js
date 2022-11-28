@@ -1,4 +1,5 @@
 import api from './api';
+import * as cookie from './cookie';
 
 describe('api', () => {
   beforeEach(() => {
@@ -117,6 +118,17 @@ describe('api', () => {
         'body',
         JSON.stringify({ data: '123' }),
       );
+    });
+
+    it('updates session cookies', async () => {
+      const setCookieSpy = jest.spyOn(cookie, 'setCookie');
+
+      fetch.mockResponseOnce(JSON.stringify({ data: '123' }), {
+        headers: { 'X-Session': 'new-session' },
+      });
+
+      await api.request('get', '/test');
+      expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
     });
   });
 
