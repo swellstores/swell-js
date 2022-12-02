@@ -491,10 +491,13 @@ async function paymentTokenize(request, params, payMethods, cart) {
       const paymentMethod = await createPaymentMethod(
         stripe,
         CARD_ELEMENTS.stripe,
+        methods(request).authorizeGateway,
         cart,
-      );
+      ).catch(onError);
 
-      if (paymentMethod.error) {
+      if (!paymentMethod) {
+        return;
+      } else if (paymentMethod.error) {
         return onError(paymentMethod.error);
       } else if (capture_total < 1) {
         // should save payment method data when payment amount is less than 1
@@ -525,7 +528,8 @@ async function paymentTokenize(request, params, payMethods, cart) {
               amount,
               currency,
               capture_method: 'manual',
-              setup_future_usage: 'off_session',
+              off_session: true,
+              confirm: true,
               ...(stripeCustomer ? { customer: stripeCustomer } : {}),
             },
           })
@@ -590,7 +594,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       const { error, paymentMethod } = await createIDealPaymentMethod(
         API.stripe,
         CARD_ELEMENTS.stripe,
-        cart.billing,
+        cart,
       );
 
       if (error) {
