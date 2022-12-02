@@ -19,38 +19,32 @@ const billingFieldsMap = {
   phone: 'phone',
 };
 
-function getBillingDetails(data) {
-  const { account = {}, billing, shipping } = data;
-  const accountShipping = get(account, 'shipping', {});
-  const accountBilling = get(account, 'billing', {});
-
-  const billingData = {
-    ...accountShipping,
-    ...accountBilling,
-    ...shipping,
-    ...billing,
-  };
-  const fillValues = (fieldsMap) =>
-    reduce(
-      fieldsMap,
-      (acc, value, key) => {
-        const billingValue = billingData[value];
-        if (billingValue) {
-          acc[key] = billingValue;
-        }
-        return acc;
-      },
-      {},
-    );
-
-  const billingDetails = fillValues(billingFieldsMap);
-  if (!isEmpty(billingDetails)) {
-    const address = fillValues(addressFieldsMap);
-    return {
-      ...billingDetails,
-      ...(!isEmpty(address) ? { address } : {}),
-    };
+function mapValues(fieldsMap, data) {
+  const result = {};
+  for (const [destinationKey, sourceKey] of Object.entries(fieldsMap)) {
+    const value = data[sourceKey];
+    if (value) {
+      result[destinationKey] = value;
+    }
   }
+  return result;
+}
+
+function getBillingDetails(cart) {
+  const details = {
+    ...mapValues(billingFieldsMap, cart.billing),
+  };
+
+  if (cart.account && cart.account.email) {
+    details.email = cart.account.email;
+  }
+
+  const address = mapValues(addressFieldsMap, cart.billing);
+  if (!isEmpty(address)) {
+    details.address = address;
+  }
+
+  return details;
 }
 
 function getKlarnaItems(cart) {
@@ -183,29 +177,42 @@ function setBancontactOwner(source, data) {
   };
 }
 
-async function createPaymentMethod(stripe, cardElement, cart) {
+async function createPaymentMethod(stripe, cardElement, authorize, cart) {
   const billingDetails = getBillingDetails(cart);
-  const { error, paymentMethod } = await stripe.createPaymentMethod({
-    type: 'card',
-    card: cardElement,
-    ...(billingDetails ? { billing_details: billingDetails } : {}),
+  const { paymentMethod, error: paymentMethodError } =
+    await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+      ...(!isEmpty(billingDetails) ? { billing_details: billingDetails } : {}),
+    });
+
+  if (paymentMethodError) {
+    return { error: paymentMethodError };
+  }
+
+  const customer = cart.account && cart.account.stripe_customer;
+  const authorization = await authorize({
+    gateway: 'stripe',
+    params: {
+      usage: 'off_session',
+      payment_method: paymentMethod.id,
+      ...(customer ? { customer } : {}),
+    },
   });
-  return error
-    ? { error }
-    : {
-        token: paymentMethod.id,
-        last4: paymentMethod.card.last4,
-        exp_month: paymentMethod.card.exp_month,
-        exp_year: paymentMethod.card.exp_year,
-        brand: paymentMethod.card.brand,
-        address_check: paymentMethod.card.checks.address_line1_check,
-        cvc_check: paymentMethod.card.checks.cvc_check,
-        zip_check: paymentMethod.card.checks.address_zip_check,
-      };
+
+  if (!authorization) {
+    return;
+  }
+
+  const { error: setupIntentError } = await stripe.confirmCardSetup(
+    authorization.client_secret,
+  );
+
+  return setupIntentError ? { error: setupIntentError } : authorization.card;
 }
 
-async function createIDealPaymentMethod(stripe, element, billing = {}) {
-  const billingDetails = getBillingDetails(billing);
+async function createIDealPaymentMethod(stripe, element, cart) {
+  const billingDetails = getBillingDetails(cart);
   return await stripe.createPaymentMethod({
     type: 'ideal',
     ideal: element,
