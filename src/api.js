@@ -1,15 +1,7 @@
+import 'isomorphic-unfetch';
+
 import card from './card';
 import { getCookie, setCookie } from './cookie';
-import {
-  setOptions,
-  toCamel,
-  toSnake,
-  trimBoth,
-  trimStart,
-  trimEnd,
-  stringifyQuery,
-  base64Encode,
-} from './utils';
 import cache from './cache';
 import cart from './cart';
 import account from './account';
@@ -22,7 +14,7 @@ import settings from './settings';
 import payment from './payment';
 import locale from './locale';
 import currency from './currency';
-import 'isomorphic-unfetch'
+import * as utils from './utils';
 
 const options = {
   store: null,
@@ -33,15 +25,18 @@ const options = {
 };
 
 const api = {
+  version: '__VERSION__',
   options,
   request,
 
   init(store, key, opt = {}) {
     options.key = key;
     options.store = store;
-    options.url = opt.url ? trimEnd(opt.url) : `https://${store}.swell.store`;
+    options.url = opt.url
+      ? utils.trimEnd(opt.url)
+      : `https://${store}.swell.store`;
     options.vaultUrl = opt.vaultUrl
-      ? trimEnd(opt.vaultUrl)
+      ? utils.trimEnd(opt.vaultUrl)
       : `https://vault.schema.io`;
     options.timeout = (opt.timeout && parseInt(opt.timeout, 10)) || 20000;
     options.useCamelCase = opt.useCamelCase || false;
@@ -50,7 +45,7 @@ const api = {
     options.locale = opt.locale;
     options.currency = opt.currency;
     options.api = api;
-    setOptions(options);
+    utils.setOptions(options);
   },
 
   // Backward compatibility
@@ -99,6 +94,8 @@ const api = {
   locale: locale(request, options),
 
   currency: currency(request, options),
+
+  utils,
 };
 
 async function request(
@@ -124,18 +121,18 @@ async function request(
   let reqData = id;
 
   if (data !== undefined || typeof id === 'string') {
-    reqUrl = [trimEnd(url), trimStart(id)].join('/');
+    reqUrl = [utils.trimEnd(url), utils.trimStart(id)].join('/');
     reqData = data;
   }
 
-  reqUrl = allOptions.fullUrl || `${baseUrl}/${trimBoth(reqUrl)}`;
-  reqData = allOptions.useCamelCase ? toSnake(reqData) : reqData;
+  reqUrl = allOptions.fullUrl || `${baseUrl}/${utils.trimBoth(reqUrl)}`;
+  reqData = allOptions.useCamelCase ? utils.toSnake(reqData) : reqData;
 
   let reqBody;
   if (reqMethod === 'get') {
     let exQuery;
     [reqUrl, exQuery] = reqUrl.split('?');
-    const fullQuery = [exQuery, stringifyQuery(reqData)]
+    const fullQuery = [exQuery, utils.stringifyQuery(reqData)]
       .join('&')
       .replace(/^&/, '');
     reqUrl = `${reqUrl}${fullQuery ? `?${fullQuery}` : ''}`;
@@ -146,7 +143,7 @@ async function request(
   const reqHeaders = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
-    Authorization: `Basic ${base64Encode(String(allOptions.key))}`,
+    Authorization: `Basic ${utils.base64Encode(String(allOptions.key))}`,
   };
 
   if (session) {
@@ -191,13 +188,7 @@ async function request(
     throw err;
   }
 
-  return options.useCamelCase ? toCamel(result) : result;
-}
-
-if (typeof window !== 'undefined') {
-  window.swell = {
-    version: '@VERSION@',
-  };
+  return options.useCamelCase ? utils.toCamel(result) : result;
 }
 
 export default api;

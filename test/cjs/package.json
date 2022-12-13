@@ -1,0 +1,14 @@
+{
+  "name": "cjs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "swell-js": "../../../swell-js"
+  }
+}
