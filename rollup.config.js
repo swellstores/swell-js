@@ -1,13 +1,17 @@
+import replacePlugin from '@rollup/plugin-replace';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
-import { terser } from 'rollup-plugin-terser';
-import { babel } from '@rollup/plugin-babel';
+import esbuild from 'rollup-plugin-esbuild';
 import pkg from './package.json';
 
 const deps = Object.keys(pkg.dependencies);
 const external = (id) => deps.filter((dep) => id.startsWith(dep)).length;
+const replace = replacePlugin({
+  preventAssignment: true,
+  __VERSION__: pkg.version,
+});
 
 export default [
   {
@@ -33,35 +37,61 @@ export default [
     external,
     output: { dir: './dist', entryFileNames: '[name].js' },
     plugins: [
+      replace,
       nodePolyfills(),
       resolve({
         moduleDirectories: ['node_modules'],
       }),
       commonjs({ include: 'node_modules/**' }),
+      esbuild(),
       filesize(),
     ],
   },
   {
-    input: './src/api.js',
+    input: './src/index.js',
+    external,
     output: [
       {
-        name: 'swell-js',
-        file: pkg.browser,
-        format: 'umd',
+        name: 'swell',
+        file: pkg.main,
+        format: 'cjs',
         sourcemap: true,
-        plugins: [terser()],
         exports: 'default',
       },
     ],
-    external: [/@babel\/runtime/],
     plugins: [
+      replace,
       nodePolyfills(),
       resolve({
         moduleDirectories: ['node_modules'],
       }),
       commonjs({ include: 'node_modules/**' }),
+      esbuild(),
       filesize(),
-      babel({ babelHelpers: 'runtime', configFile: './.babelrc' }),
+    ],
+  },
+  {
+    input: './src/index.js',
+    output: [
+      {
+        name: 'swell',
+        file: pkg.browser,
+        format: 'iife',
+        sourcemap: true,
+        exports: 'default',
+      },
+    ],
+    plugins: [
+      replace,
+      resolve({
+        browser: true,
+        moduleDirectories: ['node_modules'],
+      }),
+      commonjs({ include: 'node_modules/**' }),
+      esbuild({
+        minify: true,
+      }),
+      filesize(),
     ],
   },
 ];
