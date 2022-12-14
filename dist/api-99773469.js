@@ -39,7 +39,7 @@ const options = {
   previewContent: null
 };
 const api = {
-  version: "3.17.11",
+  version: "3.18.0",
   options,
   request,
   init(store, key, opt = {}) {
