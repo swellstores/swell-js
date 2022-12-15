@@ -1,18 +1,18 @@
-import { c as cardApi } from './card-56bc3c73.js';
-import { g as getCookie, s as setCookie } from './cookie-6b7a59c8.js';
-import { c as cacheApi } from './cache-94396c7d.js';
-import { m as methods } from './cart-5b0b89fd.js';
+import { c as cardApi } from './card-31d20d88.js';
+import { g as getCookie, s as setCookie } from './cookie-dff5d694.js';
+import { c as cacheApi } from './cache-70cd9241.js';
+import { m as methods } from './cart-5e54de2c.js';
 import { m as methods$1 } from './account-328cc590.js';
-import { m as methods$2 } from './products-397f2d56.js';
-import { m as methods$3 } from './categories-5a0792be.js';
-import { m as methods$4 } from './attributes-027e82ed.js';
-import { m as methods$5 } from './subscriptions-a6b6abeb.js';
-import { m as methods$6 } from './content-146a634f.js';
-import { m as methods$7 } from './settings-7946df35.js';
-import { m as methods$8 } from './payment-e60f169b.js';
-import { m as methods$9 } from './locale-b919e630.js';
-import { m as methods$a } from './currency-c7164221.js';
-import { n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-cb377689.js';
+import { m as methods$2 } from './products-e5e8d7fe.js';
+import { m as methods$3 } from './categories-bb6f6179.js';
+import { m as methods$4 } from './attributes-a5d59cae.js';
+import { m as methods$5 } from './subscriptions-afa9565b.js';
+import { m as methods$6 } from './content-8feae575.js';
+import { m as methods$7 } from './settings-3cf85d69.js';
+import { m as methods$8 } from './payment-ed203c03.js';
+import { m as methods$9 } from './locale-abdc14e0.js';
+import { m as methods$a } from './currency-85151e0d.js';
+import { n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-bee7164f.js';
 
 const options = {
   store: null,
@@ -23,7 +23,7 @@ const options = {
 };
 
 const api = {
-  version: '3.18.1',
+  version: '3.18.2',
   options,
   request,
 

@@ -4103,7 +4103,7 @@ function camelCase(str) {
 }
 
 function snakeCase(str) {
-  return decamelize(str, '-');
+  return decamelize(str, '_');
 }
 
 function toCamel(obj) {
@@ -4122,7 +4122,7 @@ function toCamelPath(str) {
 function toSnake(obj) {
   if (!obj) return obj;
   const objCopy = JSON.parse(JSON.stringify(obj));
-  return decamelizeKeys(objCopy, '-');
+  return decamelizeKeys(objCopy, '_');
 }
 
 function trimBoth(str) {

@@ -1,4 +1,4 @@
-import { p as isServer } from './index-cb377689.js';
+import { p as isServer } from './index-bee7164f.js';
 
 const COOKIE_MAX_AGE = 604800; // 1 week
 

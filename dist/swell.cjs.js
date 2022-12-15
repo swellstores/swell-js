@@ -4109,7 +4109,7 @@ function camelCase(str) {
 }
 
 function snakeCase(str) {
-  return fastCase.decamelize(str, '-');
+  return fastCase.decamelize(str, '_');
 }
 
 function toCamel(obj) {
@@ -4128,7 +4128,7 @@ function toCamelPath(str) {
 function toSnake(obj) {
   if (!obj) return obj;
   const objCopy = JSON.parse(JSON.stringify(obj));
-  return fastCase.decamelizeKeys(objCopy, '-');
+  return fastCase.decamelizeKeys(objCopy, '_');
 }
 
 function trimBoth(str) {
@@ -7647,7 +7647,7 @@ const options = {
 };
 
 const api = {
-  version: '3.18.1',
+  version: '3.18.2',
   options,
   request,
 
