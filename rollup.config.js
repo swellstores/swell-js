@@ -76,7 +76,7 @@ export default [
       {
         name: 'swell',
         file: pkg.browser,
-        format: 'iife',
+        format: 'umd',
         sourcemap: true,
         exports: 'default',
       },
