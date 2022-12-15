@@ -2,8 +2,8 @@ import replacePlugin from '@rollup/plugin-replace';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import filesize from 'rollup-plugin-filesize';
 import esbuild from 'rollup-plugin-esbuild';
+import filesize from 'rollup-plugin-filesize';
 import pkg from './package.json';
 
 const deps = Object.keys(pkg.dependencies);
@@ -43,54 +43,50 @@ export default [
         moduleDirectories: ['node_modules'],
       }),
       commonjs({ include: 'node_modules/**' }),
-      esbuild(),
       filesize(),
     ],
   },
   {
     input: './src/index.js',
+    output: {
+      name: 'swell',
+      sourcemap: true,
+      exports: 'default',
+      file: pkg.main,
+      format: 'cjs',
+    },
     external,
-    output: [
-      {
-        name: 'swell',
-        file: pkg.main,
-        format: 'cjs',
-        sourcemap: true,
-        exports: 'default',
-      },
-    ],
     plugins: [
       replace,
       nodePolyfills(),
       resolve({
         moduleDirectories: ['node_modules'],
       }),
-      commonjs({ include: 'node_modules/**' }),
-      esbuild(),
+      commonjs({
+        include: ['node_modules/**'],
+      }),
       filesize(),
     ],
   },
   {
     input: './src/index.js',
-    output: [
-      {
-        name: 'swell',
-        file: pkg.browser,
-        format: 'umd',
-        sourcemap: true,
-        exports: 'default',
-      },
-    ],
+    output: {
+      name: 'swell',
+      sourcemap: true,
+      exports: 'default',
+      file: pkg.browser,
+      format: 'umd',
+    },
     plugins: [
       replace,
+      nodePolyfills(),
       resolve({
-        browser: true,
         moduleDirectories: ['node_modules'],
       }),
-      commonjs({ include: 'node_modules/**' }),
-      esbuild({
-        minify: true,
+      commonjs({
+        include: ['node_modules/**'],
       }),
+      esbuild(),
       filesize(),
     ],
   },

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Button } from '@material-ui/core';
-import { get, isEqual } from 'lodash';
+import { get, isEqual } from 'lodash-es';
 import qs from 'qs';
 import { removeUrlParams } from '../../utils';
 import Info from '../../components/info';
@@ -92,7 +92,9 @@ class StripeBancontact extends React.Component {
       <div className={classes.root}>
         <Card classes={{ root: classes.card }}>
           <CardContent>
-            {tokenized && <Info title="Billing" source={{ method, bancontact }} />}
+            {tokenized && (
+              <Info title="Billing" source={{ method, bancontact }} />
+            )}
             <div className={classes.submitContainer}>
               <Button
                 id="stripe-submit-button"
@@ -100,8 +102,7 @@ class StripeBancontact extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
-                onClick={this.onClickTokenize.bind(this)}
-              >
+                onClick={this.onClickTokenize.bind(this)}>
                 Tokenize
               </Button>
               <Button
@@ -110,8 +111,7 @@ class StripeBancontact extends React.Component {
                 size="small"
                 disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={onOrderSubmit}
-              >
+                onClick={onOrderSubmit}>
                 Submit
               </Button>
             </div>
@@ -126,4 +126,7 @@ const mapStateToProps = ({ api }) => ({
   api,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(StripeBancontact);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(StripeBancontact);

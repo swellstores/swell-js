@@ -1,9 +1,9 @@
-import reduce from 'lodash/reduce';
-import isEmpty from 'lodash/isEmpty';
-import get from 'lodash/get';
-import toLower from 'lodash/toLower';
-import map from 'lodash/map';
-import toNumber from 'lodash/toNumber';
+import reduce from 'lodash-es/reduce';
+import isEmpty from 'lodash-es/isEmpty';
+import get from 'lodash-es/get';
+import toLower from 'lodash-es/toLower';
+import map from 'lodash-es/map';
+import toNumber from 'lodash-es/toNumber';
 
 const addressFieldsMap = {
   city: 'city',

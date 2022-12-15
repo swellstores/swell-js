@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import api from '../actions/api';
 import userActions from '../actions/user';
 import Header from '../components/header';
@@ -56,7 +56,13 @@ class Main extends React.Component {
   }
 
   render() {
-    const { onToggleSidebar, openSidebar, onStoreInit, onUserLogin, onUserLogout } = this.state;
+    const {
+      onToggleSidebar,
+      openSidebar,
+      onStoreInit,
+      onUserLogin,
+      onUserLogout,
+    } = this.state;
     const { flash } = this.props;
 
     return (

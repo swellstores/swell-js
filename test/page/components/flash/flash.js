@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { map, isPlainObject, isEmpty, isArray } from 'lodash';
+import { map, isPlainObject, isEmpty, isArray } from 'lodash-es';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography, Card } from '@material-ui/core';
@@ -39,10 +39,15 @@ class Flash extends React.Component {
             <Card
               classes={{
                 root: `${classes.card} ${
-                  error ? classes.error : warning ? classes.warning : success ? classes.success : ''
+                  error
+                    ? classes.error
+                    : warning
+                    ? classes.warning
+                    : success
+                    ? classes.success
+                    : ''
                 }`,
-              }}
-            >
+              }}>
               <Typography>{error || warning || success}</Typography>
             </Card>
           </div>

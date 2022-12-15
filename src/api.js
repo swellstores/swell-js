@@ -1,5 +1,3 @@
-import 'isomorphic-unfetch';
-
 import card from './card';
 import { getCookie, setCookie } from './cookie';
 import cache from './cache';

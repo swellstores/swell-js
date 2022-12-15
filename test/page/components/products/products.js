@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
-import { isEmpty, map, find, findIndex, reduce, size } from 'lodash';
+import { isEmpty, map, find, findIndex, reduce, size } from 'lodash-es';
 import { withStyles } from '@material-ui/core/styles';
 import {
   Card,
@@ -133,7 +133,9 @@ class Products extends React.Component {
     onAddProduct({
       product_id: productId,
       quantity: 1,
-      ...(!isEmpty(product.options) ? { options: productsOptions[productId] } : {}),
+      ...(!isEmpty(product.options)
+        ? { options: productsOptions[productId] }
+        : {}),
     });
   }
 
@@ -175,8 +177,7 @@ class Products extends React.Component {
           action={
             <IconButton
               classes={{ root: classes.addItemButton }}
-              onClick={() => onAddProduct(product.id)}
-            >
+              onClick={() => onAddProduct(product.id)}>
               <AddCircle />
             </IconButton>
           }
@@ -185,8 +186,12 @@ class Products extends React.Component {
           {!isEmpty(product.options) ? (
             <div className={classes.productOptions}>
               {map(product.options, (option) => (
-                <FormControl key={option.id} classes={{ root: classes.formControl }}>
-                  <InputLabel htmlFor={`${option.id}-${option.name}`}>{option.name}</InputLabel>
+                <FormControl
+                  key={option.id}
+                  classes={{ root: classes.formControl }}>
+                  <InputLabel htmlFor={`${option.id}-${option.name}`}>
+                    {option.name}
+                  </InputLabel>
                   <Select
                     autoWidth
                     native
@@ -195,11 +200,11 @@ class Products extends React.Component {
                       name: option.name,
                       id: `${product.id}`,
                     }}
-                    classes={{ root: classes.select }}
-                  >
+                    classes={{ root: classes.select }}>
                     {map(option.values, (value) => (
                       <option key={value.id} value={value.name}>
-                        {value.name} ({value.price || product.sale_price || product.price}{' '}
+                        {value.name} (
+                        {value.price || product.sale_price || product.price}{' '}
                         {product.currency})
                       </option>
                     ))}

@@ -1,7 +1,7 @@
-import map from 'lodash/map';
-import get from 'lodash/get';
-import reduce from 'lodash/reduce';
-import toNumber from 'lodash/toNumber';
+import map from 'lodash-es/map';
+import get from 'lodash-es/get';
+import reduce from 'lodash-es/reduce';
+import toNumber from 'lodash-es/toNumber';
 
 const addressFieldsMap = {
   given_name: 'first_name',
