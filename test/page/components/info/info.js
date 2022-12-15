@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { map, isPlainObject, isEmpty, isArray } from 'lodash';
+import { map, isPlainObject, isEmpty, isArray } from 'lodash-es';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography, Card } from '@material-ui/core';
 
@@ -51,7 +51,9 @@ class Info extends React.Component {
 
     return (
       <div className={classes.root}>
-        {source && title && <Typography classes={{ root: classes.title }}>{title}</Typography>}
+        {source && title && (
+          <Typography classes={{ root: classes.title }}>{title}</Typography>
+        )}
         {this.renderCard(source)}
       </div>
     );

@@ -1,4 +1,4 @@
-import get from 'lodash/get';
+import get from 'lodash-es/get';
 
 function generateOrderId() {
   return Math.random().toString(36).substr(2, 9);

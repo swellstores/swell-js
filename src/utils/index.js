@@ -1,16 +1,14 @@
 import { stringify } from 'qs';
-import set from 'lodash/set';
-import get from 'lodash/get';
-import uniq from 'lodash/uniq';
-import find from 'lodash/find';
-import round from 'lodash/round';
-import findIndex from 'lodash/findIndex';
-import camelCase from 'lodash/camelCase';
-import snakeCase from 'lodash/snakeCase';
-import cloneDeep from 'lodash/cloneDeep';
-import isEqual from 'lodash/isEqual';
+import set from 'lodash-es/set';
+import get from 'lodash-es/get';
+import uniq from 'lodash-es/uniq';
+import find from 'lodash-es/find';
+import round from 'lodash-es/round';
+import findIndex from 'lodash-es/findIndex';
+import cloneDeep from 'lodash-es/cloneDeep';
+import isEqual from 'lodash-es/isEqual';
 import deepmerge from 'deepmerge';
-import { normalizeKeys } from 'object-keys-normalizer';
+import { camelize, decamelize, camelizeKeys, decamelizeKeys } from 'fast-case';
 
 let options = {};
 
@@ -54,15 +52,23 @@ function isObject(val) {
   return val && typeof val === 'object' && !(val instanceof Array);
 }
 
+function camelCase(str) {
+  return camelize(str);
+}
+
+function snakeCase(str) {
+  return decamelize(str, '_');
+}
+
 function toCamel(obj) {
   if (!obj) return obj;
   const objCopy = JSON.parse(JSON.stringify(obj));
-  return normalizeKeys(objCopy, keyToCamel);
+  return camelizeKeys(objCopy);
 }
 
 function toCamelPath(str) {
   if (typeof str === 'string') {
-    return str.split('.').map(camelCase).join('.');
+    return str.split('.').map(camelize).join('.');
   }
   return str;
 }
@@ -70,21 +76,7 @@ function toCamelPath(str) {
 function toSnake(obj) {
   if (!obj) return obj;
   const objCopy = JSON.parse(JSON.stringify(obj));
-  return normalizeKeys(objCopy, keyToSnake);
-}
-
-function keyToSnake(key) {
-  // Handle keys prefixed with $ or _
-  return (
-    (key[0] === '$' ? '$' : '') + snakeCase(key).replace(/\_([0-9])/g, '$1')
-  );
-}
-
-function keyToCamel(key) {
-  // Handle keys prefixed with $ or _
-  return (
-    (key[0] === '$' ? '$' : '') + camelCase(key).replace(/\_([0-9])/g, '$1')
-  );
+  return decamelizeKeys(objCopy, '_');
 }
 
 function trimBoth(str) {

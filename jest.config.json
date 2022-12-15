@@ -1,6 +1,7 @@
 {
-  "setupFilesAfterEnv": [
-    "<rootDir>/test/setup.js"
-  ],
-  "testEnvironment": "node"
+  "setupFilesAfterEnv": ["<rootDir>/test/setup.js"],
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^lodash-es/(.*)$": "<rootDir>/node_modules/lodash/$1"
+  }
 }

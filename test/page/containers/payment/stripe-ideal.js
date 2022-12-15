@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Button } from '@material-ui/core';
-import { get, isEqual } from 'lodash';
+import { get, isEqual } from 'lodash-es';
 import qs from 'qs';
 import { removeUrlParams } from '../../utils';
 import Info from '../../components/info';
@@ -57,7 +57,7 @@ class StripeIDeal extends React.Component {
               stripe: {
                 ...get(cart, 'billing.intent.stripe', {}),
                 status: 'requires_confirmation',
-              }
+              },
             },
           },
         });
@@ -95,7 +95,9 @@ class StripeIDeal extends React.Component {
   }
 
   isTokinized(cart) {
-    return get(cart, 'billing.intent.stripe.status') === 'requires_confirmation';
+    return (
+      get(cart, 'billing.intent.stripe.status') === 'requires_confirmation'
+    );
   }
 
   render() {
@@ -124,8 +126,7 @@ class StripeIDeal extends React.Component {
                   size="small"
                   disabled={!bankSelected}
                   classes={{ root: classes.button }}
-                  onClick={this.onClickTokenize.bind(this)}
-                >
+                  onClick={this.onClickTokenize.bind(this)}>
                   Tokenize
                 </Button>
               ) : (
@@ -134,8 +135,7 @@ class StripeIDeal extends React.Component {
                   color="secondary"
                   size="small"
                   classes={{ root: classes.button }}
-                  onClick={onOrderSubmit}
-                >
+                  onClick={onOrderSubmit}>
                   Submit
                 </Button>
               )}
@@ -151,4 +151,7 @@ const mapStateToProps = ({ api }) => ({
   api,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(StripeIDeal);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(StripeIDeal);

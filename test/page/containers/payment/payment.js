@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
-import { isEqual, isEmpty, map, find } from 'lodash';
+import { isEqual, isEmpty, map, find } from 'lodash-es';
 import { withStyles } from '@material-ui/core/styles';
 import {
   Grid,
@@ -93,7 +93,11 @@ class Payment extends React.Component {
     const { api } = this.props;
 
     const cartProducts = await Promise.all(
-      map(items, (item) => new Promise((resolve) => resolve(api.products.get(item.product_id)))),
+      map(
+        items,
+        (item) =>
+          new Promise((resolve) => resolve(api.products.get(item.product_id))),
+      ),
     );
     this.setState({ cartProducts });
   }
@@ -128,7 +132,9 @@ class Payment extends React.Component {
       return;
     }
 
-    return typeof error === 'string' ? this.props.error(error) : this.props.error(error.message);
+    return typeof error === 'string'
+      ? this.props.error(error)
+      : this.props.error(error.message);
   }
 
   renderGateway() {
@@ -139,7 +145,9 @@ class Payment extends React.Component {
       case 'paypal':
         return <PayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'braintree-paypal':
-        return <BraintreePayPal onOrderSubmit={onOrderSubmit} onError={onError} />;
+        return (
+          <BraintreePayPal onOrderSubmit={onOrderSubmit} onError={onError} />
+        );
       case 'stripe':
         return <Stripe onOrderSubmit={onOrderSubmit} onError={onError} />;
       case 'stripe-ideal':
@@ -223,8 +231,7 @@ class Payment extends React.Component {
                     action={
                       <IconButton
                         classes={{ root: classes.removeItemButton }}
-                        onClick={() => onRemoveItem(item.id)}
-                      >
+                        onClick={() => onRemoveItem(item.id)}>
                         <RemoveCircle />
                       </IconButton>
                     }
@@ -249,15 +256,22 @@ class Payment extends React.Component {
 
     return (
       <Card classes={{ root: classes.cart }}>
-        <CardHeader classes={{ root: classes.cartHeader }} subheader={`Cart ID: ${cart.id}`} />
+        <CardHeader
+          classes={{ root: classes.cartHeader }}
+          subheader={`Cart ID: ${cart.id}`}
+        />
         <CardContent>
           {this.renderItems(cart.items)}
           <Divider classes={{ root: classes.divider }} />
-          <Typography>Tax: {cart.tax_total ? cart.tax_total.toFixed(2) : 0}</Typography>
+          <Typography>
+            Tax: {cart.tax_total ? cart.tax_total.toFixed(2) : 0}
+          </Typography>
           <Typography>
             Discount: {cart.discount_total ? cart.discount_total.toFixed(2) : 0}
           </Typography>
-          <Typography>Total: {cart.grand_total ? cart.grand_total.toFixed(2) : 0}</Typography>
+          <Typography>
+            Total: {cart.grand_total ? cart.grand_total.toFixed(2) : 0}
+          </Typography>
         </CardContent>
       </Card>
     );
@@ -269,7 +283,12 @@ class Payment extends React.Component {
 
     return (
       api && (
-        <Grid container direction="row" justify="center" alignItems="stretch" spacing={10}>
+        <Grid
+          container
+          direction="row"
+          justify="center"
+          alignItems="stretch"
+          spacing={10}>
           <Grid item xs={5}>
             <Products onAddProduct={onAddProduct} />
           </Grid>
@@ -320,4 +339,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-export default compose(connect(mapStateToProps, mapDispatchToProps), withStyles(styles))(Payment);
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  withStyles(styles),
+)(Payment);

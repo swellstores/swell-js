@@ -1,5 +1,5 @@
-import get from 'lodash/get';
-import toLower from 'lodash/toLower';
+import get from 'lodash-es/get';
+import toLower from 'lodash-es/toLower';
 import cartApi from './cart';
 import settingsApi from './settings';
 import {
