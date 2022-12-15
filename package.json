@@ -13,7 +13,7 @@
   "license": "MIT",
   "main": "./dist/swell.cjs.min.js",
   "module": "./dist/index.js",
-  "browser": "./dist/swell.iife.min.js",
+  "browser": "./dist/swell.umd.min.js",
   "files": [
     "dist"
   ],
