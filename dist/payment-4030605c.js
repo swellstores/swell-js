@@ -1,4 +1,4 @@
-import { F as toString, G as keys, H as isArrayLike, I as baseIteratee, J as isArray, K as isBuffer, L as isTypedArray, M as isArguments, N as getTag, O as isPrototype, P as baseKeys, Q as arrayMap, g as get, R as toNumber, j as toSnake, B as vaultRequest, q as isFunction, C as getLocationParams, D as removeUrlParams } from './index-bee7164f.js';
+import { F as toString, G as keys, H as isArrayLike, I as baseIteratee, J as isArray, K as isBuffer, L as isTypedArray, M as isArguments, N as getTag, O as isPrototype, P as baseKeys, Q as arrayMap, j as toSnake, g as get, R as toNumber, B as vaultRequest, q as isFunction, C as getLocationParams, D as removeUrlParams } from './index-bee7164f.js';
 import { m as methods$1 } from './cart-5e54de2c.js';
 import { m as methods$2 } from './settings-3cf85d69.js';
 
@@ -538,9 +538,8 @@ async function createPaymentMethod(stripe, cardElement, authorize, cart) {
   }
 
   const { error: setupIntentError } = await stripe.confirmCardSetup(
-    authorization.client_secret,
+    toSnake(authorization).client_secret,
   );
-
   return setupIntentError ? { error: setupIntentError } : authorization.card;
 }
 
@@ -1287,29 +1286,38 @@ async function paymentTokenize(request, params, payMethods, cart) {
           .catch(onError),
       );
 
-      if (intent && intent.status === 'requires_confirmation') {
-        const { paymentIntent, error } = await stripe.confirmCardPayment(
-          intent.client_secret,
-        );
-        return error
-          ? onError(error)
-          : await methods$1(request, options)
-              .update({
-                billing: {
-                  method: 'card',
-                  card: paymentMethod,
-                  intent: {
-                    stripe: {
-                      id: paymentIntent.id,
-                      ...(!!auth_total && {
-                        auth_amount: auth_total,
-                      }),
-                    },
-                  },
+      if (
+        intent &&
+        ['requires_capture', 'requires_confirmation'].includes(intent.status)
+      ) {
+        if (intent.status === 'requires_confirmation') {
+          // Confirm the payment intent
+          const { error } = await stripe.confirmCardPayment(
+            intent.client_secret,
+          );
+          if (error) {
+            return onError(error);
+          }
+        }
+
+        // Capture the payment
+        return await methods$1(request, options)
+          .update({
+            billing: {
+              method: 'card',
+              card: paymentMethod,
+              intent: {
+                stripe: {
+                  id: intent.id,
+                  ...(!!auth_total && {
+                    auth_amount: auth_total,
+                  }),
                 },
-              })
-              .then(onSuccess)
-              .catch(onError);
+              },
+            },
+          })
+          .then(onSuccess)
+          .catch(onError);
       }
     } else if (payMethods.card.gateway === 'quickpay') {
       const intent = await createQuickpayPayment(
