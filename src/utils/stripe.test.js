@@ -1,3 +1,4 @@
+import { toCamel } from './';
 import { createPaymentMethod, createIDealPaymentMethod } from './stripe';
 
 describe('utils/stripe', () => {
@@ -84,6 +85,36 @@ describe('utils/stripe', () => {
       );
 
       expect(paymentMethod).toEqual(card);
+      expect(stripe.createPaymentMethod).toHaveBeenCalledWith({
+        type: 'card',
+        card: 'card_element',
+        billing_details: {
+          name: 'name',
+          phone: 'phone',
+          email: 'test@email.com',
+          address: {
+            line1: 'address1',
+            line2: 'address2',
+            city: 'city',
+            country: 'country',
+            postal_code: 'zip',
+            state: 'state',
+          },
+        },
+      });
+    });
+
+    it('should create Stripe payment method when using camel-case', async () => {
+      const paymentMethod = await createPaymentMethod(
+        stripe,
+        'card_element',
+        (data) => {
+          return toCamel(onAuthorizeGateway(data));
+        },
+        cart,
+      );
+
+      expect(paymentMethod).toEqual(toCamel(card));
       expect(stripe.createPaymentMethod).toHaveBeenCalledWith({
         type: 'card',
         card: 'card_element',

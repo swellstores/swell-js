@@ -5,6 +5,8 @@ import toLower from 'lodash-es/toLower';
 import map from 'lodash-es/map';
 import toNumber from 'lodash-es/toNumber';
 
+import { toSnake } from './';
+
 const addressFieldsMap = {
   city: 'city',
   country: 'country',
@@ -205,9 +207,8 @@ async function createPaymentMethod(stripe, cardElement, authorize, cart) {
   }
 
   const { error: setupIntentError } = await stripe.confirmCardSetup(
-    authorization.client_secret,
+    toSnake(authorization).client_secret,
   );
-
   return setupIntentError ? { error: setupIntentError } : authorization.card;
 }
 
