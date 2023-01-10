@@ -23,7 +23,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.1',
+  version: '3.19.2',
   options,
   request,
 
