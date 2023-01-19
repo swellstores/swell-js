@@ -34,32 +34,53 @@ import {
 import { Settings } from './settings';
 import { Subscription } from './subscription';
 
+export * from './account';
+export * from './attribute';
+export * from './card';
+export * from './cart';
+export * from './category';
+export * from './category';
+export * from './content';
+export * from './currency';
+export * from './locale';
+export * from './order';
+export * from './payment';
+export * from './product';
+export * from './settings';
+export * from './subscription';
+
 export as namespace swell;
 
 type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
   : S;
 
-interface BaseModel {
+export interface BaseModel {
   date_created?: string;
   date_updated?: string;
   id?: string;
 }
 
-interface InitOptions {
-  currency: string;
-  key: string;
-  locale: string;
-  previewContent: boolean;
-  session: string;
-  store: string;
-  timeout: number;
-  useCamelCase: boolean;
-  url: string;
-  vaultUrl: string;
+export interface Query {
+  limit?: number;
+  page?: number;
+  expand?: string[] | string;
 }
 
-interface ResultsResponse<T> {
+export interface InitOptions {
+  currency?: string;
+  key?: string;
+  locale?: string;
+  previewContent?: boolean;
+  session?: string;
+  store?: string;
+  timeout?: number;
+  useCamelCase?: boolean;
+  url?: string;
+  vaultUrl?: string;
+}
+
+export interface ResultsResponse<T> {
   count: number;
   page: number;
   pages?: {
@@ -71,7 +92,7 @@ interface ResultsResponse<T> {
   results: Array<T>;
 }
 
-interface Tax {
+export interface Tax {
   amount?: number;
   id?: string;
   name?: string;
@@ -79,7 +100,7 @@ interface Tax {
   rate?: number;
 }
 
-interface Discount {
+export interface Discount {
   amount?: number;
   id?: string;
 }
@@ -128,12 +149,15 @@ export namespace card {
 
 export namespace cart {
   function addItem(input: CartItem): Promise<Cart>;
+  function applyCoupon(input: string): Promise<Cart>;
   function get(input?: string): Promise<Cart | null>;
   function getSettings(): Promise<Settings>;
   function getShippingRates(): Promise<object>; // TODO: add shipping Rate object
-  function removeItem(input: string): Promise<Cart>;
   function recover(input: string): Promise<Cart>;
-  function setItems(input: [CartItem]): Promise<Cart>;
+  function removeCoupon(input: string): Promise<Cart>;
+  function removeItem(input: string): Promise<Cart>;
+  function setItems(input: [CartItem?]): Promise<Cart>;
+  function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;
 }
@@ -177,7 +201,7 @@ export namespace payment {
     card?: InputPaymentElementCard;
     paypal?: InputPaymentElementPaypal;
     ideal?: InputPaymentElementIdeal;
-  }): Promise<unknown>;
+  }): Promise<void>;
   function createIntent(input: {
     gateway: string;
     intent: object;
@@ -201,6 +225,12 @@ export namespace payment {
   }): Promise<unknown>;
 }
 
+export interface ProductQuery extends Query {
+  category?: string;
+  categories?: string[];
+  $filters?: unknown;
+  search?: string;
+}
 export namespace products {
   function categories(
     products: FlexibleProductInput,
@@ -210,8 +240,8 @@ export namespace products {
     products: Array<Product>,
     options?: object,
   ): Array<Attribute>;
-  function get(id: string, input?: object): Promise<Product>;
-  function list(input?: object): Promise<ResultsResponse<Product>>;
+  function get(id: string, input?: ProductQuery): Promise<Product>;
+  function list(input?: ProductQuery): Promise<ResultsResponse<Product>>;
   function priceRange(product: FlexibleProductInput): PriceRange;
   function variation(product: Product, options: object): Promise<Product>;
 }
