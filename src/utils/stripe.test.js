@@ -1,4 +1,3 @@
-import { toCamel } from './';
 import { createPaymentMethod, createIDealPaymentMethod } from './stripe';
 
 describe('utils/stripe', () => {
@@ -16,16 +15,10 @@ describe('utils/stripe', () => {
 
     const stripe = {
       createPaymentMethod: jest.fn((data) => {
-        if (data.card === 'invalid_payment_method') {
-          return { error: 'Invalid payment method' };
+        if (data.card === 'invalid_card_element') {
+          return { error: 'Invalid card element' };
         }
-        if (data.card === 'card_setup_failed') {
-          return {
-            paymentMethod: {
-              id: 'pm_card_setup_failed',
-            },
-          };
-        }
+
         return {
           paymentMethod: {
             id: 'pm_id',
@@ -43,21 +36,6 @@ describe('utils/stripe', () => {
           },
         };
       }),
-      confirmCardSetup: (secret) => {
-        const result = {};
-        if (secret === 'seti_failed') {
-          result.error = 'Confirm card setup error';
-        }
-        return Promise.resolve(result);
-      },
-    };
-
-    const onAuthorizeGateway = (data) => {
-      const paymentMethodId = data.params.payment_method;
-      if (paymentMethodId === 'pm_card_setup_failed') {
-        return { client_secret: 'seti_failed' };
-      }
-      return { client_secret: 'seti_success', card };
     };
 
     const cart = {
@@ -80,7 +58,6 @@ describe('utils/stripe', () => {
       const paymentMethod = await createPaymentMethod(
         stripe,
         'card_element',
-        onAuthorizeGateway,
         cart,
       );
 
@@ -104,54 +81,14 @@ describe('utils/stripe', () => {
       });
     });
 
-    it('should create Stripe payment method when using camel-case', async () => {
+    it('should return an error when card element is invalid', async () => {
       const paymentMethod = await createPaymentMethod(
         stripe,
-        'card_element',
-        (data) => {
-          return toCamel(onAuthorizeGateway(data));
-        },
+        'invalid_card_element',
         cart,
       );
 
-      expect(paymentMethod).toEqual(toCamel(card));
-      expect(stripe.createPaymentMethod).toHaveBeenCalledWith({
-        type: 'card',
-        card: 'card_element',
-        billing_details: {
-          name: 'name',
-          phone: 'phone',
-          email: 'test@email.com',
-          address: {
-            line1: 'address1',
-            line2: 'address2',
-            city: 'city',
-            country: 'country',
-            postal_code: 'zip',
-            state: 'state',
-          },
-        },
-      });
-    });
-
-    it('should return an error when creating a payment method', async () => {
-      const paymentMethod = await createPaymentMethod(
-        stripe,
-        'invalid_payment_method',
-        onAuthorizeGateway,
-        cart,
-      );
-      expect(paymentMethod.error).toBe('Invalid payment method');
-    });
-
-    it('should return an error when confirming card setup', async () => {
-      const paymentMethod = await createPaymentMethod(
-        stripe,
-        'card_setup_failed',
-        onAuthorizeGateway,
-        cart,
-      );
-      expect(paymentMethod.error).toBe('Confirm card setup error');
+      expect(paymentMethod.error).toBe('Invalid card element');
     });
   });
 
