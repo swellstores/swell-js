@@ -9,7 +9,7 @@ import { m as methods$4 } from './attributes-a5d59cae.js';
 import { m as methods$5 } from './subscriptions-afa9565b.js';
 import { m as methods$6 } from './content-8feae575.js';
 import { m as methods$7 } from './settings-3cf85d69.js';
-import { m as methods$8 } from './payment-4030605c.js';
+import { m as methods$8 } from './payment-83df2674.js';
 import { m as methods$9 } from './locale-abdc14e0.js';
 import { m as methods$a } from './currency-85151e0d.js';
 import { n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-bee7164f.js';
@@ -23,7 +23,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.3',
+  version: '3.19.4',
   options,
   request,
 

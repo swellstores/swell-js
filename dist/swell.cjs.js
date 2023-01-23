@@ -6248,37 +6248,26 @@ function setBancontactOwner(source, data) {
   };
 }
 
-async function createPaymentMethod(stripe, cardElement, authorize, cart) {
+async function createPaymentMethod(stripe, cardElement, cart) {
   const billingDetails = getBillingDetails(cart);
-  const { paymentMethod, error: paymentMethodError } =
-    await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-      ...(!isEmpty(billingDetails) ? { billing_details: billingDetails } : {}),
-    });
-
-  if (paymentMethodError) {
-    return { error: paymentMethodError };
-  }
-
-  const customer = cart.account && cart.account.stripe_customer;
-  const authorization = await authorize({
-    gateway: 'stripe',
-    params: {
-      usage: 'off_session',
-      payment_method: paymentMethod.id,
-      ...(customer ? { customer } : {}),
-    },
+  const { paymentMethod, error } = await stripe.createPaymentMethod({
+    type: 'card',
+    card: cardElement,
+    billing_details: billingDetails,
   });
 
-  if (!authorization) {
-    return;
-  }
-
-  const { error: setupIntentError } = await stripe.confirmCardSetup(
-    toSnake(authorization).client_secret,
-  );
-  return setupIntentError ? { error: setupIntentError } : authorization.card;
+  return error
+    ? { error }
+    : {
+        token: paymentMethod.id,
+        last4: paymentMethod.card.last4,
+        exp_month: paymentMethod.card.exp_month,
+        exp_year: paymentMethod.card.exp_year,
+        brand: paymentMethod.card.brand,
+        address_check: paymentMethod.card.checks.address_line1_check,
+        cvc_check: paymentMethod.card.checks.cvc_check,
+        zip_check: paymentMethod.card.checks.address_zip_check,
+      };
 }
 
 async function createIDealPaymentMethod(stripe, element, cart) {
@@ -6979,7 +6968,6 @@ async function paymentTokenize(request, params, payMethods, cart) {
       const paymentMethod = await createPaymentMethod(
         stripe,
         CARD_ELEMENTS.stripe,
-        methods$2(request).authorizeGateway,
         cart,
       ).catch(onError);
 
@@ -7016,8 +7004,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               amount,
               currency,
               capture_method: 'manual',
-              off_session: true,
-              confirm: true,
+              setup_future_usage: 'off_session',
               ...(stripeCustomer ? { customer: stripeCustomer } : {}),
             },
           })
@@ -7655,7 +7642,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.3',
+  version: '3.19.4',
   options,
   request,
 
