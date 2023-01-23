@@ -491,7 +491,6 @@ async function paymentTokenize(request, params, payMethods, cart) {
       const paymentMethod = await createPaymentMethod(
         stripe,
         CARD_ELEMENTS.stripe,
-        methods(request).authorizeGateway,
         cart,
       ).catch(onError);
 
@@ -528,8 +527,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
               amount,
               currency,
               capture_method: 'manual',
-              off_session: true,
-              confirm: true,
+              setup_future_usage: 'off_session',
               ...(stripeCustomer ? { customer: stripeCustomer } : {}),
             },
           })
