@@ -1,15 +1,15 @@
 import { c as cardApi } from './card-31d20d88.js';
 import { g as getCookie, s as setCookie } from './cookie-dff5d694.js';
 import { c as cacheApi } from './cache-70cd9241.js';
-import { m as methods } from './cart-5e54de2c.js';
+import { m as methods } from './cart-fe0aca95.js';
 import { m as methods$1 } from './account-328cc590.js';
-import { m as methods$2 } from './products-e5e8d7fe.js';
+import { m as methods$2 } from './products-9a198f48.js';
 import { m as methods$3 } from './categories-bb6f6179.js';
 import { m as methods$4 } from './attributes-a5d59cae.js';
-import { m as methods$5 } from './subscriptions-afa9565b.js';
+import { m as methods$5 } from './subscriptions-5d5db711.js';
 import { m as methods$6 } from './content-8feae575.js';
 import { m as methods$7 } from './settings-3cf85d69.js';
-import { m as methods$8 } from './payment-83df2674.js';
+import { m as methods$8 } from './payment-18b37b4e.js';
 import { m as methods$9 } from './locale-abdc14e0.js';
 import { m as methods$a } from './currency-85151e0d.js';
 import { n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-bee7164f.js';
@@ -23,7 +23,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.4',
+  version: '3.19.5',
   options,
   request,
 

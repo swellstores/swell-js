@@ -116,7 +116,7 @@ function calculateVariation(input, options, purchaseOption) {
   const purchaseOp = findPurchaseOption(product, purchaseOption);
   const variation = {
     ...product,
-    price: purchaseOp.price || 0,
+    price: typeof purchaseOp.price !== 'number' ? null : purchaseOp.price,
     sale_price: purchaseOp.sale_price,
     orig_price: purchaseOp.orig_price,
     stock_status: product.stock_status,

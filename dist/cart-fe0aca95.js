@@ -2,7 +2,7 @@ import 'qs';
 import { b as cloneDeep } from './index-bee7164f.js';
 import 'deepmerge';
 import 'fast-case';
-import { c as cleanProductOptions } from './products-e5e8d7fe.js';
+import { c as cleanProductOptions } from './products-9a198f48.js';
 
 function methods(request, options) {
   return {

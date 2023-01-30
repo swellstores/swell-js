@@ -1,4 +1,4 @@
-export { b as calculateVariation, c as cleanProductOptions, m as default, f as findVariantWithOptions, g as getProductOptionIndex, a as getVariantOptionValueIds } from './products-e5e8d7fe.js';
+export { b as calculateVariation, c as cleanProductOptions, m as default, f as findVariantWithOptions, g as getProductOptionIndex, a as getVariantOptionValueIds } from './products-9a198f48.js';
 import './index-bee7164f.js';
 import 'qs';
 import 'deepmerge';
