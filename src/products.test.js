@@ -100,6 +100,14 @@ describe('products', () => {
       expect(variation).toEqual(mockProductWithOptions);
     });
 
+    it('should return product with default values (without price)', () => {
+      const mockProductWithoutPrice = { ...mockProductWithOptions, price: null };
+
+      const variation = methods.variation(mockProductWithoutPrice);
+
+      expect(variation).toEqual(mockProductWithoutPrice);
+    });
+
     it('should return product with variant values', () => {
       const options = [
         { id: 'x', value: '1' },
@@ -121,6 +129,20 @@ describe('products', () => {
       expect(variation).toEqual({
         ...mockProductWithOptions,
         price: 13,
+        stock_status: 'in_stock',
+      });
+    });
+
+    it('should return product (without price) + option price with addon option', () => {
+      const mockProductWithoutPrice = { ...mockProductWithOptions, price: null };
+
+      const options = [{ id: 'z', value: 'stuff' }];
+
+      const variation = methods.variation(mockProductWithoutPrice, options);
+
+      expect(variation).toEqual({
+        ...mockProductWithoutPrice,
+        price: 3,
         stock_status: 'in_stock',
       });
     });
