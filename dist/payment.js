@@ -1,4 +1,4 @@
-export { m as default, s as shouldUsePayPalEmail } from './payment-18b37b4e.js';
+export { m as default, l as loadScript, s as shouldUsePayPalEmail } from './payment-491338ef.js';
 import './index-bee7164f.js';
 import 'qs';
 import 'deepmerge';

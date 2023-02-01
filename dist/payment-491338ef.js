@@ -961,6 +961,9 @@ async function render(request, cart, payMethods, params) {
         await loadScript(
           'paypal-sdk',
           `https://www.paypal.com/sdk/js?currency=${cart.currency}&client-id=${payMethods.paypal.client_id}&merchant-id=${payMethods.paypal.merchant_id}&intent=authorize&commit=false`,
+          {
+            'data-partner-attribution-id': 'SwellCommerce_SP',
+          },
         );
       }
       await payPalButton(request, cart, payMethods, params);
@@ -968,7 +971,7 @@ async function render(request, cart, payMethods, params) {
   }
 }
 
-const loadScript = async (id, src) => {
+const loadScript = async (id, src, attributes = {}) => {
   LOADING_SCRIPTS[id] =
     LOADING_SCRIPTS[id] ||
     new Promise((resolve) => {
@@ -977,6 +980,9 @@ const loadScript = async (id, src) => {
       script.src = src;
       script.async = true;
       script.type = 'text/javascript';
+      for (const [key, value] of Object.entries(attributes)) {
+        script.setAttribute(key, value);
+      }
       script.addEventListener(
         'load',
         () => {
@@ -1664,4 +1670,4 @@ async function authenticateStripeCard(request, payment, payMethods) {
     : { status: actionResult.status };
 }
 
-export { methods as m, shouldUsePayPalEmail as s };
+export { loadScript as l, methods as m, shouldUsePayPalEmail as s };
