@@ -2,17 +2,17 @@ import { PaymentSnake } from './snake';
 import { PaymentCamel } from './camel';
 
 export interface InputPaymentElementCard {
-  seperateElements?: boolean,
+  seperateElements?: boolean;
   cardNumber?: {
     elementId?: string; // default: #card-element
     options?: object;
-  },
+  };
   cardExpiry?: {
     elementId?: string; // default: #cardExpiry-element
-  },
+  };
   cardCvc?: {
     elementId?: string; // default: #cardCvc-element
-  }
+  };
   onChange?: (event: unknown) => void; // optional, called when the Element value changes
   onReady?: (event: unknown) => void; // optional, called when the Element is fully rendered
   onFocus?: (event: unknown) => void; // optional, called when the Element gains focus
@@ -60,4 +60,4 @@ export interface InputPaymentRedirect {
   onSuccess?: void;
 }
 
-export interface Payment extends PaymentSnake, PaymentCamel { }
+export interface Payment extends PaymentSnake, PaymentCamel {}
