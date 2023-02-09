@@ -1,18 +1,29 @@
 import { c as cardApi } from './card-31d20d88.js';
 import { g as getCookie, s as setCookie } from './cookie-dff5d694.js';
 import { c as cacheApi } from './cache-70cd9241.js';
-import { m as methods } from './cart-fe0aca95.js';
-import { m as methods$1 } from './account-328cc590.js';
-import { m as methods$2 } from './products-9a198f48.js';
-import { m as methods$3 } from './categories-bb6f6179.js';
-import { m as methods$4 } from './attributes-a5d59cae.js';
-import { m as methods$5 } from './subscriptions-5d5db711.js';
-import { m as methods$6 } from './content-8feae575.js';
-import { m as methods$7 } from './settings-3cf85d69.js';
-import { m as methods$8 } from './payment-491338ef.js';
-import { m as methods$9 } from './locale-abdc14e0.js';
-import { m as methods$a } from './currency-85151e0d.js';
-import { n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-bee7164f.js';
+import { m as methods$1 } from './cart-fe0aca95.js';
+import { m as methods$2 } from './account-328cc590.js';
+import { m as methods$3 } from './products-9a198f48.js';
+import { m as methods$4 } from './categories-bb6f6179.js';
+import { m as methods$5 } from './attributes-a5d59cae.js';
+import { m as methods$6 } from './subscriptions-5d5db711.js';
+import { d as defaultMethods, n as trimEnd, E as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, A as base64Encode, t as toCamel, e as setOptions } from './index-bee7164f.js';
+import { m as methods$7 } from './content-8feae575.js';
+import { m as methods$8 } from './settings-3cf85d69.js';
+import { m as methods$9 } from './payment-491338ef.js';
+import { m as methods$a } from './locale-abdc14e0.js';
+import { m as methods$b } from './currency-85151e0d.js';
+
+function methods(request) {
+  const { get, list } = defaultMethods(request, '/invoices', ['list', 'get']);
+  return {
+    get: (id, ...args) => {
+      return cacheApi.getFetch('invoices', id, () => get(id, ...args));
+    },
+
+    list,
+  };
+}
 
 const options = {
   store: null,
@@ -23,7 +34,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.6',
+  version: '3.19.7',
   options,
   request,
 
@@ -71,27 +82,29 @@ const api = {
 
   card: cardApi,
 
-  cart: methods(request, options),
+  cart: methods$1(request, options),
 
-  account: methods$1(request),
+  account: methods$2(request),
 
-  products: methods$2(request, options),
+  products: methods$3(request, options),
 
-  categories: methods$3(request),
+  categories: methods$4(request),
 
-  attributes: methods$4(request),
+  attributes: methods$5(request),
 
-  subscriptions: methods$5(request),
+  subscriptions: methods$6(request),
 
-  content: methods$6(request, options),
+  invoices: methods(request),
 
-  settings: methods$7(request, options),
+  content: methods$7(request, options),
 
-  payment: methods$8(request, options),
+  settings: methods$8(request, options),
 
-  locale: methods$9(request, options),
+  payment: methods$9(request, options),
 
-  currency: methods$a(request, options),
+  locale: methods$a(request, options),
+
+  currency: methods$b(request, options),
 
   utils,
 };

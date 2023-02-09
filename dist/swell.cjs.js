@@ -4689,7 +4689,7 @@ const cacheApi = {
   },
 };
 
-function methods$a(request) {
+function methods$b(request) {
   const { get, list } = defaultMethods(request, '/attributes', ['list', 'get']);
 
   return {
@@ -4703,7 +4703,7 @@ function methods$a(request) {
 
 let OPTIONS;
 
-function methods$9(request, opt) {
+function methods$a(request, opt) {
   OPTIONS = opt;
   const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
   return {
@@ -4912,7 +4912,7 @@ function findPurchaseOption(product, purchaseOption) {
 }
 
 async function getFilterableAttributeFilters(request, products, options) {
-  const { results: filterableAttributes } = await methods$a(
+  const { results: filterableAttributes } = await methods$b(
     request).list({
     filterable: true,
   });
@@ -5097,7 +5097,7 @@ function getPriceRange(products) {
   };
 }
 
-function methods$8(request, options) {
+function methods$9(request, options) {
   return {
     state: null,
     order: null,
@@ -5259,7 +5259,7 @@ function methods$8(request, options) {
   };
 }
 
-function methods$7(request) {
+function methods$8(request) {
   return {
     state: null,
 
@@ -5358,7 +5358,7 @@ function methods$7(request) {
   };
 }
 
-function methods$6(request) {
+function methods$7(request) {
   const { get, list } = defaultMethods(request, '/categories', ['list', 'get']);
 
   return {
@@ -5370,7 +5370,7 @@ function methods$6(request) {
   };
 }
 
-function methods$5(request) {
+function methods$6(request) {
   const { get, list } = defaultMethods(request, '/subscriptions', [
     'list',
     'get',
@@ -5431,6 +5431,17 @@ function methods$5(request) {
     removeItem(id, itemId) {
       return request('delete', `/subscriptions/${id}/items/${itemId}`);
     },
+  };
+}
+
+function methods$5(request) {
+  const { get, list } = defaultMethods(request, '/invoices', ['list', 'get']);
+  return {
+    get: (id, ...args) => {
+      return cacheApi.getFetch('invoices', id, () => get(id, ...args));
+    },
+
+    list,
   };
 }
 
@@ -6528,7 +6539,7 @@ function methods$2(request, opts) {
 
     async createElements(elementParams) {
       this.params = elementParams || {};
-      const cart = toSnake(await methods$8(request, options$1).get());
+      const cart = toSnake(await methods$9(request, options$1).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
@@ -6542,7 +6553,7 @@ function methods$2(request, opts) {
     },
 
     async tokenize(params) {
-      const cart = toSnake(await methods$8(request, options$1).get());
+      const cart = toSnake(await methods$9(request, options$1).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
@@ -6561,7 +6572,7 @@ function methods$2(request, opts) {
     },
 
     async handleRedirect(params) {
-      const cart = toSnake(await methods$8(request, options$1).get());
+      const cart = toSnake(await methods$9(request, options$1).get());
       if (!cart) {
         throw new Error('Cart not found');
       }
@@ -6776,7 +6787,7 @@ async function shouldUsePayPalEmail(guest, request, options) {
   if (!guest) return false;
 
   // Refetch to avoid stale data from the cart
-  const updatedCart = await methods$8(request, options).get();
+  const updatedCart = await methods$9(request, options).get();
   const currentEmail = get(updatedCart, 'account.email');
 
   // If no email is present, use paypal's email
@@ -6848,7 +6859,7 @@ async function payPalButton(request, cart, payMethods, params) {
                 options$1,
               );
 
-              return methods$8(request).update({
+              return methods$9(request).update({
                 ...(usePayPalEmail && {
                   account: {
                     email: payer.email_address,
@@ -6909,7 +6920,7 @@ async function braintreePayPalButton(request, cart, payMethods, params) {
             paypalCheckoutInstance
               .tokenizePayment(data)
               .then(({ nonce }) =>
-                methods$8(request, options$1).update({
+                methods$9(request, options$1).update({
                   billing: { paypal: { nonce } },
                 }),
               )
@@ -6984,7 +6995,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       } else if (capture_total < 1) {
         // should save payment method data when payment amount is less than 1
         // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
-        return methods$8(request, options$1)
+        return methods$9(request, options$1)
           .update({
             billing: {
               method: 'card',
@@ -7032,7 +7043,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         }
 
         // Capture the payment
-        return await methods$8(request, options$1)
+        return await methods$9(request, options$1)
           .update({
             billing: {
               method: 'card',
@@ -7061,7 +7072,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
         return onError(intent.error);
       }
 
-      await methods$8(request, options$1).update({
+      await methods$9(request, options$1).update({
         billing: {
           method: 'card',
           intent: {
@@ -7111,7 +7122,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       );
 
       if (intent) {
-        await methods$8(request, options$1)
+        await methods$9(request, options$1)
           .update({
             billing: {
               method: 'ideal',
@@ -7152,7 +7163,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : methods$8(request, options$1)
+        : methods$9(request, options$1)
             .update({
               billing: {
                 method: 'klarna',
@@ -7173,7 +7184,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
 
       return error
         ? onError(error)
-        : methods$8(request, options$1)
+        : methods$9(request, options$1)
             .update({
               billing: {
                 method: 'bancontact',
@@ -7191,7 +7202,7 @@ async function paymentTokenize(request, params, payMethods, cart) {
       return;
     }
 
-    await methods$8(request, options$1).update({
+    await methods$9(request, options$1).update({
       billing: {
         method: 'paysafecard',
         intent: {
@@ -7279,7 +7290,7 @@ async function handleQuickpayRedirectAction(
       } else if (card.error) {
         return card;
       } else {
-        await methods$8(request, options$1).update({
+        await methods$9(request, options$1).update({
           billing: {
             method: 'card',
             card,
@@ -7351,7 +7362,7 @@ async function handleDirectKlarnaRedirectAction(
     };
   }
 
-  await methods$8(request, options$1).update({
+  await methods$9(request, options$1).update({
     billing: {
       method: 'klarna',
       klarna: {
@@ -7648,7 +7659,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.6',
+  version: '3.19.7',
   options,
   request,
 
@@ -7696,17 +7707,19 @@ const api = {
 
   card: cardApi,
 
-  cart: methods$8(request, options),
+  cart: methods$9(request, options),
 
-  account: methods$7(request),
+  account: methods$8(request),
 
-  products: methods$9(request, options),
+  products: methods$a(request, options),
 
-  categories: methods$6(request),
+  categories: methods$7(request),
 
-  attributes: methods$a(request),
+  attributes: methods$b(request),
 
-  subscriptions: methods$5(request),
+  subscriptions: methods$6(request),
+
+  invoices: methods$5(request),
 
   content: methods$4(request, options),
 
