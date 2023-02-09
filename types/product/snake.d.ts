@@ -47,12 +47,12 @@ interface ProductOptionSnake {
   input_hint?: string;
   input_multi?: boolean;
   input_type?:
-  | 'text'
-  | 'textarea'
-  | 'select'
-  | 'multi_select'
-  | 'file'
-  | 'muti_file';
+    | 'text'
+    | 'textarea'
+    | 'select'
+    | 'multi_select'
+    | 'file'
+    | 'muti_file';
   name?: string;
   parent_id?: string;
   parent_value_ids?: string[];

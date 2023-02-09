@@ -1,7 +1,7 @@
 import { Account } from '../account';
 import { Order } from '../order';
 import { BaseModel, Tax } from '../index';
-
+import { Product } from '../product';
 interface InvoiceItems extends BaseModel {
   delivery?: string;
   discount_total?: number;

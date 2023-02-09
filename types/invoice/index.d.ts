@@ -1,4 +1,4 @@
 import { InvoiceSnake } from './snake';
-import { InvoicenCamel } from './camel';
+import { InvoiceCamel } from './camel';
 
-export interface Invoice extends InvoiceSnake, InvoicenCamel {}
+export interface Invoice extends InvoiceSnake, InvoiceCamel {}
