@@ -7659,7 +7659,7 @@ const options = {
 };
 
 const api = {
-  version: '3.19.7',
+  version: '3.19.8',
   options,
   request,
 
