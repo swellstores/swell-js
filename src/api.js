@@ -7,6 +7,7 @@ import products from './products';
 import categories from './categories';
 import attributes from './attributes';
 import subscriptions from './subscriptions';
+import invoices from './invoices';
 import content from './content';
 import settings from './settings';
 import payment from './payment';
@@ -82,6 +83,8 @@ const api = {
   attributes: attributes(request, options),
 
   subscriptions: subscriptions(request, options),
+
+  invoices: invoices(request, options),
 
   content: content(request, options),
 

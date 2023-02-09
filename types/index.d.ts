@@ -33,6 +33,7 @@ import {
 } from './payment';
 import { Settings } from './settings';
 import { Subscription } from './subscription';
+import { Invoice } from './invoice';
 
 export * from './account';
 export * from './attribute';
@@ -282,6 +283,11 @@ export namespace subscriptions {
     itemId: string,
     input: any,
   ): Promise<Subscription>;
+}
+
+export namespace invoices {
+  function get(id: string): Promise<Invoice>;
+  function list(): Promise<ResultsResponse<Invoice>>;
 }
 
 // Backward compatible functions

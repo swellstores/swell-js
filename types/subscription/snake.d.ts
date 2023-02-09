@@ -1,6 +1,7 @@
 import { Account } from '../account';
-import { BaseModel, ResultsResponse, Tax } from '../index';
+import { BaseModel, Tax } from '../index';
 import { Product } from '../product';
+import { Invoice } from '../invoice';
 
 interface SubscriptionItems extends BaseModel {
   date_created?: string;
@@ -58,7 +59,7 @@ interface SubscriptionSnake extends BaseModel {
   grand_total?: number;
   interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
   interval_count?: number;
-  invoices?: [object]; // TODO: Create Invoice Type
+  invoices?: [Invoice];
   invoice_total?: number;
   item_discount?: number;
   item_tax?: number;
