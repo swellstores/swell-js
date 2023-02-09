@@ -231,6 +231,7 @@ export interface ProductQuery extends Query {
   categories?: string[];
   $filters?: unknown;
   search?: string;
+  where?: object;
 }
 export namespace products {
   function categories(
