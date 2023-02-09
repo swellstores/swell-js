@@ -51,7 +51,7 @@ export * from './subscription';
 
 export as namespace swell;
 
-type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
+export type SnakeToCamelCase<S extends any> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
   : S;
 
