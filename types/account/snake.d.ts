@@ -34,6 +34,7 @@ interface AccountSnake extends BaseModel {
 }
 
 interface AddressSnake extends BaseModel {
+  account_address_id?: string;
   active?: boolean;
   address1: string;
   address2?: string;
