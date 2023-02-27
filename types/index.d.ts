@@ -28,6 +28,8 @@ import {
   InputPaymentElementCard,
   InputPaymentElementIdeal,
   InputPaymentElementPaypal,
+  InputPaymentElementGoogle,
+  InputPaymentElementApple,
   InputPaymentRedirect,
   Payment,
 } from './payment';
@@ -196,23 +198,15 @@ export namespace locale {
 }
 
 export namespace payment {
-  function authenticate(id: string): Promise<unknown>;
-  function authorizeGateway(input: object): Promise<unknown>;
+  function get(id: string): Promise<Payment>;
+  function methods(): Promise<object>;
   function createElements(input: {
     card?: InputPaymentElementCard;
-    paypal?: InputPaymentElementPaypal;
     ideal?: InputPaymentElementIdeal;
+    paypal?: InputPaymentElementPaypal;
+    google?: InputPaymentElementGoogle;
+    apple?: InputPaymentElementApple;
   }): Promise<void>;
-  function createIntent(input: {
-    gateway: string;
-    intent: object;
-  }): Promise<unknown>;
-  function get(input: string): Promise<Payment>;
-  function handleRedirect(input: {
-    card?: InputPaymentRedirect;
-    paysafecard?: InputPaymentRedirect;
-    klarna?: InputPaymentRedirect;
-  }): Promise<unknown>;
   function tokenize(input: {
     card?: object;
     ideal?: object;
@@ -220,9 +214,23 @@ export namespace payment {
     bancontact?: object;
     paysafecard?: object;
   }): Promise<unknown>;
+  function handleRedirect(input: {
+    card?: InputPaymentRedirect;
+    paysafecard?: InputPaymentRedirect;
+    klarna?: InputPaymentRedirect;
+  }): Promise<unknown>;
+  function authenticate(id: string): Promise<unknown>;
+  function createIntent(input: {
+    gateway: string;
+    intent: object;
+  }): Promise<unknown>;
   function updateIntent(input: {
     gateway: string;
     intent: object;
+  }): Promise<unknown>;
+  function authorizeGateway(input: {
+    gateway: string;
+    params?: object;
   }): Promise<unknown>;
 }
 

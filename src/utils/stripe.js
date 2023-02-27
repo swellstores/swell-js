@@ -1,11 +1,33 @@
-import reduce from 'lodash-es/reduce';
-import isEmpty from 'lodash-es/isEmpty';
-import get from 'lodash-es/get';
-import toLower from 'lodash-es/toLower';
-import map from 'lodash-es/map';
-import toNumber from 'lodash-es/toNumber';
+import { get, map, reduce, toNumber, toLower, isEmpty } from './index';
 
-import { toSnake } from './';
+// https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+const MINIMUM_CHARGE_AMOUNT = {
+  USD: 0.5,
+  AED: 2,
+  AUD: 0.5,
+  BGN: 1,
+  BRL: 0.5,
+  CAD: 0.5,
+  CHF: 0.5,
+  CZK: 15,
+  DKK: 2.5,
+  EUR: 0.5,
+  GBP: 0.3,
+  HKD: 4,
+  HRK: 0.5,
+  HUF: 175,
+  INR: 0.5,
+  JPY: 50,
+  MXN: 10,
+  MYR: 2,
+  NOK: 3,
+  NZD: 0.5,
+  PLN: 2,
+  RON: 2,
+  SEK: 3,
+  SGD: 0.5,
+  THB: 10,
+};
 
 const addressFieldsMap = {
   city: 'city',
@@ -179,6 +201,23 @@ function setBancontactOwner(source, data) {
   };
 }
 
+function createElement(type, elements, params) {
+  const elementParams = params[type] || params;
+  const elementOptions = elementParams.options || {};
+  const element = elements.create(type, elementOptions);
+
+  elementParams.onChange && element.on('change', elementParams.onChange);
+  elementParams.onReady && element.on('ready', elementParams.onReady);
+  elementParams.onFocus && element.on('focus', elementParams.onFocus);
+  elementParams.onBlur && element.on('blur', elementParams.onBlur);
+  elementParams.onEscape && element.on('escape', elementParams.onEscape);
+  elementParams.onClick && element.on('click', elementParams.onClick);
+
+  element.mount(elementParams.elementId || `#${type}-element`);
+
+  return element;
+}
+
 async function createPaymentMethod(stripe, cardElement, cart) {
   const billingDetails = getBillingDetails(cart);
   const { paymentMethod, error } = await stripe.createPaymentMethod({
@@ -271,10 +310,17 @@ function stripeAmountByCurrency(currency, amount) {
   }
 }
 
+function isStripeChargeableAmount(amount, currency) {
+  const minAmount = MINIMUM_CHARGE_AMOUNT[currency];
+  return !minAmount || amount >= minAmount;
+}
+
 export {
+  createElement,
   createPaymentMethod,
   createIDealPaymentMethod,
   createKlarnaSource,
   createBancontactSource,
   stripeAmountByCurrency,
+  isStripeChargeableAmount,
 };

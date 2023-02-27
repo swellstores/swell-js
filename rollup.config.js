@@ -28,7 +28,7 @@ export default [
       cookie: './src/cookie.js',
       currency: './src/currency.js',
       locale: './src/locale.js',
-      payment: './src/payment.js',
+      payment: './src/payment/index.js',
       products: './src/products.js',
       settings: './src/settings.js',
       subscriptions: './src/subscriptions.js',

@@ -138,16 +138,39 @@ class Stripe extends React.Component {
             <FormControl>
               <FormLabel>Type</FormLabel>
               <RadioGroup defaultValue="card" row onChange={this.onChangeType}>
-                <FormControlLabel value="card" control={<Radio />} label="Card" />
-                <FormControlLabel value="separate" control={<Radio />} label="Separate elements" />
+                <FormControlLabel
+                  value="card"
+                  control={<Radio />}
+                  label="Card"
+                />
+                <FormControlLabel
+                  value="separate"
+                  control={<Radio />}
+                  label="Separate elements"
+                />
               </RadioGroup>
             </FormControl>
             <FormControl>
               <FormLabel>Font</FormLabel>
-              <RadioGroup defaultValue="default" row onChange={this.onChangeFont}>
-                <FormControlLabel value="default" control={<Radio />} label="Default" />
-                <FormControlLabel value="audiowide" control={<Radio />} label="Audiowide" />
-                <FormControlLabel value="festive" control={<Radio />} label="Festive" />
+              <RadioGroup
+                defaultValue="default"
+                row
+                onChange={this.onChangeFont}>
+                <FormControlLabel
+                  value="default"
+                  control={<Radio />}
+                  label="Default"
+                />
+                <FormControlLabel
+                  value="audiowide"
+                  control={<Radio />}
+                  label="Audiowide"
+                />
+                <FormControlLabel
+                  value="festive"
+                  control={<Radio />}
+                  label="Festive"
+                />
               </RadioGroup>
             </FormControl>
             {type === 'card' ? (
@@ -166,8 +189,7 @@ class Stripe extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
-                onClick={this.onClickTokenize}
-              >
+                onClick={this.onClickTokenize}>
                 Tokenize
               </Button>
               <Button
@@ -176,8 +198,7 @@ class Stripe extends React.Component {
                 size="small"
                 disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={onOrderSubmit}
-              >
+                onClick={onOrderSubmit}>
                 Submit
               </Button>
             </div>

@@ -41,6 +41,9 @@ function methods(request, options) {
     },
 
     get() {
+      if (options.getCart) {
+        return options.getCart();
+      }
       let data;
       if (this.cacheClear) {
         this.cacheClear = null;
@@ -106,6 +109,9 @@ function methods(request, options) {
           ...data,
           items: data.items.map(this.getItemData),
         };
+      }
+      if (options.updateCart) {
+        return options.updateCart(input);
       }
       return this.requestStateChange('put', `/cart`, data);
     },
