@@ -10,7 +10,7 @@ import subscriptions from './subscriptions';
 import invoices from './invoices';
 import content from './content';
 import settings from './settings';
-import payment from './payment';
+import Payment from './payment';
 import locale from './locale';
 import currency from './currency';
 import * as utils from './utils';
@@ -44,6 +44,8 @@ const api = {
     options.locale = opt.locale;
     options.currency = opt.currency;
     options.api = api;
+    options.getCart = opt.getCart;
+    options.updateCart = opt.updateCart;
     utils.setOptions(options);
   },
 
@@ -90,7 +92,7 @@ const api = {
 
   settings: settings(request, options),
 
-  payment: payment(request, options),
+  payment: new Payment(request, options),
 
   locale: locale(request, options),
 

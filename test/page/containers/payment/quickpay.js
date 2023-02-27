@@ -72,8 +72,7 @@ class Quickpay extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
-                onClick={this.onClickTokenize.bind(this)}
-              >
+                onClick={this.onClickTokenize.bind(this)}>
                 Tokenize
               </Button>
               <Button
@@ -82,8 +81,7 @@ class Quickpay extends React.Component {
                 size="small"
                 disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={onOrderSubmit}
-              >
+                onClick={onOrderSubmit}>
                 Submit
               </Button>
             </div>

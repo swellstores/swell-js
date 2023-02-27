@@ -1,7 +1,4 @@
-import map from 'lodash-es/map';
-import get from 'lodash-es/get';
-import reduce from 'lodash-es/reduce';
-import toNumber from 'lodash-es/toNumber';
+import { get, map, reduce, toNumber } from './index';
 
 const addressFieldsMap = {
   given_name: 'first_name',
@@ -79,30 +76,27 @@ function getOrderLines(cart) {
   return items;
 }
 
-async function createKlarnaSession(cart, createIntent) {
+function getKlarnaSessionData(cart) {
   const returnUrl = `${window.location.origin}${window.location.pathname}?gateway=klarna_direct&sid={{session_id}}`;
   const successUrl = `${returnUrl}&authorization_token={{authorization_token}}`;
 
-  return createIntent({
-    gateway: 'klarna',
-    intent: {
-      locale: cart.display_locale || get(cart, 'settings.locale') || 'en-US',
-      purchase_country:
-        get(cart, 'billing.country') || get(cart, 'shipping.country'),
-      purchase_currency: cart.currency,
-      billing_address: mapAddressFields(cart, 'billing'),
-      shipping_address: mapAddressFields(cart, 'shipping'),
-      order_amount: Math.round(get(cart, 'grand_total', 0) * 100),
-      order_lines: JSON.stringify(getOrderLines(cart)),
-      merchant_urls: {
-        success: successUrl,
-        back: returnUrl,
-        cancel: returnUrl,
-        error: returnUrl,
-        failure: returnUrl,
-      },
+  return {
+    locale: cart.display_locale || get(cart, 'settings.locale') || 'en-US',
+    purchase_country:
+      get(cart, 'billing.country') || get(cart, 'shipping.country'),
+    purchase_currency: cart.currency,
+    billing_address: mapAddressFields(cart, 'billing'),
+    shipping_address: mapAddressFields(cart, 'shipping'),
+    order_amount: Math.round(get(cart, 'capture_total', 0) * 100),
+    order_lines: JSON.stringify(getOrderLines(cart)),
+    merchant_urls: {
+      success: successUrl,
+      back: returnUrl,
+      cancel: returnUrl,
+      error: returnUrl,
+      failure: returnUrl,
     },
-  });
+  };
 }
 
-export { createKlarnaSession };
+export { getKlarnaSessionData };

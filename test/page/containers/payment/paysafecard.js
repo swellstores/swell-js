@@ -37,7 +37,10 @@ class Paysafecard extends React.Component {
   componentDidMount() {
     const { api, onError } = this.props;
     api.payment.handleRedirect({
-      card: { onError, onSuccess: () => this.setState({ tokenized: true }) },
+      paysafecard: {
+        onError,
+        onSuccess: () => this.setState({ tokenized: true }),
+      },
     });
   }
 
@@ -72,8 +75,7 @@ class Paysafecard extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
-                onClick={this.onClickTokenize.bind(this)}
-              >
+                onClick={this.onClickTokenize.bind(this)}>
                 Tokenize
               </Button>
               <Button
@@ -82,8 +84,7 @@ class Paysafecard extends React.Component {
                 size="small"
                 disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={onOrderSubmit}
-              >
+                onClick={onOrderSubmit}>
                 Submit
               </Button>
             </div>
@@ -98,4 +99,7 @@ const mapStateToProps = ({ api }) => ({
   api,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(Paysafecard);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(Paysafecard);
