@@ -1,8 +1,8 @@
 import 'qs';
-import { b as cloneDeep } from './index-bee7164f.js';
+import { b as cloneDeep } from './index-cde4db96.js';
 import 'deepmerge';
 import 'fast-case';
-import { c as cleanProductOptions } from './products-9a198f48.js';
+import { c as cleanProductOptions } from './products-103d12fc.js';
 
 function methods(request, options) {
   return {
@@ -44,6 +44,9 @@ function methods(request, options) {
     },
 
     get() {
+      if (options.getCart) {
+        return options.getCart();
+      }
       let data;
       if (this.cacheClear) {
         this.cacheClear = null;
@@ -109,6 +112,9 @@ function methods(request, options) {
           ...data,
           items: data.items.map(this.getItemData),
         };
+      }
+      if (options.updateCart) {
+        return options.updateCart(input);
       }
       return this.requestStateChange('put', `/cart`, data);
     },
