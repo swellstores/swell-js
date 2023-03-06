@@ -4,6 +4,7 @@ import get from 'lodash-es/get';
 import uniq from 'lodash-es/uniq';
 import find from 'lodash-es/find';
 import round from 'lodash-es/round';
+import pick from 'lodash-es/pick';
 import findIndex from 'lodash-es/findIndex';
 import cloneDeep from 'lodash-es/cloneDeep';
 import toNumber from 'lodash-es/toNumber';
@@ -300,6 +301,7 @@ export {
   uniq,
   find,
   round,
+  pick,
   findIndex,
   camelCase,
   cloneDeep,
