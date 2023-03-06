@@ -10,7 +10,16 @@ export default class PaypalDirectPayment extends Payment {
   get scripts() {
     const { client_id, merchant_id } = this.method;
 
-    return [{ id: 'paypal-sdk', params: { client_id, merchant_id } }];
+    return [
+      {
+        id: 'paypal-sdk',
+        params: {
+          client_id,
+          merchant_id,
+          cart: ['currency'],
+        },
+      },
+    ];
   }
 
   get paypal() {

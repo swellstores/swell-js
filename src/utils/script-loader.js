@@ -33,7 +33,7 @@ async function loadPaypal(params) {
   if (!window.paypal) {
     await loadScript(
       'paypal-sdk',
-      `https://www.paypal.com/sdk/js?client-id=${params.client_id}&merchant-id=${params.merchant_id}&intent=authorize&commit=false`,
+      `https://www.paypal.com/sdk/js?currency=${params.currency}&client-id=${params.client_id}&merchant-id=${params.merchant_id}&intent=authorize&commit=false`,
       {
         'data-partner-attribution-id': 'SwellCommerce_SP',
       },

@@ -1,6 +1,13 @@
 import cartApi from '../cart';
 import settingsApi from '../settings';
-import { get, vaultRequest, isFunction, toSnake, cloneDeep } from '../utils';
+import {
+  get,
+  pick,
+  vaultRequest,
+  isFunction,
+  toSnake,
+  cloneDeep,
+} from '../utils';
 import loadScripts from '../utils/script-loader';
 
 export default class Payment {
@@ -12,6 +19,7 @@ export default class Payment {
   }
 
   async loadScripts(scripts) {
+    await this._populateScriptsParams(scripts);
     await loadScripts(scripts);
   }
 
@@ -96,5 +104,28 @@ export default class Payment {
     }
 
     return response;
+  }
+
+  async _populateScriptsParams(scripts = []) {
+    for (const script of scripts) {
+      await this._populateScriptWithCartParams(script);
+    }
+  }
+
+  async _populateScriptWithCartParams(script) {
+    const cartParams = get(script, 'params.cart');
+
+    if (!cartParams) {
+      return;
+    }
+
+    const cart = await this.getCart();
+
+    script.params = {
+      ...script.params,
+      ...pick(cart, cartParams),
+    };
+
+    delete script.params.cart;
   }
 }
