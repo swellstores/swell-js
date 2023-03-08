@@ -26,6 +26,10 @@ export type PriceCamel = {
   [K in keyof PriceSnake as SnakeToCamelCase<K>]: PriceSnake[K];
 };
 
+export type PricesCamel = {
+  [K in keyof PriceSnake as SnakeToCamelCase<K>]: PriceSnake[K];
+};
+
 export type UpsellCamel = {
   [K in keyof UpsellSnake as SnakeToCamelCase<K>]: UpsellSnake[K];
 };

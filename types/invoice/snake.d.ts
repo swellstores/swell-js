@@ -1,7 +1,9 @@
 import { Account } from '../account';
 import { Order } from '../order';
-import { BaseModel, Tax } from '../index';
+import { BaseModel, Discount, Tax } from '../index';
 import { Product } from '../product';
+import { Billing } from '../billing';
+import { Coupon } from '../coupon';
 interface InvoiceItems extends BaseModel {
   delivery?: string;
   discount_total?: number;
@@ -22,8 +24,8 @@ interface InvoiceItems extends BaseModel {
 interface InvoiceSnake extends BaseModel {
   account_id?: string;
   account?: Account;
-  billing?: object; // TODO: Add billing
-  coupon?: object; // TODO: Add Coupon
+  billing?: Billing;
+  coupon?: Coupon;
   coupon_code?: string;
   coupon_id?: string;
   currency?: string;
@@ -34,7 +36,7 @@ interface InvoiceSnake extends BaseModel {
   date_period_start?: string;
   date_updated?: string;
   discount_total?: number;
-  discounts?: [object]; // TODO: Create Discount type
+  discounts?: Discount[];
   grand_total?: number;
   shipping?: object; // TODO: Add shipping
   subscription_id?: string;
@@ -51,7 +53,7 @@ interface InvoiceSnake extends BaseModel {
   sub_total?: number;
   tax_included_total?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   taxes_fixed?: boolean;
   unpaid?: boolean;
 }
