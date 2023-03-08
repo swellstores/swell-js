@@ -1,9 +1,10 @@
 import { BaseModel } from '..';
 import { Account } from '../account';
+import { Billing } from '../billing';
 
 interface InputCreateTokenSnake {
   account_id?: string;
-  billing?: object; // TODO: Add billing
+  billing?: Billing;
   cvc?: number;
   exp_month?: number;
   exp_year?: number;
@@ -24,7 +25,7 @@ interface TokenResponseSnake {
 interface CardSnake extends BaseModel {
   active?: boolean;
   address_check?: 'unchecked' | 'pass' | 'fail';
-  billing?: object; // TODO: Create Billing Interface
+  billing?: Billing;
   brand?: string;
   cvc_check?: 'unchecked' | 'pass' | 'fail';
   exp_month?: number;

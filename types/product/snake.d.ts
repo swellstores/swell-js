@@ -1,6 +1,6 @@
-import { BaseModel, ResultsResponse } from '../index';
+import { BaseModel, Bundle, CrossSell, Image, ProductOption, Upsell, Variant } from '../index';
 import { Attribute } from '../attribute';
-import { PurchaseOption } from './index';
+import { Price, PurchaseOption } from './index';
 
 interface ContentObject {
   [key: string]: unknown;
@@ -47,12 +47,12 @@ interface ProductOptionSnake {
   input_hint?: string;
   input_multi?: boolean;
   input_type?:
-    | 'text'
-    | 'textarea'
-    | 'select'
-    | 'multi_select'
-    | 'file'
-    | 'muti_file';
+  | 'text'
+  | 'textarea'
+  | 'select'
+  | 'multi_select'
+  | 'file'
+  | 'muti_file';
   name?: string;
   parent_id?: string;
   parent_value_ids?: string[];
@@ -82,6 +82,7 @@ interface ImageSnake {
     url?: string;
     width?: number;
   };
+  id?: string;
 }
 
 interface PriceSnake {
@@ -106,7 +107,7 @@ interface VariantSnake extends BaseModel {
   parent_id?: string;
   price?: number;
   prices?: PriceSnake[];
-  purchase_options?: PurchaseOption[];
+  purchase_options?: PurchaseOption;
   sku?: string;
   stock_level?: number;
   subscription_interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
@@ -117,7 +118,7 @@ export interface ProductSnake extends BaseModel {
   active?: boolean;
   attributes?: Attribute[];
   bundle?: boolean;
-  bundle_items?: BundleSnake[];
+  bundle_items?: Bundle[];
   category?: unknown;
   category_id?: string;
   categories?: unknown[];
@@ -128,22 +129,22 @@ export interface ProductSnake extends BaseModel {
   code?: string;
   cost?: number;
   content?: ContentObject;
-  cross_sells?: CrossSellSnake[];
+  cross_sells?: CrossSell[];
   currency?: string;
   customizable?: boolean;
   delivery?: 'shipment' | 'subscription' | 'giftcard' | 'null';
   description?: string;
   discontinued?: boolean;
-  images?: ImageSnake[];
+  images?: Image[];
   meta_description?: string;
   meta_title?: string;
   meta_keywords?: string;
   name: string;
-  options?: ProductOptionSnake[];
+  options?: ProductOption[];
   orig_price?: number;
   price?: number;
-  prices?: PriceSnake[];
-  purchase_options?: PurchaseOption[];
+  prices?: Price[];
+  purchase_options?: PurchaseOption;
   quantity_min?: number;
   quantity_inc?: number;
   related_product_ids?: string[];
@@ -163,8 +164,8 @@ export interface ProductSnake extends BaseModel {
   stock_status?: 'available' | 'preorder' | 'backorder';
   stock_tracking?: boolean;
   tags?: string[];
-  up_sells?: UpsellSnake[];
+  up_sells?: Upsell[];
   variable?: boolean;
-  variants?: VariantSnake[];
+  variants?: Variant[];
   virtual?: boolean;
 }

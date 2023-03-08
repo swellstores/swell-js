@@ -1,8 +1,30 @@
-import { BaseModel, Discount, Tax } from '../index';
+import { BaseModel, CartGiftCardItem, CartItemOption, CartShipmentRating, CartShipping, Discount, Tax } from '../index';
 import { Product, Variant } from '../product';
 import { Subscription } from '../subscription';
 import { Account } from '../account';
 import { Order } from '../order';
+import { Coupon } from '../coupon';
+import { Billing } from '../billing';
+import { Promotion } from '../promotion';
+import { PurhcaseLink } from '../purchase_link';
+
+interface CartItemOptionsSnake {
+  id?: string;
+  name?: string;
+  price?: number;
+  shipment_weight: number;
+  value?: string;
+  variant?: boolean;
+}
+
+interface CartGiftCardItemSnake {
+  id?: string;
+  amount?: number;
+  code?: string;
+  code_formatted?: string;
+  giftcard?: string;
+  last4?; string
+}
 
 interface CartItemSnake extends BaseModel {
   bundle_items?: [object];
@@ -12,7 +34,7 @@ interface CartItemSnake extends BaseModel {
   discount_total?: number;
   discounts?: [Discount];
   metadata?: object;
-  options?: [object]; // TODO: Add Options Variant
+  options?: CartItemOption[];
   orig_price?: number;
   price?: number;
   price_total?: number;
@@ -28,10 +50,47 @@ interface CartItemSnake extends BaseModel {
   subscription_paid?: boolean;
   tax_each?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   trial_price_total?: number;
   variant_id?: string;
   variant?: Variant;
+}
+
+interface CartShipmentRatingSnake {
+  date_created?: string;
+  services?: {
+    id?: string
+    name?: string
+    carrier?: string
+    price?: string
+    pickup?: boolean
+    tax_code?: string
+  }
+  errors?: [{
+    message?: string
+    code?: string
+  }]
+  md5?: string
+}
+
+interface CartShippingSnake {
+  name?: string
+  first_name?: string
+  last_name?: string
+  address1?: string
+  address2?: string
+  city?: string
+  state?: string
+  zip?: string
+  country?: string
+  phone?: string
+  service?: string
+  service_name?: string
+  price?: number
+  default?: boolean
+  account_address_id?: string
+  account_address?: any
+  pickup?: boolean
 }
 
 interface CartSnake extends BaseModel {
@@ -44,11 +103,11 @@ interface CartSnake extends BaseModel {
   account_info_saved?: boolean;
   account_logged_in?: boolean;
   active?: boolean;
-  billing?: object; // TODO: Billing Object
+  billing?: Billing;
   checkout_id?: string;
   checkout_url?: string;
   comments?: string;
-  coupon?: object; // TODO: Create Coupon Object
+  coupon?: Coupon;
   coupon_code?: string;
   coupon_id?: string;
   currency?: string;
@@ -58,14 +117,14 @@ interface CartSnake extends BaseModel {
   date_webhook_first_failed?: string;
   date_webhook_last_succeeded?: string;
   discount_total?: number;
-  discounts?: [object]; // TODO: Add discount object
+  discounts?: Discount[];
   display_currency?: string;
   display_locale?: string;
   gift?: boolean;
   gift_message?: string;
   giftcard_delivery?: boolean;
   giftcard_total?: number;
-  giftcards?: [object]; // TODO: Add gift card object
+  giftcards?: CartGiftCardItem[];
   grand_total?: number;
   guest?: boolean;
   item_discount?: number;
@@ -80,21 +139,21 @@ interface CartSnake extends BaseModel {
   order?: Order;
   order_id?: string;
   orig_price?: number;
-  promotion_ids?: [string]; // TODO: Create a special type for this?
-  promotions?: [object]; // TODO: Create Promotion Object
+  promotion_ids?: any[];
+  promotions?: Promotion[];
   purchase_link_ids?: [string];
-  purchase_links?: [object]; // TODO : Create Purchase Links
+  purchase_links?: PurhcaseLink[];
   purchase_links_errors?: [object];
   recovered?: boolean;
   schedule?: object;
   shipment_delivery?: boolean;
   shipment_discount?: number;
   shipment_price?: number;
-  shipment_rating?: object; // TODO: Create Shipment Rating
+  shipment_rating?: CartShipmentRating;
   shipment_tax?: number;
   shipment_tax_included?: boolean;
   shipment_total?: number;
-  shipping?: object; // TODO: Create Shipping Object
+  shipping?: CartShipping;
   status?: 'active' | 'converted' | 'abandoned' | 'recovered';
   sub_total?: number;
   subscription?: Subscription;

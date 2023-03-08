@@ -4,7 +4,21 @@ import { Subscription } from '../subscription';
 import { Account } from '../account';
 import { Payment } from '../payment';
 import { Cart } from '../cart';
-import { Order } from '.';
+import { Order, OrderGiftCard, OrderOption, OrderShipping } from '.';
+import { Billing } from '../billing';
+import { Coupon } from '../coupon';
+import { Promotion } from '../promotion';
+import { PurhcaseLink } from '../purchase_link';
+
+interface OrderOptionSnake {
+  id?: string
+  name?: string
+  price?: number
+  shipment_weight?: number
+  value?: string
+  variant?: boolean
+  value_id: string
+}
 
 interface OrderItemSnake extends BaseModel {
   bundle_items?: [object];
@@ -12,9 +26,9 @@ interface OrderItemSnake extends BaseModel {
   description?: string;
   discount_each?: number;
   discount_total?: number;
-  discounts?: [Discount];
+  discounts?: Discount[];
   metadata?: object;
-  options?: [object]; // TODO: Add Options Variant
+  options?: OrderOption[];
   orig_price?: number;
   price?: number;
   price_total?: number;
@@ -30,10 +44,39 @@ interface OrderItemSnake extends BaseModel {
   subscription_paid?: boolean;
   tax_each?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   trial_price_total?: number;
   variant_id?: string;
   variant?: Variant;
+}
+
+interface OrderShippingSnake {
+  name?: string
+  first_name?: string
+  last_name?: string
+  address1?: string
+  address2?: string
+  city?: string
+  state?: string
+  zip?: string
+  country?: string
+  phone?: string
+  service?: string
+  service_name?: string
+  price?: number
+  default?: boolean
+  account_address_id?: string
+  account_address?: any
+  pickup?: boolean
+}
+
+interface OrderGiftCardSnake {
+  id?: string
+  amount?: number
+  code?: string
+  code_formatted?: string
+  last4?: string
+  giftcard?: any // TODO: complete this
 }
 
 interface OrderSnake extends BaseModel {
@@ -46,14 +89,14 @@ interface OrderSnake extends BaseModel {
   active?: boolean;
   authorized_payment?: Payment;
   authorized_payment_id?: string;
-  billing?: object; // TODO: Billing Object
+  billing?: Billing;
   cancel_reason?: string;
   canceled?: boolean;
   cart?: Cart;
   cart_id?: string;
   closed?: boolean;
   comments?: string;
-  coupon?: object; // TODO: Create Coupon Object
+  coupon?: Coupon;
   coupon_code?: string;
   coupon_id?: string;
   credit_total?: number;
@@ -70,7 +113,7 @@ interface OrderSnake extends BaseModel {
   delivered?: boolean;
   delivery_marked?: boolean;
   discount_total?: number;
-  discounts?: [object]; // TODO: Add discount object
+  discounts?: Discount[];
   display_currency?: string;
   display_locale?: string;
   draft?: boolean;
@@ -78,7 +121,7 @@ interface OrderSnake extends BaseModel {
   gift_message?: string;
   giftcard_delivery?: boolean;
   giftcard_total?: number;
-  giftcards?: [object]; // TODO: Add gift card object
+  giftcards?: OrderGiftCard[];
   grand_total?: number;
   guest?: boolean;
   hold?: boolean;
@@ -118,11 +161,11 @@ interface OrderSnake extends BaseModel {
   pending_invoices?: object[];
   prev?: Order;
   prev_id?: string;
-  promotion_ids?: [string];
-  promotions?: [object]; // TODO: Create Promotion Object
-  purchase_link_ids?: [string];
-  purchase_links?: [object]; // TODO : Create Purchase Links
-  purchase_links_errors?: [object];
+  promotion_ids?: string[];
+  promotions?: Promotion[];
+  purchase_link_ids?: string[];
+  purchase_links?: PurhcaseLink[];
+  purchase_links_errors?: object[];
   refund_marked?: boolean;
   refund_total?: number;
   refunded?: boolean;
@@ -137,21 +180,36 @@ interface OrderSnake extends BaseModel {
   shipment_delivery?: boolean;
   shipment_discount?: number;
   shipment_price?: number;
-  shipment_rating?: object; // TODO: Create Shipment Rating
+  shipment_rating?: {
+    date_created?: string
+    errors?: {
+      code?: string
+      message?: string
+    }
+    fingerprint?: string
+    services?: {
+      id?: string
+      name?: string
+      carrier?: string
+      price?: string
+      pickup?: boolean
+      tax_code?: string
+    }
+  };
   shipment_tax?: number;
   shipment_tax_included?: boolean;
   shipment_total?: number;
   shipment_total_credited?: number;
   shipments?: object[];
-  shipping?: object; // TODO: Create Shipping Object
+  shipping?: OrderShipping;
   status?:
-    | 'pending'
-    | 'draft'
-    | 'payment_pending'
-    | 'delivery_pending'
-    | 'hold'
-    | 'complete'
-    | 'canceled';
+  | 'pending'
+  | 'draft'
+  | 'payment_pending'
+  | 'delivery_pending'
+  | 'hold'
+  | 'complete'
+  | 'canceled';
   sub_total?: number;
   subscription?: Subscription;
   subscription_delivery?: boolean;

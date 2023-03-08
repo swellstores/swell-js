@@ -36,6 +36,7 @@ import {
 import { Settings } from './settings';
 import { Subscription } from './subscription';
 import { Invoice } from './invoice';
+import { ShipmentRating } from './shipment_rating';
 
 export * from './account';
 export * from './attribute';
@@ -155,11 +156,11 @@ export namespace cart {
   function applyCoupon(input: string): Promise<Cart>;
   function get(input?: string): Promise<Cart | null>;
   function getSettings(): Promise<Settings>;
-  function getShippingRates(): Promise<object>; // TODO: add shipping Rate object
+  function getShippingRates(): Promise<ShipmentRating[]>;
   function recover(input: string): Promise<Cart>;
   function removeCoupon(input: string): Promise<Cart>;
   function removeItem(input: string): Promise<Cart>;
-  function setItems(input: [CartItem?]): Promise<Cart>;
+  function setItems(input: CartItem[]): Promise<Cart>;
   function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;

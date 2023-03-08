@@ -1,7 +1,9 @@
 import { Account } from '../account';
 import { Card } from '../card';
 import { BaseModel } from '../index';
+import { Invoice } from '../invoice';
 import { Order } from '../order';
+import { Refund } from '../refund';
 import { Subscription } from '../subscription';
 
 interface PaymentSnake extends BaseModel {
@@ -25,14 +27,14 @@ interface PaymentSnake extends BaseModel {
   giftcard?: object; // TODO: Add Gift Card
   giftcard_id?: string;
   intent?: object;
-  invoice?: object; // TODO: Add Invoice Object
+  invoice?: Invoice;
   invoice_id?: string;
   method: string;
   number?: string;
   order?: Order;
   order_id?: string;
   paypal?: object; //TODO: Add Paypal Object
-  refunds?: [object]; // TODO: Add Refunds Object
+  refunds?: Refund[];
   status?: 'pending' | 'error' | 'success' | 'authorized';
   subscription?: Subscription;
   subscription_id?: string;

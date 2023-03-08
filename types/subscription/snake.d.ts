@@ -1,7 +1,10 @@
 import { Account } from '../account';
-import { BaseModel, Tax } from '../index';
-import { Product } from '../product';
+import { BaseModel, Discount, Payment, SubscriptionBillingSchedule, Tax } from '../index';
+import { Product, Variant } from '../product';
 import { Invoice } from '../invoice';
+import { Billing } from '../billing';
+import { Coupon } from '../coupon';
+import { Refund } from '../refund';
 
 interface SubscriptionItems extends BaseModel {
   date_created?: string;
@@ -23,14 +26,23 @@ interface SubscriptionItems extends BaseModel {
   tax_each?: number;
 }
 
+interface SubscriptionBillingScheduleSnake {
+  interval?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  interval_count?: number
+  trial_days?: number
+  limit?: number
+  limit_current?: number
+  date_limit_end?: string
+}
+
 interface SubscriptionSnake extends BaseModel {
   account_id?: string;
   account?: Account;
   active?: boolean;
-  billing?: object; // TODO: Add billing
-  billing_schedule?: object; // TODO: add billing schedule
-  bundle_item_id?: string; // TODO: add bundle item id
-  coupon?: object; // TODO: Add Coupon
+  billing?: Billing;
+  billing_schedule?: SubscriptionBillingSchedule;
+  bundle_item_id?: string;
+  coupon?: Coupon;
   coupon_code?: string;
   coupon_id?: string;
   cancel_at_end?: boolean;
@@ -54,31 +66,31 @@ interface SubscriptionSnake extends BaseModel {
   date_trial_start?: string;
   date_updated?: string;
   discount_total?: number;
-  discounts?: [object]; // TODO: Create Discount type
+  discounts?: Discount[];
   draft?: boolean;
   grand_total?: number;
   interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
   interval_count?: number;
-  invoices?: [Invoice];
+  invoices?: Invoice[];
   invoice_total?: number;
   item_discount?: number;
   item_tax?: number;
   item_total?: number;
-  items?: [SubscriptionItems];
+  items?: SubscriptionItems[];
   number?: string;
   product_id?: string;
   notes?: string;
-  options?: [object];
+  options?: object[];
   order_id?: string;
   order_item_id?: string;
   order_schedule?: string;
-  orders?: [object];
+  orders?: object[];
   ordering?: boolean;
   paid?: boolean;
-  payments?: object; // TODO: Create Payment Object
+  payments?: Payment[];
   payment_balance?: number;
   payment_total?: number;
-  pending_invoices?: [object]; // TODO : Create Invoice Object
+  pending_invoices?: Invoice[];
   plan_id?: string;
   plan_name?: string;
   price?: number;
@@ -100,25 +112,25 @@ interface SubscriptionSnake extends BaseModel {
   recurring_tax_included_total?: number;
   recurring_tax_total?: number;
   recurring_total?: number;
-  refunds?: object; // TODO: Create Refund Object
+  refunds?: Refund;
   refund_total?: number;
   status?:
-    | 'pending'
-    | 'active'
-    | 'trial'
-    | 'pastdue'
-    | 'unpaid'
-    | 'canceled'
-    | 'paid'
-    | 'complete';
+  | 'pending'
+  | 'active'
+  | 'trial'
+  | 'pastdue'
+  | 'unpaid'
+  | 'canceled'
+  | 'paid'
+  | 'complete';
   sub_total?: number;
   tax_included_total?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   taxes_fixed?: boolean;
   trial?: boolean;
   trial_days?: number;
   unpaid?: boolean;
-  variant?: object; //TODO: Create Variant
+  variant?: Variant;
   variant_id?: string;
 }

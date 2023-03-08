@@ -1,9 +1,41 @@
 import { PaymentSnake } from './snake';
 import { PaymentCamel } from './camel';
 
-interface InputPayment {
-  onSuccess?: (data?: object) => void; // optional, called on payment success
-  onError?: (error?: Error) => void; // optional, called on payment error
+export interface InputPaymentElementCard {
+  elementId?: string;
+  options?: { // https://stripe.com/docs/js/elements_object/create_element?type=card
+    classes?: object // https://stripe.com/docs/js/appendix/style?type=card
+    style?: {
+      base?: StripeOptionsStyles
+      complete?: StripeOptionsStyles
+      empty?: StripeOptionsStyles
+      invalid?: StripeOptionsStyles
+    }
+    value?: string
+    hidePostalCode?: boolean
+    iconStyle?: string
+    hideIcon?: boolean
+    disable?: boolean
+  };
+  seperateElements?: boolean;
+  cardNumber?: {
+    elementId?: string; // default: #card-element
+    options?: object;
+  };
+  cardExpiry?: {
+    elementId?: string; // default: #cardExpiry-element
+  };
+  cardCvc?: {
+    elementId?: string; // default: #cardCvc-element
+  };
+  onChange?: (event: unknown) => void; // optional, called when the Element value changes
+  onReady?: (event: unknown) => void; // optional, called when the Element is fully rendered
+  onFocus?: (event: unknown) => void; // optional, called when the Element gains focus
+  onBlur?: (event: unknown) => void; // optional, called when the Element loses focus
+  onEscape?: (event: unknown) => void;
+  onClick?: (event: unknown) => void; // optional, called when the Element is clicked
+  onSuccess?: (event: unknown) => void; // optional, called on card payment success
+  onError?: (event: unknown) => void; // optional, called on card payment error
 }
 
 interface InputPaymentElement extends InputPayment {
@@ -58,29 +90,24 @@ export interface InputPaymentElementGoogle extends InputPaymentElement {
   };
 }
 
-export interface InputPaymentElementApple extends InputPaymentElement {
-  locale?: string;
-  style?: {
-    type?: string;
-    theme?: string;
-    sizeMode?: string;
-  };
-  require?: {
-    name?: boolean;
-    email?: boolean;
-    shipping?: boolean;
-    phone?: boolean;
-  };
-  classes?: {
-    base?: string;
-    complete?: string;
-    empty?: string;
-    focus?: string;
-    invalid?: string;
-    webkitAutofill?: string;
-  };
+interface StripeOptionsStyles {
+  backgroundColor?: string;
+  color?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  fontSmoothing?: string;
+  fontStyle?: string;
+  fontVariant?: string;
+  fontWeight?: string;
+  iconColor?: string;
+  lineHeight?: string;
+  letterSpacing?: string;
+  textAlign?: string;
+  padding?: string;
+  textDecoration?: string;
+  textShadow?: string;
+  textTransform?: string;
 }
 
-export interface InputPaymentRedirect extends InputPayment {}
 
-export interface Payment extends PaymentSnake, PaymentCamel {}
+export interface Payment extends PaymentSnake, PaymentCamel { }
