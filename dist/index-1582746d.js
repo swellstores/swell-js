@@ -1,6 +1,6 @@
-import { m as methods } from './cart-4f70ad5f.js';
-import { m as methods$1 } from './settings-ae65722d.js';
-import { q as isFunction, v as isObject, H as loadScript, j as toSnake, b as cloneDeep, g as get, E as vaultRequest, x as toLower, z as isEmpty, B as map, w as toNumber, C as reduce, I as isLiveMode, F as getLocationParams, G as removeUrlParams, t as toCamel } from './index-cde4db96.js';
+import { m as methods } from './cart-ff3e3ef6.js';
+import { m as methods$1 } from './settings-937b96f1.js';
+import { v as isFunction, w as isObject, I as loadScript, j as toSnake, b as cloneDeep, g as get, F as vaultRequest, p as pick, y as toLower, A as isEmpty, C as map, x as toNumber, D as reduce, J as isLiveMode, G as getLocationParams, H as removeUrlParams, t as toCamel } from './index-512fc30d.js';
 import 'qs';
 import 'deepmerge';
 import 'fast-case';
@@ -38,7 +38,7 @@ async function loadPaypal(params) {
   if (!window.paypal) {
     await loadScript(
       'paypal-sdk',
-      `https://www.paypal.com/sdk/js?client-id=${params.client_id}&merchant-id=${params.merchant_id}&intent=authorize&commit=false`,
+      `https://www.paypal.com/sdk/js?currency=${params.currency}&client-id=${params.client_id}&merchant-id=${params.merchant_id}&intent=authorize&commit=false`,
       {
         'data-partner-attribution-id': 'SwellCommerce_SP',
       },
@@ -163,6 +163,7 @@ class Payment {
   }
 
   async loadScripts(scripts) {
+    await this._populateScriptsParams(scripts);
     await loadScripts(scripts);
   }
 
@@ -247,6 +248,29 @@ class Payment {
     }
 
     return response;
+  }
+
+  async _populateScriptsParams(scripts = []) {
+    for (const script of scripts) {
+      await this._populateScriptWithCartParams(script);
+    }
+  }
+
+  async _populateScriptWithCartParams(script) {
+    const cartParams = get(script, 'params.cart');
+
+    if (!cartParams) {
+      return;
+    }
+
+    const cart = await this.getCart();
+
+    script.params = {
+      ...script.params,
+      ...pick(cart, cartParams),
+    };
+
+    delete script.params.cart;
   }
 }
 
@@ -2353,7 +2377,16 @@ class PaypalDirectPayment extends Payment {
   get scripts() {
     const { client_id, merchant_id } = this.method;
 
-    return [{ id: 'paypal-sdk', params: { client_id, merchant_id } }];
+    return [
+      {
+        id: 'paypal-sdk',
+        params: {
+          client_id,
+          merchant_id,
+          cart: ['currency'],
+        },
+      },
+    ];
   }
 
   get paypal() {

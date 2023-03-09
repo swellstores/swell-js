@@ -1,18 +1,18 @@
-import { c as cardApi } from './card-68720a8a.js';
-import { g as getCookie, s as setCookie } from './cookie-105be66f.js';
-import { c as cacheApi } from './cache-e20666f1.js';
-import { m as methods$1 } from './cart-4f70ad5f.js';
+import { c as cardApi } from './card-91071403.js';
+import { g as getCookie, s as setCookie } from './cookie-b78058af.js';
+import { c as cacheApi } from './cache-751d89b1.js';
+import { m as methods$1 } from './cart-ff3e3ef6.js';
 import { m as methods$2 } from './account-328cc590.js';
-import { m as methods$3 } from './products-103d12fc.js';
-import { m as methods$4 } from './categories-231942ca.js';
-import { m as methods$5 } from './attributes-65b29136.js';
-import { m as methods$6 } from './subscriptions-64ab09c1.js';
-import { d as defaultMethods, n as trimEnd, J as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, D as base64Encode, t as toCamel, e as setOptions } from './index-cde4db96.js';
-import { m as methods$7 } from './content-8711bc91.js';
-import { m as methods$8 } from './settings-ae65722d.js';
-import { P as PaymentController } from './index-42f745bb.js';
-import { m as methods$9 } from './locale-95671e4d.js';
-import { m as methods$a } from './currency-6044dae3.js';
+import { m as methods$3 } from './products-7f2fbc3e.js';
+import { m as methods$4 } from './categories-8f6a4584.js';
+import { m as methods$5 } from './attributes-7a214d6b.js';
+import { m as methods$6 } from './subscriptions-8044a530.js';
+import { d as defaultMethods, n as trimEnd, K as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, E as base64Encode, t as toCamel, e as setOptions } from './index-512fc30d.js';
+import { m as methods$7 } from './content-0afdcb05.js';
+import { m as methods$8 } from './settings-937b96f1.js';
+import { P as PaymentController } from './index-1582746d.js';
+import { m as methods$9 } from './locale-4391bcf3.js';
+import { m as methods$a } from './currency-842f76f2.js';
 
 function methods(request) {
   const { get, list } = defaultMethods(request, '/invoices', ['list', 'get']);
@@ -34,7 +34,7 @@ const options = {
 };
 
 const api = {
-  version: '3.20.0',
+  version: '3.20.1',
   options,
   request,
 
