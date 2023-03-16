@@ -10,7 +10,7 @@ import { m as methods$6 } from './subscriptions-8044a530.js';
 import { d as defaultMethods, n as trimEnd, K as utils, l as trimStart, k as trimBoth, j as toSnake, o as stringifyQuery, E as base64Encode, t as toCamel, e as setOptions } from './index-512fc30d.js';
 import { m as methods$7 } from './content-0afdcb05.js';
 import { m as methods$8 } from './settings-937b96f1.js';
-import { P as PaymentController } from './index-1582746d.js';
+import { P as PaymentController } from './index-47c8a8e3.js';
 import { m as methods$9 } from './locale-4391bcf3.js';
 import { m as methods$a } from './currency-842f76f2.js';
 
@@ -34,7 +34,7 @@ const options = {
 };
 
 const api = {
-  version: '3.20.1',
+  version: '3.20.2',
   options,
   request,
 

@@ -174,6 +174,14 @@ class Payment {
       throw new Error('Cart not found');
     }
 
+    if (!cart.settings) {
+      const settings = await this.getSettings();
+
+      cart.settings = {
+        ...settings.store,
+      };
+    }
+
     return toSnake(cart);
   }
 
@@ -988,13 +996,9 @@ class StripeKlarnaPayment extends Payment {
 
   async tokenize() {
     const cart = await this.getCart();
-    const settings = await this.getSettings();
     const { source, error: sourceError } = await createKlarnaSource(
       this.stripe,
-      {
-        ...cart,
-        settings: settings.store,
-      },
+      cart,
     );
 
     if (sourceError) {
