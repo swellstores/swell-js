@@ -43,13 +43,9 @@ export default class StripeKlarnaPayment extends Payment {
 
   async tokenize() {
     const cart = await this.getCart();
-    const settings = await this.getSettings();
     const { source, error: sourceError } = await createKlarnaSource(
       this.stripe,
-      {
-        ...cart,
-        settings: settings.store,
-      },
+      cart,
     );
 
     if (sourceError) {

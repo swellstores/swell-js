@@ -30,6 +30,14 @@ export default class Payment {
       throw new Error('Cart not found');
     }
 
+    if (!cart.settings) {
+      const settings = await this.getSettings();
+
+      cart.settings = {
+        ...settings.store,
+      };
+    }
+
     return toSnake(cart);
   }
 
