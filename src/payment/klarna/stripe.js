@@ -2,7 +2,7 @@ import Payment from '../payment';
 import { createKlarnaSource } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
 } from '../../utils/errors';
 
 export default class StripeKlarnaPayment extends Payment {
@@ -30,7 +30,7 @@ export default class StripeKlarnaPayment extends Payment {
       }
 
       if (!StripeKlarnaPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 

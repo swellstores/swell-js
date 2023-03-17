@@ -9,6 +9,7 @@ const SCRIPT_HANDLERS = {
   'braintree-web-paypal-checkout': loadBraintreePaypalCheckout,
   'braintree-google-payment': loadBraintreeGoogle,
   'braintree-apple-payment': loadBraintreeApple,
+  'amazon-checkout': loadAmazonCheckout,
 };
 
 async function loadStripe() {
@@ -117,6 +118,19 @@ async function loadBraintreeApple() {
 
   if (window.braintree && !window.braintree.applePay) {
     console.error('Warning: Braintree Apple Payment was not loaded');
+  }
+}
+
+async function loadAmazonCheckout() {
+  if (!window.amazon) {
+    await loadScript(
+      'amazon-checkout',
+      'https://static-na.payments-amazon.com/checkout.js',
+    );
+  }
+
+  if (!window.amazon) {
+    console.error('Warning: Amazon Checkout was not loaded');
   }
 }
 

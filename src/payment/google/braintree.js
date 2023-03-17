@@ -2,7 +2,8 @@ import Payment from '../payment';
 import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
+  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const API_VERSION = 2;
@@ -32,7 +33,7 @@ export default class BraintreeGooglePayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -40,7 +41,7 @@ export default class BraintreeGooglePayment extends Payment {
 
   get google() {
     if (!window.google) {
-      throw new LibraryNotLoaded('Google');
+      throw new LibraryNotLoadedError('Google');
     }
 
     return window.google;
@@ -55,7 +56,7 @@ export default class BraintreeGooglePayment extends Payment {
       }
 
       if (!BraintreeGooglePayment.googleClient) {
-        throw new LibraryNotLoaded('Google client');
+        throw new LibraryNotLoadedError('Google client');
       }
     }
 
@@ -171,7 +172,7 @@ export default class BraintreeGooglePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {

@@ -32,9 +32,23 @@ export class UnableAuthenticatePaymentMethodError extends Error {
   }
 }
 
-export class LibraryNotLoaded extends Error {
+export class LibraryNotLoadedError extends Error {
   constructor(library) {
     const message = `${library} was not loaded`;
+    super(message);
+  }
+}
+
+export class MethodPropertyMissingError extends Error {
+  constructor(method, property) {
+    const message = `${method} ${property} is missing`;
+    super(message);
+  }
+}
+
+export class DomElementNotFoundError extends Error {
+  constructor(elementId) {
+    const message = `DOM element with '${elementId}' ID not found`;
     super(message);
   }
 }

@@ -2,7 +2,7 @@ import Payment from '../payment';
 import { createBancontactSource } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
 } from '../../utils/errors';
 
 export default class StripeBancontactPayment extends Payment {
@@ -30,7 +30,7 @@ export default class StripeBancontactPayment extends Payment {
       }
 
       if (!StripeBancontactPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 

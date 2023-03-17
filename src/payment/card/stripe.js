@@ -5,7 +5,7 @@ import {
   isStripeChargeableAmount,
   stripeAmountByCurrency,
 } from '../../utils/stripe';
-import { LibraryNotLoaded } from '../../utils/errors';
+import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class StripeCardPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -23,7 +23,7 @@ export default class StripeCardPayment extends Payment {
       }
 
       if (!StripeCardPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 

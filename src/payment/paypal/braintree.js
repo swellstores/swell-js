@@ -1,5 +1,5 @@
 import Payment from '../payment';
-import { LibraryNotLoaded } from '../../utils/errors';
+import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class BraintreePaypalPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -18,7 +18,7 @@ export default class BraintreePaypalPayment extends Payment {
 
   get paypal() {
     if (!window.paypal) {
-      throw new LibraryNotLoaded('PayPal');
+      throw new LibraryNotLoadedError('PayPal');
     }
 
     return window.paypal;
@@ -26,7 +26,7 @@ export default class BraintreePaypalPayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -34,7 +34,7 @@ export default class BraintreePaypalPayment extends Payment {
 
   get braintreePaypalCheckout() {
     if (!this.braintree.paypalCheckout) {
-      throw new LibraryNotLoaded('Braintree PayPal Checkout');
+      throw new LibraryNotLoadedError('Braintree PayPal Checkout');
     }
 
     return this.braintree.paypalCheckout;

@@ -1,7 +1,8 @@
 import Payment from '../payment';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
+  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const VERSION = 3;
@@ -26,7 +27,7 @@ export default class BraintreeApplePayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -34,7 +35,7 @@ export default class BraintreeApplePayment extends Payment {
 
   get ApplePaySession() {
     if (!window.ApplePaySession) {
-      throw new LibraryNotLoaded('Apple');
+      throw new LibraryNotLoadedError('Apple');
     }
 
     return window.ApplePaySession;
@@ -66,7 +67,7 @@ export default class BraintreeApplePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {

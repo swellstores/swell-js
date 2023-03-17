@@ -11,6 +11,7 @@ import QuickpayCardPayment from './card/quickpay';
 import PaysafecardDirectPayment from './paysafecard/paysafecard';
 import KlarnaDirectPayment from './klarna/klarna';
 import PaypalDirectPayment from './paypal/paypal';
+import AmazonDirectPayment from './amazon/amazon';
 import {
   PaymentMethodDisabledError,
   UnsupportedPaymentMethodError,
@@ -65,13 +66,17 @@ export default class PaymentController {
   }
 
   async handleRedirect(params = this.params) {
+    const queryParams = getLocationParams(window.location);
+
+    if (!queryParams || !queryParams.gateway) {
+      return;
+    }
+
     this.params = params;
 
     if (!params) {
       throw new Error('Redirect parameters are not provided');
     }
-
-    const queryParams = getLocationParams(window.location);
 
     removeUrlParams();
     this._performPaymentAction('handleRedirect', queryParams);
@@ -238,6 +243,8 @@ export default class PaymentController {
         return this._getGooglePaymentClass(gateway);
       case 'apple':
         return this._getApplePaymentClass(gateway);
+      case 'amazon':
+        return this._getAmazonPaymentClass(gateway);
       default:
         return null;
     }
@@ -318,6 +325,13 @@ export default class PaymentController {
         return BraintreeApplePayment;
       default:
         return null;
+    }
+  }
+
+  _getAmazonPaymentClass(gateway) {
+    switch (gateway) {
+      default:
+        return AmazonDirectPayment;
     }
   }
 }

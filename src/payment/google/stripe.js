@@ -2,7 +2,8 @@ import Payment from '../payment';
 import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
+  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const VERSION = '2018-10-31';
@@ -38,7 +39,7 @@ export default class StripeGooglePayment extends Payment {
 
   get google() {
     if (!window.google) {
-      throw new LibraryNotLoaded('Google');
+      throw new LibraryNotLoadedError('Google');
     }
 
     return window.google;
@@ -53,7 +54,7 @@ export default class StripeGooglePayment extends Payment {
       }
 
       if (!StripeGooglePayment.googleClient) {
-        throw new LibraryNotLoaded('Google client');
+        throw new LibraryNotLoadedError('Google client');
       }
     }
 
@@ -165,7 +166,7 @@ export default class StripeGooglePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {

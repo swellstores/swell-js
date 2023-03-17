@@ -1,6 +1,6 @@
 import Payment from '../payment';
 import { get } from '../../utils';
-import { LibraryNotLoaded } from '../../utils/errors';
+import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class PaypalDirectPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -24,7 +24,7 @@ export default class PaypalDirectPayment extends Payment {
 
   get paypal() {
     if (!window.paypal) {
-      throw new LibraryNotLoaded('PayPal');
+      throw new LibraryNotLoadedError('PayPal');
     }
 
     return window.paypal;
