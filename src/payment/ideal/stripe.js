@@ -6,7 +6,7 @@ import {
 } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
 } from '../../utils/errors';
 
 export default class StripeIDealPayment extends Payment {
@@ -34,7 +34,7 @@ export default class StripeIDealPayment extends Payment {
       }
 
       if (!StripeIDealPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 

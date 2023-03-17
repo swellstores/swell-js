@@ -1,4 +1,6 @@
 {
+  "clearMocks": true,
+  "restoreMocks": true,
   "setupFilesAfterEnv": ["<rootDir>/test/setup.js"],
   "testEnvironment": "node",
   "moduleNameMapper": {

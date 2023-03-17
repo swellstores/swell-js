@@ -30,6 +30,7 @@ import {
   InputPaymentElementPaypal,
   InputPaymentElementGoogle,
   InputPaymentElementApple,
+  InputPaymentElementAmazon,
   InputPaymentRedirect,
   Payment,
 } from './payment';
@@ -207,6 +208,7 @@ export namespace payment {
     paypal?: InputPaymentElementPaypal;
     google?: InputPaymentElementGoogle;
     apple?: InputPaymentElementApple;
+    amazon?: InputPaymentElementAmazon;
   }): Promise<void>;
   function tokenize(input: {
     card?: object;
@@ -214,11 +216,13 @@ export namespace payment {
     klarna?: object;
     bancontact?: object;
     paysafecard?: object;
+    amazon?: object;
   }): Promise<unknown>;
   function handleRedirect(input: {
     card?: InputPaymentRedirect;
     paysafecard?: InputPaymentRedirect;
     klarna?: InputPaymentRedirect;
+    amazon?: InputPaymentRedirect;
   }): Promise<unknown>;
   function authenticate(id: string): Promise<unknown>;
   function createIntent(input: {

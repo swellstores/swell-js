@@ -2,7 +2,8 @@ import Payment from '../payment';
 import { stripeAmountByCurrency } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
-  LibraryNotLoaded,
+  LibraryNotLoadedError,
+  DomElementNotFoundError,
 } from '../../utils/errors';
 
 export default class StripeApplePayment extends Payment {
@@ -30,7 +31,7 @@ export default class StripeApplePayment extends Payment {
       }
 
       if (!StripeApplePayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -106,7 +107,7 @@ export default class StripeApplePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     const button = this.stripe.elements().create('paymentRequestButton', {
