@@ -14,6 +14,7 @@ const SCRIPT_HANDLERS = {
   'braintree-web-paypal-checkout': loadBraintreePaypalCheckout,
   'braintree-google-payment': loadBraintreeGoogle,
   'braintree-apple-payment': loadBraintreeApple,
+  'amazon-checkout': loadAmazonCheckout,
 };
 
 async function loadStripe() {
@@ -122,6 +123,19 @@ async function loadBraintreeApple() {
 
   if (window.braintree && !window.braintree.applePay) {
     console.error('Warning: Braintree Apple Payment was not loaded');
+  }
+}
+
+async function loadAmazonCheckout() {
+  if (!window.amazon) {
+    await loadScript(
+      'amazon-checkout',
+      'https://static-na.payments-amazon.com/checkout.js',
+    );
+  }
+
+  if (!window.amazon) {
+    console.error('Warning: Amazon Checkout was not loaded');
   }
 }
 
@@ -624,9 +638,23 @@ class UnableAuthenticatePaymentMethodError extends Error {
   }
 }
 
-class LibraryNotLoaded extends Error {
+class LibraryNotLoadedError extends Error {
   constructor(library) {
     const message = `${library} was not loaded`;
+    super(message);
+  }
+}
+
+class MethodPropertyMissingError extends Error {
+  constructor(method, property) {
+    const message = `${method} ${property} is missing`;
+    super(message);
+  }
+}
+
+class DomElementNotFoundError extends Error {
+  constructor(elementId) {
+    const message = `DOM element with '${elementId}' ID not found`;
     super(message);
   }
 }
@@ -647,7 +675,7 @@ class StripeCardPayment extends Payment {
       }
 
       if (!StripeCardPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -813,7 +841,7 @@ class StripeIDealPayment extends Payment {
       }
 
       if (!StripeIDealPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -926,7 +954,7 @@ class StripeBancontactPayment extends Payment {
       }
 
       if (!StripeBancontactPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -983,7 +1011,7 @@ class StripeKlarnaPayment extends Payment {
       }
 
       if (!StripeKlarnaPayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -1048,7 +1076,7 @@ class StripeGooglePayment extends Payment {
 
   get google() {
     if (!window.google) {
-      throw new LibraryNotLoaded('Google');
+      throw new LibraryNotLoadedError('Google');
     }
 
     return window.google;
@@ -1063,7 +1091,7 @@ class StripeGooglePayment extends Payment {
       }
 
       if (!StripeGooglePayment.googleClient) {
-        throw new LibraryNotLoaded('Google client');
+        throw new LibraryNotLoadedError('Google client');
       }
     }
 
@@ -1175,7 +1203,7 @@ class StripeGooglePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {
@@ -1281,7 +1309,7 @@ class StripeApplePayment extends Payment {
       }
 
       if (!StripeApplePayment.stripe) {
-        throw new LibraryNotLoaded('Stripe');
+        throw new LibraryNotLoadedError('Stripe');
       }
     }
 
@@ -1357,7 +1385,7 @@ class StripeApplePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     const button = this.stripe.elements().create('paymentRequestButton', {
@@ -1550,7 +1578,7 @@ class BraintreePaypalPayment extends Payment {
 
   get paypal() {
     if (!window.paypal) {
-      throw new LibraryNotLoaded('PayPal');
+      throw new LibraryNotLoadedError('PayPal');
     }
 
     return window.paypal;
@@ -1558,7 +1586,7 @@ class BraintreePaypalPayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -1566,7 +1594,7 @@ class BraintreePaypalPayment extends Payment {
 
   get braintreePaypalCheckout() {
     if (!this.braintree.paypalCheckout) {
-      throw new LibraryNotLoaded('Braintree PayPal Checkout');
+      throw new LibraryNotLoadedError('Braintree PayPal Checkout');
     }
 
     return this.braintree.paypalCheckout;
@@ -1654,7 +1682,7 @@ class BraintreeGooglePayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -1662,7 +1690,7 @@ class BraintreeGooglePayment extends Payment {
 
   get google() {
     if (!window.google) {
-      throw new LibraryNotLoaded('Google');
+      throw new LibraryNotLoadedError('Google');
     }
 
     return window.google;
@@ -1677,7 +1705,7 @@ class BraintreeGooglePayment extends Payment {
       }
 
       if (!BraintreeGooglePayment.googleClient) {
-        throw new LibraryNotLoaded('Google client');
+        throw new LibraryNotLoadedError('Google client');
       }
     }
 
@@ -1793,7 +1821,7 @@ class BraintreeGooglePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {
@@ -1890,7 +1918,7 @@ class BraintreeApplePayment extends Payment {
 
   get braintree() {
     if (!window.braintree) {
-      throw new LibraryNotLoaded('Braintree');
+      throw new LibraryNotLoadedError('Braintree');
     }
 
     return window.braintree;
@@ -1898,7 +1926,7 @@ class BraintreeApplePayment extends Payment {
 
   get ApplePaySession() {
     if (!window.ApplePaySession) {
-      throw new LibraryNotLoaded('Apple');
+      throw new LibraryNotLoadedError('Apple');
     }
 
     return window.ApplePaySession;
@@ -1930,7 +1958,7 @@ class BraintreeApplePayment extends Payment {
     const container = document.getElementById(elementId);
 
     if (!container) {
-      throw new Error(`DOM element with '${elementId}' ID not found`);
+      throw new DomElementNotFoundError(elementId);
     }
 
     if (classes.base) {
@@ -2395,7 +2423,7 @@ class PaypalDirectPayment extends Payment {
 
   get paypal() {
     if (!window.paypal) {
-      throw new LibraryNotLoaded('PayPal');
+      throw new LibraryNotLoadedError('PayPal');
     }
 
     return window.paypal;
@@ -2476,6 +2504,187 @@ class PaypalDirectPayment extends Payment {
   }
 }
 
+class AmazonDirectPayment extends Payment {
+  constructor(request, options, params, methods) {
+    super(request, options, params, methods.amazon);
+  }
+
+  get scripts() {
+    return ['amazon-checkout'];
+  }
+
+  get amazon() {
+    if (!window.amazon) {
+      throw new LibraryNotLoadedError('Amazon');
+    }
+
+    return window.amazon;
+  }
+
+  get merchantId() {
+    const merchantId = this.method.merchant_id;
+
+    if (!merchantId) {
+      throw new MethodPropertyMissingError('Amazon', 'merchant_id');
+    }
+
+    return merchantId;
+  }
+
+  get publicKeyId() {
+    const publicKeyId = this.method.public_key_id;
+
+    if (!publicKeyId) {
+      throw new MethodPropertyMissingError('Amazon', 'public_key_id');
+    }
+
+    return publicKeyId;
+  }
+
+  get returnUrl() {
+    return `${
+      window.location.origin + window.location.pathname
+    }?gateway=amazon`;
+  }
+
+  async createElements() {
+    const cart = await this.getCart();
+    const returnUrl = this.returnUrl;
+    const isSubscription = Boolean(cart.subscription_delivery);
+    const session = await this.authorizeGateway({
+      gateway: 'amazon',
+      params: {
+        chargePermissionType: isSubscription ? 'Recurring' : 'OneTime',
+        ...(isSubscription
+          ? {
+              recurringMetadata: {
+                frequency: {
+                  unit: 'Variable',
+                  value: '0',
+                },
+              },
+            }
+          : {}),
+        webCheckoutDetails: {
+          checkoutReviewReturnUrl: `${returnUrl}&redirect_status=succeeded`,
+          checkoutCancelUrl: `${returnUrl}&redirect_status=canceled`,
+        },
+      },
+    });
+
+    this._renderButton(cart, session);
+  }
+
+  async tokenize() {
+    const cart = await this.getCart();
+    const returnUrl = this.returnUrl;
+    const checkoutSessionId = get(cart, 'billing.amazon.checkout_session_id');
+
+    if (!checkoutSessionId) {
+      throw new Error(
+        'Missing Amazon Pay checkout session ID (billing.amazon.checkout_session_id)',
+      );
+    }
+
+    const intent = await this.createIntent({
+      gateway: 'amazon',
+      intent: {
+        checkoutSessionId,
+        webCheckoutDetails: {
+          checkoutResultReturnUrl: `${returnUrl}&confirm=true&redirect_status=succeeded`,
+          checkoutCancelUrl: `${returnUrl}&redirect_status=canceled`,
+        },
+        paymentDetails:
+          cart.capture_total > 0
+            ? {
+                paymentIntent: 'Authorize',
+                canHandlePendingAuthorization: true,
+                chargeAmount: {
+                  amount: cart.capture_total,
+                  currencyCode: cart.currency,
+                },
+              }
+            : {
+                // Just confirm payment to save payment details when capture total amount is 0.
+                // e.g. trial subscription, 100% discount or items.price = 0
+                paymentIntent: 'Confirm',
+              },
+      },
+    });
+
+    return window.location.replace(intent.redirect_url);
+  }
+
+  async handleRedirect(queryParams) {
+    const { redirect_status } = queryParams;
+
+    switch (redirect_status) {
+      case 'succeeded':
+        return this._handleSuccessfulRedirect(queryParams);
+      case 'canceled':
+        throw new UnableAuthenticatePaymentMethodError();
+      default:
+        throw new Error(`Unknown redirect status: ${redirect_status}`);
+    }
+  }
+
+  _renderButton(cart, session) {
+    const amazon = this.amazon;
+    const merchantId = this.merchantId;
+    const publicKeyId = this.publicKeyId;
+    const { payload: payloadJSON, signature } = session;
+    const {
+      elementId = 'amazonpay-button',
+      locale = 'en_US',
+      placement = 'Checkout',
+      style: { color = 'Gold' } = {},
+      require: { shipping: requireShipping } = {},
+      classes = {},
+    } = this.params;
+
+    const container = document.getElementById(elementId);
+
+    if (!container) {
+      throw new DomElementNotFoundError(elementId);
+    }
+
+    amazon.Pay.renderButton(`#${elementId}`, {
+      ledgerCurrency: cart.currency,
+      checkoutLanguage: locale,
+      productType: Boolean(requireShipping) ? 'PayAndShip' : 'PayOnly',
+      buttonColor: color,
+      placement,
+      merchantId,
+      publicKeyId,
+      createCheckoutSessionConfig: {
+        payloadJSON,
+        signature,
+      },
+    });
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
+  }
+
+  async _handleSuccessfulRedirect(queryParams) {
+    const { confirm, amazonCheckoutSessionId } = queryParams;
+
+    if (!confirm) {
+      await this.updateCart({
+        billing: {
+          method: 'amazon',
+          amazon: {
+            checkout_session_id: amazonCheckoutSessionId,
+          },
+        },
+      });
+    }
+
+    this.onSuccess();
+  }
+}
+
 class PaymentController {
   constructor(request, options) {
     this.request = request;
@@ -2517,13 +2726,17 @@ class PaymentController {
   }
 
   async handleRedirect(params = this.params) {
+    const queryParams = getLocationParams(window.location);
+
+    if (!queryParams || !queryParams.gateway) {
+      return;
+    }
+
     this.params = params;
 
     if (!params) {
       throw new Error('Redirect parameters are not provided');
     }
-
-    const queryParams = getLocationParams(window.location);
 
     removeUrlParams();
     this._performPaymentAction('handleRedirect', queryParams);
@@ -2690,6 +2903,8 @@ class PaymentController {
         return this._getGooglePaymentClass(gateway);
       case 'apple':
         return this._getApplePaymentClass(gateway);
+      case 'amazon':
+        return this._getAmazonPaymentClass(gateway);
       default:
         return null;
     }
@@ -2770,6 +2985,13 @@ class PaymentController {
         return BraintreeApplePayment;
       default:
         return null;
+    }
+  }
+
+  _getAmazonPaymentClass(gateway) {
+    switch (gateway) {
+      default:
+        return AmazonDirectPayment;
     }
   }
 }
