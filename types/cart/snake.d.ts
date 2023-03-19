@@ -62,10 +62,11 @@ interface CartShipmentRatingSnake {
     id?: string
     name?: string
     carrier?: string
-    price?: string
+    price?: number
     pickup?: boolean
     tax_code?: string
-  }
+    description?: string
+  }[]
   errors?: [{
     message?: string
     code?: string
