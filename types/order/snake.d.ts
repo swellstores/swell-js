@@ -9,15 +9,16 @@ import { Billing } from '../billing';
 import { Coupon } from '../coupon';
 import { Promotion } from '../promotion';
 import { PurhcaseLink } from '../purchase_link';
+import { ShipmentRating } from '../shipment_rating';
 
 interface OrderOptionSnake {
-  id?: string
-  name?: string
-  price?: number
-  shipment_weight?: number
-  value?: string
-  variant?: boolean
-  value_id: string
+  id?: string;
+  name?: string;
+  price?: number;
+  shipment_weight?: number;
+  value?: string;
+  variant?: boolean;
+  value_id: string;
 }
 
 interface OrderItemSnake extends BaseModel {
@@ -51,32 +52,32 @@ interface OrderItemSnake extends BaseModel {
 }
 
 interface OrderShippingSnake {
-  name?: string
-  first_name?: string
-  last_name?: string
-  address1?: string
-  address2?: string
-  city?: string
-  state?: string
-  zip?: string
-  country?: string
-  phone?: string
-  service?: string
-  service_name?: string
-  price?: number
-  default?: boolean
-  account_address_id?: string
-  account_address?: any
-  pickup?: boolean
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  phone?: string;
+  service?: string;
+  service_name?: string;
+  price?: number;
+  default?: boolean;
+  account_address_id?: string;
+  account_address?: any;
+  pickup?: boolean;
 }
 
 interface OrderGiftCardSnake {
-  id?: string
-  amount?: number
-  code?: string
-  code_formatted?: string
-  last4?: string
-  giftcard?: any // TODO: complete this
+  id?: string;
+  amount?: number;
+  code?: string;
+  code_formatted?: string;
+  last4?: string;
+  giftcard?: any; // TODO: complete this
 }
 
 interface OrderSnake extends BaseModel {
@@ -180,22 +181,7 @@ interface OrderSnake extends BaseModel {
   shipment_delivery?: boolean;
   shipment_discount?: number;
   shipment_price?: number;
-  shipment_rating?: {
-    date_created?: string
-    errors?: {
-      code?: string
-      message?: string
-    }
-    fingerprint?: string
-    services?: {
-      id?: string
-      name?: string
-      carrier?: string
-      price?: string
-      pickup?: boolean
-      tax_code?: string
-    }
-  };
+  shipment_rating?: ShipmentRating;
   shipment_tax?: number;
   shipment_tax_included?: boolean;
   shipment_total?: number;
@@ -203,13 +189,13 @@ interface OrderSnake extends BaseModel {
   shipments?: object[];
   shipping?: OrderShipping;
   status?:
-  | 'pending'
-  | 'draft'
-  | 'payment_pending'
-  | 'delivery_pending'
-  | 'hold'
-  | 'complete'
-  | 'canceled';
+    | 'pending'
+    | 'draft'
+    | 'payment_pending'
+    | 'delivery_pending'
+    | 'hold'
+    | 'complete'
+    | 'canceled';
   sub_total?: number;
   subscription?: Subscription;
   subscription_delivery?: boolean;
