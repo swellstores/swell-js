@@ -30,9 +30,8 @@ import {
   InputPaymentElementPaypal,
   InputPaymentElementGoogle,
   InputPaymentElementApple,
-  InputPaymentElementAmazon,
-  InputPaymentRedirect,
   Payment,
+  InputPaymentRedirect
 } from './payment';
 import { Settings } from './settings';
 import { Subscription } from './subscription';
@@ -208,7 +207,6 @@ export namespace payment {
     paypal?: InputPaymentElementPaypal;
     google?: InputPaymentElementGoogle;
     apple?: InputPaymentElementApple;
-    amazon?: InputPaymentElementAmazon;
   }): Promise<void>;
   function tokenize(input: {
     card?: object;
@@ -222,7 +220,6 @@ export namespace payment {
     card?: InputPaymentRedirect;
     paysafecard?: InputPaymentRedirect;
     klarna?: InputPaymentRedirect;
-    amazon?: InputPaymentRedirect;
   }): Promise<unknown>;
   function authenticate(id: string): Promise<unknown>;
   function createIntent(input: {
@@ -245,6 +242,7 @@ export interface ProductQuery extends Query {
   $filters?: unknown;
   search?: string;
   where?: object;
+  include?: string[]
 }
 export namespace products {
   function categories(
