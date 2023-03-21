@@ -215,7 +215,6 @@ export default class BraintreeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'google',

@@ -174,8 +174,6 @@ export default class BraintreeApplePayment extends Payment {
       await this.updateCart({
         account: {
           email: shippingContact.emailAddress,
-          first_name: shippingContact.givenName,
-          last_name: shippingContact.familyName,
         },
         billing: {
           method: 'apple',
