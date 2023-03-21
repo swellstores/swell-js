@@ -1,6 +1,6 @@
 import { m as methods } from './cart-ff3e3ef6.js';
 import { m as methods$1 } from './settings-937b96f1.js';
-import { v as isFunction, w as isObject, I as loadScript, j as toSnake, b as cloneDeep, g as get, F as vaultRequest, p as pick, y as toLower, A as isEmpty, C as map, x as toNumber, D as reduce, J as isLiveMode, G as getLocationParams, H as removeUrlParams, t as toCamel } from './index-512fc30d.js';
+import { v as isFunction, w as isObject, I as loadScript, b as cloneDeep, g as get, j as toSnake, F as vaultRequest, p as pick, y as toLower, A as isEmpty, C as map, x as toNumber, D as reduce, J as isLiveMode, G as getLocationParams, H as removeUrlParams, t as toCamel } from './index-512fc30d.js';
 import 'qs';
 import 'deepmerge';
 import 'fast-case';
@@ -188,15 +188,7 @@ class Payment {
       throw new Error('Cart not found');
     }
 
-    if (!cart.settings) {
-      const settings = await this.getSettings();
-
-      cart.settings = {
-        ...settings.store,
-      };
-    }
-
-    return toSnake(cart);
+    return this._adjustCart(cart);
   }
 
   async updateCart(data) {
@@ -212,7 +204,11 @@ class Payment {
       }
     }
 
-    return methods(this.request, this.options).update(updateData);
+    const updatedCart = await methods(this.request, this.options).update(
+      updateData,
+    );
+
+    return this._adjustCart(updatedCart);
   }
 
   async getSettings() {
@@ -255,6 +251,20 @@ class Payment {
     }
 
     console.error(error.message);
+  }
+
+  async _adjustCart(cart) {
+    return this._ensureCartSettings(cart).then(toSnake);
+  }
+
+  async _ensureCartSettings(cart) {
+    if (cart.settings) {
+      return cart;
+    }
+
+    const settings = await this.getSettings();
+
+    return { ...cart, settings: { ...settings.store } };
   }
 
   async _vaultRequest(method, url, data) {
@@ -1248,7 +1258,6 @@ class StripeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'card',
@@ -1493,7 +1502,6 @@ class StripeApplePayment extends Payment {
   async _onPaymentMethod(event) {
     const {
       payerEmail,
-      payerName,
       paymentMethod: { id: paymentMethod, card, billing_details },
       shippingAddress,
       shippingOption,
@@ -1503,7 +1511,6 @@ class StripeApplePayment extends Payment {
 
     await this.updateCart({
       account: {
-        name: payerName,
         email: payerEmail,
       },
       ...(requireShipping && {
@@ -1864,7 +1871,6 @@ class BraintreeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'google',
@@ -2065,8 +2071,6 @@ class BraintreeApplePayment extends Payment {
       await this.updateCart({
         account: {
           email: shippingContact.emailAddress,
-          first_name: shippingContact.givenName,
-          last_name: shippingContact.familyName,
         },
         billing: {
           method: 'apple',
@@ -2700,7 +2704,7 @@ class PaymentController {
       return this.methodSettings;
     }
 
-    this.methodSettings = await request('get', '/payment/methods');
+    this.methodSettings = await this.request('get', '/payment/methods');
 
     return this.methodSettings;
   }

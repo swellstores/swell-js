@@ -6352,15 +6352,7 @@ class Payment {
       throw new Error('Cart not found');
     }
 
-    if (!cart.settings) {
-      const settings = await this.getSettings();
-
-      cart.settings = {
-        ...settings.store,
-      };
-    }
-
-    return toSnake(cart);
+    return this._adjustCart(cart);
   }
 
   async updateCart(data) {
@@ -6376,7 +6368,11 @@ class Payment {
       }
     }
 
-    return methods$8(this.request, this.options).update(updateData);
+    const updatedCart = await methods$8(this.request, this.options).update(
+      updateData,
+    );
+
+    return this._adjustCart(updatedCart);
   }
 
   async getSettings() {
@@ -6419,6 +6415,20 @@ class Payment {
     }
 
     console.error(error.message);
+  }
+
+  async _adjustCart(cart) {
+    return this._ensureCartSettings(cart).then(toSnake);
+  }
+
+  async _ensureCartSettings(cart) {
+    if (cart.settings) {
+      return cart;
+    }
+
+    const settings = await this.getSettings();
+
+    return { ...cart, settings: { ...settings.store } };
   }
 
   async _vaultRequest(method, url, data) {
@@ -7412,7 +7422,6 @@ class StripeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'card',
@@ -7657,7 +7666,6 @@ class StripeApplePayment extends Payment {
   async _onPaymentMethod(event) {
     const {
       payerEmail,
-      payerName,
       paymentMethod: { id: paymentMethod, card, billing_details },
       shippingAddress,
       shippingOption,
@@ -7667,7 +7675,6 @@ class StripeApplePayment extends Payment {
 
     await this.updateCart({
       account: {
-        name: payerName,
         email: payerEmail,
       },
       ...(requireShipping && {
@@ -8028,7 +8035,6 @@ class BraintreeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'google',
@@ -8229,8 +8235,6 @@ class BraintreeApplePayment extends Payment {
       await this.updateCart({
         account: {
           email: shippingContact.emailAddress,
-          first_name: shippingContact.givenName,
-          last_name: shippingContact.familyName,
         },
         billing: {
           method: 'apple',
@@ -8864,7 +8868,7 @@ class PaymentController {
       return this.methodSettings;
     }
 
-    this.methodSettings = await request('get', '/payment/methods');
+    this.methodSettings = await this.request('get', '/payment/methods');
 
     return this.methodSettings;
   }
@@ -9403,9 +9407,9 @@ const options = {
 };
 
 const api = {
-  version: '3.21.0',
+  version: '3.21.1',
   options,
-  request: request$1,
+  request,
 
   init(store, key, opt = {}) {
     options.key = key;
@@ -9434,53 +9438,53 @@ const api = {
   },
 
   get(url, query) {
-    return request$1('get', url, query);
+    return request('get', url, query);
   },
 
   put(url, data) {
-    return request$1('put', url, data);
+    return request('put', url, data);
   },
 
   post(url, data) {
-    return request$1('post', url, data);
+    return request('post', url, data);
   },
 
   delete(url, data) {
-    return request$1('delete', url, data);
+    return request('delete', url, data);
   },
 
   cache: cacheApi,
 
   card: cardApi,
 
-  cart: methods$8(request$1, options),
+  cart: methods$8(request, options),
 
-  account: methods$7(request$1),
+  account: methods$7(request),
 
-  products: methods$9(request$1, options),
+  products: methods$9(request, options),
 
-  categories: methods$6(request$1),
+  categories: methods$6(request),
 
-  attributes: methods$a(request$1),
+  attributes: methods$a(request),
 
-  subscriptions: methods$5(request$1),
+  subscriptions: methods$5(request),
 
-  invoices: methods$4(request$1),
+  invoices: methods$4(request),
 
-  content: methods$3(request$1, options),
+  content: methods$3(request, options),
 
-  settings: methods$2(request$1, options),
+  settings: methods$2(request, options),
 
-  payment: new PaymentController(request$1, options),
+  payment: new PaymentController(request, options),
 
-  locale: methods$1(request$1, options),
+  locale: methods$1(request, options),
 
-  currency: methods(request$1, options),
+  currency: methods(request, options),
 
   utils,
 };
 
-async function request$1(
+async function request(
   method,
   url,
   id = undefined,
