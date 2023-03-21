@@ -30,15 +30,7 @@ export default class Payment {
       throw new Error('Cart not found');
     }
 
-    if (!cart.settings) {
-      const settings = await this.getSettings();
-
-      cart.settings = {
-        ...settings.store,
-      };
-    }
-
-    return toSnake(cart);
+    return this._adjustCart(cart);
   }
 
   async updateCart(data) {
@@ -54,7 +46,11 @@ export default class Payment {
       }
     }
 
-    return cartApi(this.request, this.options).update(updateData);
+    const updatedCart = await cartApi(this.request, this.options).update(
+      updateData,
+    );
+
+    return this._adjustCart(updatedCart);
   }
 
   async getSettings() {
@@ -97,6 +93,20 @@ export default class Payment {
     }
 
     console.error(error.message);
+  }
+
+  async _adjustCart(cart) {
+    return this._ensureCartSettings(cart).then(toSnake);
+  }
+
+  async _ensureCartSettings(cart) {
+    if (cart.settings) {
+      return cart;
+    }
+
+    const settings = await this.getSettings();
+
+    return { ...cart, settings: { ...settings.store } };
   }
 
   async _vaultRequest(method, url, data) {

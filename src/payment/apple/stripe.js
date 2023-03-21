@@ -215,7 +215,6 @@ export default class StripeApplePayment extends Payment {
   async _onPaymentMethod(event) {
     const {
       payerEmail,
-      payerName,
       paymentMethod: { id: paymentMethod, card, billing_details },
       shippingAddress,
       shippingOption,
@@ -225,7 +224,6 @@ export default class StripeApplePayment extends Payment {
 
     await this.updateCart({
       account: {
-        name: payerName,
         email: payerEmail,
       },
       ...(requireShipping && {
