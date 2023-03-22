@@ -40,7 +40,7 @@ export default class PaymentController {
       return this.methodSettings;
     }
 
-    this.methodSettings = await request('get', '/payment/methods');
+    this.methodSettings = await this.request('get', '/payment/methods');
 
     return this.methodSettings;
   }

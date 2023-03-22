@@ -1,4 +1,11 @@
-import { BaseModel, CartGiftCardItem, CartItemOption, CartShipmentRating, CartShipping, Discount, Tax } from '../index';
+import {
+  BaseModel,
+  CartGiftCardItem,
+  CartItemOption,
+  CartShipping,
+  Discount,
+  Tax,
+} from '../index';
 import { Product, Variant } from '../product';
 import { Subscription } from '../subscription';
 import { Account } from '../account';
@@ -7,6 +14,7 @@ import { Coupon } from '../coupon';
 import { Billing } from '../billing';
 import { Promotion } from '../promotion';
 import { PurhcaseLink } from '../purchase_link';
+import { ShipmentRating } from '../shipment_rating';
 
 interface CartItemOptionsSnake {
   id?: string;
@@ -23,7 +31,8 @@ interface CartGiftCardItemSnake {
   code?: string;
   code_formatted?: string;
   giftcard?: string;
-  last4?; string
+  last4?;
+  string;
 }
 
 interface CartItemSnake extends BaseModel {
@@ -56,42 +65,24 @@ interface CartItemSnake extends BaseModel {
   variant?: Variant;
 }
 
-interface CartShipmentRatingSnake {
-  date_created?: string;
-  services?: {
-    id?: string
-    name?: string
-    carrier?: string
-    price?: number
-    pickup?: boolean
-    tax_code?: string
-    description?: string
-  }[]
-  errors?: [{
-    message?: string
-    code?: string
-  }]
-  md5?: string
-}
-
 interface CartShippingSnake {
-  name?: string
-  first_name?: string
-  last_name?: string
-  address1?: string
-  address2?: string
-  city?: string
-  state?: string
-  zip?: string
-  country?: string
-  phone?: string
-  service?: string
-  service_name?: string
-  price?: number
-  default?: boolean
-  account_address_id?: string
-  account_address?: any
-  pickup?: boolean
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  phone?: string;
+  service?: string;
+  service_name?: string;
+  price?: number;
+  default?: boolean;
+  account_address_id?: string;
+  account_address?: any;
+  pickup?: boolean;
 }
 
 interface CartSnake extends BaseModel {
@@ -150,7 +141,7 @@ interface CartSnake extends BaseModel {
   shipment_delivery?: boolean;
   shipment_discount?: number;
   shipment_price?: number;
-  shipment_rating?: CartShipmentRating;
+  shipment_rating?: ShipmentRating;
   shipment_tax?: number;
   shipment_tax_included?: boolean;
   shipment_total?: number;

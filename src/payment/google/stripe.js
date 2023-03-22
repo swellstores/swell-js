@@ -211,7 +211,6 @@ export default class StripeGooglePayment extends Payment {
     await this.updateCart({
       account: {
         email,
-        name: shippingAddress ? shippingAddress.name : billingAddress.name,
       },
       billing: {
         method: 'card',
