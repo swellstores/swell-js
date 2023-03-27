@@ -8,7 +8,7 @@ interface InvoiceItems extends BaseModel {
   delivery?: string;
   discount_total?: number;
   discount_each?: number;
-  discounts?: [object]; // TODO: Create Discount type
+  discounts?: Discount[];
   id?: string;
   product_id?: string;
   product?: Product;
@@ -42,7 +42,7 @@ interface InvoiceSnake extends BaseModel {
   subscription_id?: string;
   item_discount?: number;
   item_tax?: number;
-  items?: [InvoiceItems];
+  items?: InvoiceItems[];
   number?: string;
   notes?: string;
   order_id?: string;
