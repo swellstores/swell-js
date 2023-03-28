@@ -77,7 +77,7 @@ class Products extends React.Component {
       renderProducts: this.renderProducts.bind(this),
       onAddProduct: this.onAddProduct.bind(this),
       setProduct: this.setProduct.bind(this),
-      onСhangePage: this.onСhangePage.bind(this),
+      onChangePage: this.onChangePage.bind(this),
     };
   }
 
@@ -161,7 +161,7 @@ class Products extends React.Component {
     });
   }
 
-  onСhangePage(event, value) {
+  onChangePage(event, value) {
     this.loadProducts({ page: value });
   }
 
@@ -238,7 +238,7 @@ class Products extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { onСhangePage, renderProducts, pages, page } = this.state;
+    const { onChangePage, renderProducts, pages, page } = this.state;
 
     return (
       <div className={classes.root}>
@@ -251,7 +251,7 @@ class Products extends React.Component {
             shape="rounded"
             size="large"
             color="primary"
-            onChange={onСhangePage}
+            onChange={onChangePage}
           />
         )}
       </div>
