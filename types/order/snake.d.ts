@@ -189,13 +189,13 @@ interface OrderSnake extends BaseModel {
   shipments?: object[];
   shipping?: OrderShipping;
   status?:
-  | 'pending'
-  | 'draft'
-  | 'payment_pending'
-  | 'delivery_pending'
-  | 'hold'
-  | 'complete'
-  | 'canceled';
+    | 'pending'
+    | 'draft'
+    | 'payment_pending'
+    | 'delivery_pending'
+    | 'hold'
+    | 'complete'
+    | 'canceled';
   sub_total?: number;
   subscription?: Subscription;
   subscription_delivery?: boolean;

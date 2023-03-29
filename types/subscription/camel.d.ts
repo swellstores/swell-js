@@ -7,4 +7,4 @@ export type SubscriptionCamel = {
 
 export type SubscriptionBillingScheduleCamel = {
   [K in keyof SubscriptionBillingScheduleSnake as SnakeToCamelCase<K>]: SubscriptionBillingScheduleSnake[K];
-}
+};

@@ -1,4 +1,4 @@
-import { RefundCamel } from "./camel";
-import { RefundSnake } from "./snake";
+import { RefundCamel } from './camel';
+import { RefundSnake } from './snake';
 
-export interface Refund extends RefundSnake, RefundCamel { }
+export interface Refund extends RefundSnake, RefundCamel {}

@@ -1,8 +1,13 @@
 import { SnakeToCamelCase } from '..';
 import {
-  PaymentSnake, InputPaymentElementAppleSnake, InputPaymentElementBaseSnake, InputPaymentElementCardSnake,
+  PaymentSnake,
+  InputPaymentElementAppleSnake,
+  InputPaymentElementBaseSnake,
+  InputPaymentElementCardSnake,
   InputPaymentElementGoogleSnake,
-  InputPaymentElementIdealSnake, InputPaymentElementPaypalSnake, InputPaymentRedirectSnake
+  InputPaymentElementIdealSnake,
+  InputPaymentElementPaypalSnake,
+  InputPaymentRedirectSnake,
 } from './snake';
 
 export type PaymentCamel = {

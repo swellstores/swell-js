@@ -101,7 +101,10 @@ describe('products', () => {
     });
 
     it('should return product with default values (without price)', () => {
-      const mockProductWithoutPrice = { ...mockProductWithOptions, price: null };
+      const mockProductWithoutPrice = {
+        ...mockProductWithOptions,
+        price: null,
+      };
 
       const variation = methods.variation(mockProductWithoutPrice);
 
@@ -134,7 +137,10 @@ describe('products', () => {
     });
 
     it('should return product (without price) + option price with addon option', () => {
-      const mockProductWithoutPrice = { ...mockProductWithOptions, price: null };
+      const mockProductWithoutPrice = {
+        ...mockProductWithOptions,
+        price: null,
+      };
 
       const options = [{ id: 'z', value: 'stuff' }];
 

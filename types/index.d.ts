@@ -31,7 +31,7 @@ import {
   InputPaymentElementGoogle,
   InputPaymentElementApple,
   Payment,
-  InputPaymentRedirect
+  InputPaymentRedirect,
 } from './payment';
 import { Settings } from './settings';
 import { Subscription } from './subscription';
@@ -242,7 +242,7 @@ export interface ProductQuery extends Query {
   $filters?: unknown;
   search?: string;
   where?: object;
-  include?: string[]
+  include?: string[];
 }
 export namespace products {
   function categories(

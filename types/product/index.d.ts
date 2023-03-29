@@ -20,22 +20,21 @@ import {
   CrossSellCamel,
 } from './camel';
 
+export interface Product extends ProductSnake, ProductCamel {}
 
-export interface Product extends ProductSnake, ProductCamel { }
+export interface Variant extends VariantSnake, VariantCamel {}
 
-export interface Variant extends VariantSnake, VariantCamel { }
+export interface Image extends ImageSnake, ImageCamel {}
 
-export interface Image extends ImageSnake, ImageCamel { }
+export interface Price extends PriceSnake, PriceCamel {}
 
-export interface Price extends PriceSnake, PriceCamel { }
+export interface Upsell extends UpsellSnake, UpsellCamel {}
 
-export interface Upsell extends UpsellSnake, UpsellCamel { }
+export interface Bundle extends BundleSnake, BundleCamel {}
 
-export interface Bundle extends BundleSnake, BundleCamel { }
+export interface CrossSell extends CrossSellSnake, CrossSellCamel {}
 
-export interface CrossSell extends CrossSellSnake, CrossSellCamel { }
-
-export interface ProductOption extends ProductOptionSnake, ProductOptionCamel { }
+export interface ProductOption extends ProductOptionSnake, ProductOptionCamel {}
 export interface PriceRange {
   interval: number;
   max: number;

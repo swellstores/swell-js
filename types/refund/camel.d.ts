@@ -1,6 +1,6 @@
-import { SnakeToCamelCase } from "..";
-import { RefundSnake } from "./snake";
+import { SnakeToCamelCase } from '..';
+import { RefundSnake } from './snake';
 
 export type RefundCamel = {
-    [K in keyof RefundSnake as SnakeToCamelCase<K>]: RefundSnake[K];
+  [K in keyof RefundSnake as SnakeToCamelCase<K>]: RefundSnake[K];
 };
