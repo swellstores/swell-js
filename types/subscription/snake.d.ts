@@ -1,5 +1,11 @@
 import { Account } from '../account';
-import { BaseModel, Discount, Payment, SubscriptionBillingSchedule, Tax } from '../index';
+import {
+  BaseModel,
+  Discount,
+  Payment,
+  SubscriptionBillingSchedule,
+  Tax,
+} from '../index';
 import { Product, Variant } from '../product';
 import { Invoice } from '../invoice';
 import { Billing } from '../billing';
@@ -27,12 +33,12 @@ interface SubscriptionItems extends BaseModel {
 }
 
 interface SubscriptionBillingScheduleSnake {
-  interval?: 'daily' | 'weekly' | 'monthly' | 'yearly'
-  interval_count?: number
-  trial_days?: number
-  limit?: number
-  limit_current?: number
-  date_limit_end?: string
+  interval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval_count?: number;
+  trial_days?: number;
+  limit?: number;
+  limit_current?: number;
+  date_limit_end?: string;
 }
 
 interface SubscriptionSnake extends BaseModel {
@@ -115,14 +121,14 @@ interface SubscriptionSnake extends BaseModel {
   refunds?: Refund;
   refund_total?: number;
   status?:
-  | 'pending'
-  | 'active'
-  | 'trial'
-  | 'pastdue'
-  | 'unpaid'
-  | 'canceled'
-  | 'paid'
-  | 'complete';
+    | 'pending'
+    | 'active'
+    | 'trial'
+    | 'pastdue'
+    | 'unpaid'
+    | 'canceled'
+    | 'paid'
+    | 'complete';
   sub_total?: number;
   tax_included_total?: number;
   tax_total?: number;

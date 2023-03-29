@@ -44,7 +44,7 @@ interface PaymentSnake extends BaseModel {
 }
 
 interface InputPaymentElementBaseSnake {
-  element_id?: string
+  element_id?: string;
   on_change?: (event: unknown) => void; // optional, called when the Element value changes
   on_ready?: (event: unknown) => void; // optional, called when the Element is fully rendered
   on_focus?: (event: unknown) => void; // optional, called when the Element gains focus
@@ -56,7 +56,7 @@ interface InputPaymentElementBaseSnake {
 }
 
 interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
-  options?: any // https://stripe.com/docs/js/elements_object/create_element?type=card
+  options?: any; // https://stripe.com/docs/js/elements_object/create_element?type=card
   seperate_elements?: boolean;
   card_number?: {
     elementId?: string; // default: #card-element
@@ -72,16 +72,16 @@ interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
 
 interface InputPaymentElementIdealSnake extends InputPaymentElementBaseSnake {
   options?: {
-    style?: any
-  }
+    style?: any;
+  };
 }
 
 interface InputPaymentElementPaypalSnake extends InputPaymentElementBaseSnake {
-  style?: any // https://developer.paypal.com/docs/checkout/integration-features/customize-button/
+  style?: any; // https://developer.paypal.com/docs/checkout/integration-features/customize-button/
 }
 
 interface InputPaymentElementAppleSnake extends InputPaymentElementBaseSnake {
-  style?: any
+  style?: any;
   require?: {
     shipping?: boolean;
     name?: boolean;
@@ -89,18 +89,18 @@ interface InputPaymentElementAppleSnake extends InputPaymentElementBaseSnake {
     phone?: boolean;
   };
   classes?: {
-    base?: string
-    complete?: string
-    empty?: string
-    focus?: string
-    invalid?: string
-    webkit_autofill?: string
-  }
+    base?: string;
+    complete?: string;
+    empty?: string;
+    focus?: string;
+    invalid?: string;
+    webkit_autofill?: string;
+  };
 }
 
 interface InputPaymentElementGoogleSnake extends InputPaymentElementBaseSnake {
   locale?: string;
-  style?: any
+  style?: any;
   require?: {
     email?: boolean;
     shipping?: boolean;

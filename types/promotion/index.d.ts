@@ -1,4 +1,4 @@
-import { PromotionCamel } from "./camel";
-import { PromotionSnake } from "./snake";
+import { PromotionCamel } from './camel';
+import { PromotionSnake } from './snake';
 
-export interface Promotion extends PromotionCamel, PromotionSnake { }
+export interface Promotion extends PromotionCamel, PromotionSnake {}

@@ -1,4 +1,4 @@
-import { DiscountCamel } from "./camel";
-import { DiscountSnake } from "./snake";
+import { DiscountCamel } from './camel';
+import { DiscountSnake } from './snake';
 
-export interface Discount extends DiscountSnake, DiscountCamel { }
+export interface Discount extends DiscountSnake, DiscountCamel {}
