@@ -36,12 +36,12 @@ interface CartGiftCardItemSnake {
 }
 
 interface CartItemSnake extends BaseModel {
-  bundle_items?: [object];
+  bundle_items?: object[];
   delivery?: 'shipment' | 'subscription' | 'giftcard' | null;
   description?: string;
   discount_each?: number;
   discount_total?: number;
-  discounts?: [Discount];
+  discounts?: Discount[];
   metadata?: object;
   options?: CartItemOption[];
   orig_price?: number;
@@ -124,7 +124,7 @@ interface CartSnake extends BaseModel {
   item_shipment_weight?: number;
   item_tax?: number;
   item_tax_included?: boolean;
-  items?: [CartItemSnake];
+  items?: CartItemSnake[];
   metadata?: object;
   notes?: string;
   number?: string;
@@ -133,9 +133,9 @@ interface CartSnake extends BaseModel {
   orig_price?: number;
   promotion_ids?: any[];
   promotions?: Promotion[];
-  purchase_link_ids?: [string];
+  purchase_link_ids?: string[];
   purchase_links?: PurhcaseLink[];
-  purchase_links_errors?: [object];
+  purchase_links_errors?: object[];
   recovered?: boolean;
   schedule?: object;
   shipment_delivery?: boolean;
@@ -155,7 +155,7 @@ interface CartSnake extends BaseModel {
   target_order_id?: string;
   tax_included_total?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   taxes_fixed?: boolean;
   webhook_attempts_failed?: number;
   webhook_response?: string;

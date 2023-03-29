@@ -22,7 +22,7 @@ interface OrderOptionSnake {
 }
 
 interface OrderItemSnake extends BaseModel {
-  bundle_items?: [object];
+  bundle_items?: object[];
   delivery?: 'shipment' | 'subscription' | 'giftcard' | null;
   description?: string;
   discount_each?: number;
@@ -144,7 +144,7 @@ interface OrderSnake extends BaseModel {
   item_shipment_weight?: number;
   item_tax?: number;
   item_tax_included?: boolean;
-  items?: [OrderItemSnake];
+  items?: OrderItemSnake[];
   metadata?: object;
   next?: Order;
   next_id?: string;
@@ -189,20 +189,20 @@ interface OrderSnake extends BaseModel {
   shipments?: object[];
   shipping?: OrderShipping;
   status?:
-    | 'pending'
-    | 'draft'
-    | 'payment_pending'
-    | 'delivery_pending'
-    | 'hold'
-    | 'complete'
-    | 'canceled';
+  | 'pending'
+  | 'draft'
+  | 'payment_pending'
+  | 'delivery_pending'
+  | 'hold'
+  | 'complete'
+  | 'canceled';
   sub_total?: number;
   subscription?: Subscription;
   subscription_delivery?: boolean;
   subscription_id?: string;
   tax_included_total?: number;
   tax_total?: number;
-  taxes?: [Tax];
+  taxes?: Tax[];
   taxes_fixed?: boolean;
   test?: boolean;
   webhook_attempts_failed?: number;
