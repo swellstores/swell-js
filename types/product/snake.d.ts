@@ -169,7 +169,13 @@ export interface ProductSnake extends BaseModel {
   slug?: string;
   stock_level?: number;
   stock_purchasable?: boolean;
-  stock_status?: 'available' | 'preorder' | 'backorder';
+  stock_status?:
+    | 'discontinued'
+    | 'preorder'
+    | 'backorder'
+    | 'in_stock'
+    | 'out_of_stock'
+    | null;
   stock_tracking?: boolean;
   tags?: string[];
   up_sells?: Upsell[];
