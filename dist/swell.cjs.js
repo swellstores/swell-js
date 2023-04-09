@@ -9274,7 +9274,7 @@ function methods(request, opt) {
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
       const formatDecimals =
-        typeof params.decimals === 'number' ? params.decimals : decimals;
+        'decimals' in params ? params.decimals : decimals;
       const { convert = true } = params;
 
       let formatAmount = amount;
@@ -9407,7 +9407,7 @@ const options = {
 };
 
 const api = {
-  version: '3.21.3',
+  version: '3.21.5',
   options,
   request,
 

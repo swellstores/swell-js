@@ -147,6 +147,21 @@ describe('currency', () => {
       expect(formatted).toEqual('A$1.0000');
     });
 
+    it('should format currency value with default decimals', async () => {
+      let formatted = api.currency.format(1, {
+        code: 'CNY',
+      });
+
+      expect(formatted).toEqual('CN¥10.2500');
+
+      formatted = api.currency.format(1, {
+        code: 'CNY',
+        decimals: null,
+      });
+
+      expect(formatted).toEqual('CN¥10.25');
+    });
+
     it('should convert amount by explicit rate', async () => {
       const formatted = api.currency.format(1, { rate: 0.5 });
 

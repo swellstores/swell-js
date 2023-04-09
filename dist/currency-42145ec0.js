@@ -1,5 +1,8 @@
-import { get, find, round } from './utils';
-import { getCookie, setCookie } from './cookie';
+import 'qs';
+import { f as find, g as get, r as round } from './index-512fc30d.js';
+import 'deepmerge';
+import 'fast-case';
+import { g as getCookie, s as setCookie } from './cookie-b78058af.js';
 
 const FORMATTERS = {};
 
@@ -191,4 +194,4 @@ function methods(request, opt) {
   };
 }
 
-export default methods;
+export { methods as m };
