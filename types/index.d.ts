@@ -146,8 +146,8 @@ export namespace attributes {
 
 export namespace card {
   function createToken(input: InputCreateToken): Promise<TokenResponse>;
-  function validateCVC(input: string): boolean;
-  function validateExpiry(input: string): boolean;
+  function validateCVC(code: string): boolean;
+  function validateExpiry(month: string, year: string): boolean;
   function validateNumber(input: string): boolean;
 }
 
