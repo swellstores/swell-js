@@ -64,9 +64,11 @@ interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
   };
   card_expiry?: {
     elementId?: string; // default: #cardExpiry-element
+    options?: object;
   };
   card_cvc?: {
     elementId?: string; // default: #cardCvc-element
+    options?: object;
   };
 }
 
