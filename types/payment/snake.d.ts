@@ -57,7 +57,7 @@ interface InputPaymentElementBaseSnake {
 
 interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
   options?: any; // https://stripe.com/docs/js/elements_object/create_element?type=card
-  seperate_elements?: boolean;
+  separate_elements?: boolean;
   card_number?: {
     elementId?: string; // default: #card-element
     options?: object;
