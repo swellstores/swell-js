@@ -6054,7 +6054,7 @@ function methods$2(request, opt) {
           value: session,
         });
       } catch (err) {
-        console.error(`Swell: unable to loading settings (${err})`);
+        console.error(`Swell: unable to load settings (${err})`);
       }
     },
   };
@@ -9407,7 +9407,7 @@ const options = {
 };
 
 const api = {
-  version: '3.21.7',
+  version: '3.21.8',
   options,
   request,
 
