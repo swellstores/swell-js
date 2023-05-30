@@ -1,4 +1,9 @@
-import { createPaymentMethod, createIDealPaymentMethod } from './stripe';
+import {
+  createPaymentMethod,
+  createIDealPaymentMethod,
+  getKlarnaIntentDetails,
+  getKlarnaConfirmationDetails,
+} from './stripe';
 
 describe('utils/stripe', () => {
   describe('#createPaymentMethod', () => {
@@ -180,6 +185,107 @@ describe('utils/stripe', () => {
         cart,
       );
       expect(paymentMethod.error).toBe('Card error');
+    });
+  });
+
+  describe('#getKlarnaIntentDetails', () => {
+    it('should return intent details', () => {
+      const cart = {
+        account: { stripe_customer: 'cus_test' },
+        currency: 'USD',
+        capture_total: 100,
+      };
+      const result = getKlarnaIntentDetails(cart);
+
+      expect(result).toEqual({
+        payment_method_types: 'klarna',
+        currency: 'usd',
+        amount: 10000,
+        capture_method: 'manual',
+        customer: 'cus_test',
+      });
+    });
+
+    it('should return intent details without customer when cart account does not have a Stripe Customer', () => {
+      const cart = {
+        account: {},
+        currency: 'USD',
+        capture_total: 100,
+      };
+      const result = getKlarnaIntentDetails(cart);
+
+      expect(result).toEqual({
+        payment_method_types: 'klarna',
+        currency: 'usd',
+        amount: 10000,
+        capture_method: 'manual',
+      });
+    });
+
+    it('should return intent details without customer when cart account is not defined', () => {
+      const cart = {
+        currency: 'USD',
+        capture_total: 100,
+      };
+      const result = getKlarnaIntentDetails(cart);
+
+      expect(result).toEqual({
+        payment_method_types: 'klarna',
+        currency: 'usd',
+        amount: 10000,
+        capture_method: 'manual',
+      });
+    });
+  });
+
+  describe('#getKlarnaConfirmationDetails', () => {
+    beforeEach(() => {
+      global.window = {
+        location: {
+          origin: 'http://test.swell.test',
+          pathname: '/checkout',
+        },
+      };
+    });
+
+    afterEach(() => {
+      global.window = undefined;
+    });
+
+    it('should return confirmation details', () => {
+      const cart = {
+        account: { email: 'test@swell.is' },
+        billing: {
+          name: 'Test Person-us',
+          phone: '3106683312',
+          city: 'Beverly Hills',
+          country: 'US',
+          address1: 'Lombard St 10',
+          address2: 'Apt 214',
+          zip: '90210',
+          state: 'CA',
+        },
+      };
+      const result = getKlarnaConfirmationDetails(cart);
+
+      expect(result).toEqual({
+        payment_method: {
+          billing_details: {
+            address: {
+              city: 'Beverly Hills',
+              country: 'US',
+              line1: 'Lombard St 10',
+              line2: 'Apt 214',
+              postal_code: '90210',
+              state: 'CA',
+            },
+            email: 'test@swell.is',
+            name: 'Test Person-us',
+            phone: '3106683312',
+          },
+        },
+        return_url: 'http://test.swell.test/checkout?gateway=stripe',
+      });
     });
   });
 });
