@@ -13,6 +13,11 @@ const mockPayment = {
         return {
           redirect_url: 'https://www.amazon.com/',
         };
+      case 'stripe':
+        return {
+          id: 'test_stripe_intent_id',
+          client_secret: 'test_stripe_client_secret',
+        };
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }

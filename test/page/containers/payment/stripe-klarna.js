@@ -4,8 +4,6 @@ import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Button } from '@material-ui/core';
 import { get, isEqual } from 'lodash-es';
-import qs from 'qs';
-import { removeUrlParams } from '../../utils';
 import Info from '../../components/info';
 
 const styles = {
@@ -44,33 +42,16 @@ class StripeKlarna extends React.Component {
   }
 
   componentDidMount() {
-    const { cart, onCartUpdate, onError } = this.props;
-    const params = qs.parse(window.location.search);
-    if (cart.billing.method === 'klarna' && params.redirect_status) {
-      removeUrlParams();
-      if (params.redirect_status === 'succeeded') {
-        return onCartUpdate({
-          billing: {
-            ...cart.billing,
-            klarna: {
-              source: params.source,
-            },
-          },
-        });
-      } else if (params.redirect_status === 'canceled') {
-        onError('Your payment was canceled.');
-      } else {
-        onError(
-          'We are unable to authenticate your payment method. Please choose a different payment method and try again.',
-        );
-      }
-    }
+    const { api, onError } = this.props;
+    api.payment.handleRedirect({
+      klarna: { onError, onSuccess: () => this.setState({ tokenized: true }) },
+    });
   }
 
   onClickTokenize(event) {
+    event.preventDefault();
     const { api, onError } = this.props;
 
-    event.preventDefault();
     api.payment.tokenize({
       klarna: {
         onError,
@@ -79,7 +60,7 @@ class StripeKlarna extends React.Component {
   }
 
   isTokinized(cart) {
-    return !!get(cart, 'billing.klarna.source');
+    return !!get(cart, 'billing.klarna.token');
   }
 
   render() {
