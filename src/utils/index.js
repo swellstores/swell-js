@@ -217,14 +217,19 @@ function buildParams(key, obj, add) {
   let name;
   if (obj instanceof Array) {
     for (let i = 0; i < obj.length; i++) {
+      const value = obj[i];
+
       if (rbracket.test(key)) {
         // Treat each array item as a scalar.
-        add(key, v);
+        add(key, value);
       } else {
         // Item is non-scalar (array or object), encode its numeric index.
         buildParams(
-          key + '[' + (typeof v === 'object' && v != null ? i : '') + ']',
-          v,
+          key +
+            '[' +
+            (typeof value === 'object' && value != null ? i : '') +
+            ']',
+          value,
           add,
         );
       }
