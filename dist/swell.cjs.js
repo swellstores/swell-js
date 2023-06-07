@@ -6541,102 +6541,6 @@ function getBillingDetails(cart) {
   return details;
 }
 
-function getKlarnaItems(cart) {
-  const currency = toLower(get(cart, 'currency', 'eur'));
-  const items = map(cart.items, (item) => ({
-    type: 'sku',
-    description: item.product.name,
-    quantity: item.quantity,
-    currency,
-    amount: Math.round(toNumber(item.price_total - item.discount_total) * 100),
-  }));
-
-  const tax = get(cart, 'tax_included_total');
-  if (tax) {
-    items.push({
-      type: 'tax',
-      description: 'Taxes',
-      currency,
-      amount: Math.round(toNumber(tax) * 100),
-    });
-  }
-
-  const shipping = get(cart, 'shipping', {});
-  const shippingTotal = get(cart, 'shipment_total', {});
-  if (shipping.price) {
-    items.push({
-      type: 'shipping',
-      description: shipping.service_name,
-      currency,
-      amount: Math.round(toNumber(shippingTotal) * 100),
-    });
-  }
-
-  return items;
-}
-
-function setKlarnaBillingShipping(source, data) {
-  const shippingNameFieldsMap = {
-    shipping_first_name: 'first_name',
-    shipping_last_name: 'last_name',
-  };
-  const shippingFieldsMap = {
-    phone: 'phone',
-  };
-  const billingNameFieldsMap = {
-    first_name: 'first_name',
-    last_name: 'last_name',
-  };
-  const billingFieldsMap = {
-    email: 'email',
-  };
-
-  const fillValues = (fieldsMap, data) =>
-    reduce(
-      fieldsMap,
-      (acc, srcKey, destKey) => {
-        const value = data[srcKey];
-        if (value) {
-          acc[destKey] = value;
-        }
-        return acc;
-      },
-      {},
-    );
-
-  source.klarna = {
-    ...source.klarna,
-    ...fillValues(shippingNameFieldsMap, data.shipping),
-  };
-  const shipping = fillValues(shippingFieldsMap, data.shipping);
-  const shippingAddress = fillValues(addressFieldsMap$1, data.shipping);
-  if (shipping || shippingAddress) {
-    source.source_order.shipping = {
-      ...(shipping ? shipping : {}),
-      ...(shippingAddress ? { address: shippingAddress } : {}),
-    };
-  }
-
-  source.klarna = {
-    ...source.klarna,
-    ...fillValues(
-      billingNameFieldsMap,
-      data.billing || get(data, 'account.billing') || data.shipping,
-    ),
-  };
-  const billing = fillValues(billingFieldsMap, data.account);
-  const billingAddress = fillValues(
-    addressFieldsMap$1,
-    data.billing || get(data, 'account.billing') || data.shipping,
-  );
-  if (billing || billingAddress) {
-    source.owner = {
-      ...(billing ? billing : {}),
-      ...(billingAddress ? { address: billingAddress } : {}),
-    };
-  }
-}
-
 function setBancontactOwner(source, data) {
   const fillValues = (fieldsMap, data) =>
     reduce(
@@ -6719,26 +6623,37 @@ async function createIDealPaymentMethod(stripe, element, cart) {
   });
 }
 
-async function createKlarnaSource(stripe, cart) {
-  const sourceObject = {
-    type: 'klarna',
-    flow: 'redirect',
-    amount: Math.round(get(cart, 'grand_total', 0) * 100),
-    currency: toLower(get(cart, 'currency', 'eur')),
-    klarna: {
-      product: 'payment',
-      purchase_country: get(cart, 'settings.country', 'DE'),
-    },
-    source_order: {
-      items: getKlarnaItems(cart),
-    },
-    redirect: {
-      return_url: window.location.href,
-    },
+function getKlarnaIntentDetails(cart) {
+  const { account, currency, capture_total } = cart;
+  const stripeCustomer = account && account.stripe_customer;
+  const stripeCurrency = (currency || 'USD').toLowerCase();
+  const stripeAmount = stripeAmountByCurrency(currency, capture_total);
+  const details = {
+    payment_method_types: 'klarna',
+    amount: stripeAmount,
+    currency: stripeCurrency,
+    capture_method: 'manual',
   };
-  setKlarnaBillingShipping(sourceObject, cart);
 
-  return await stripe.createSource(sourceObject);
+  if (stripeCustomer) {
+    details.customer = stripeCustomer;
+  }
+
+  return details;
+}
+
+function getKlarnaConfirmationDetails(cart) {
+  const billingDetails = getBillingDetails(cart);
+  const returnUrl = `${
+    window.location.origin + window.location.pathname
+  }?gateway=stripe`;
+
+  return {
+    payment_method: {
+      billing_details: billingDetails,
+    },
+    return_url: returnUrl,
+  };
 }
 
 async function createBancontactSource(stripe, cart) {
@@ -7198,22 +7113,50 @@ class StripeKlarnaPayment extends Payment {
 
   async tokenize() {
     const cart = await this.getCart();
-    const { source, error: sourceError } = await createKlarnaSource(
-      this.stripe,
-      cart,
+    const intent = await this.createIntent({
+      gateway: 'stripe',
+      intent: getKlarnaIntentDetails(cart),
+    });
+    const { error } = await this.stripe.confirmKlarnaPayment(
+      intent.client_secret,
+      getKlarnaConfirmationDetails(cart),
     );
 
-    if (sourceError) {
-      throw new Error(sourceError.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async handleRedirect(queryParams) {
+    const { redirect_status, payment_intent_client_secret } = queryParams;
+
+    if (redirect_status !== 'succeeded') {
+      throw new UnableAuthenticatePaymentMethodError();
+    }
+
+    const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
+      payment_intent_client_secret,
+    );
+
+    if (error) {
+      throw new Error(error.message);
     }
 
     await this.updateCart({
       billing: {
         method: 'klarna',
+        klarna: {
+          token: paymentIntent.payment_method,
+        },
+        intent: {
+          stripe: {
+            id: paymentIntent.id,
+          },
+        },
       },
     });
 
-    window.location.replace(source.redirect.url);
+    this.onSuccess();
   }
 }
 
@@ -9407,7 +9350,7 @@ const options = {
 };
 
 const api = {
-  version: '3.21.8',
+  version: '3.21.9',
   options,
   request,
 
