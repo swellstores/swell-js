@@ -23,6 +23,19 @@ const mockPayment = {
     }
   }),
 
+  updateIntent: jest.fn((params) => {
+    const { gateway } = params;
+
+    switch (gateway) {
+      case 'paypal':
+        return {
+          id: 'paypal_order_id',
+        };
+      default:
+        throw new Error(`Unknown gateway: ${gateway}`);
+    }
+  }),
+
   authorizeGateway: jest.fn((params) => {
     const { gateway } = params;
 
@@ -32,12 +45,16 @@ const mockPayment = {
           payload: 'test_amazon_session_payload',
           signature: 'test_amazon_session_signature',
         };
+      case 'braintree':
+        return 'braintree_authorization';
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }
   }),
 
   onSuccess: jest.fn(),
+  onCancel: jest.fn(),
+  onError: jest.fn(),
 };
 
 export default mockPayment;

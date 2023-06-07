@@ -1,5 +1,8 @@
 import Payment from '../payment';
-import { LibraryNotLoadedError } from '../../utils/errors';
+import {
+  LibraryNotLoadedError,
+  DomElementNotFoundError,
+} from '../../utils/errors';
 
 export default class BraintreePaypalPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -10,7 +13,10 @@ export default class BraintreePaypalPayment extends Payment {
     const { client_id, merchant_id } = this.method;
 
     return [
-      { id: 'braintree-paypal-sdk', params: { client_id, merchant_id } },
+      {
+        id: 'braintree-paypal-sdk',
+        params: { client_id, merchant_id, cart: ['currency'] },
+      },
       'braintree-web',
       'braintree-web-paypal-checkout',
     ];
@@ -42,6 +48,25 @@ export default class BraintreePaypalPayment extends Payment {
 
   async createElements() {
     const cart = await this.getCart();
+    const {
+      elementId = 'paypal-button',
+      locale = 'en_US',
+      style: {
+        layout = 'horizontal',
+        height = 45,
+        color = 'gold',
+        shape = 'rect',
+        label = 'paypal',
+        tagline = false,
+      } = {},
+      classes = {},
+    } = this.params;
+    const container = document.getElementById(elementId);
+
+    if (!container) {
+      throw new DomElementNotFoundError(elementId);
+    }
+
     const authorization = await this.authorizeGateway({
       gateway: 'braintree',
     });
@@ -56,9 +81,23 @@ export default class BraintreePaypalPayment extends Payment {
     const paypalCheckout = await this.braintreePaypalCheckout.create({
       client: braintreeClient,
     });
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
+
     const button = this.paypal.Buttons({
-      style: this.params.style || {},
-      createBillingAgreement: this._onCreateBillingAgreement.bind(
+      locale,
+      style: {
+        layout,
+        height,
+        color,
+        shape,
+        label,
+        tagline,
+      },
+      fundingSource: this.paypal.FUNDING.PAYPAL,
+      createBillingAgreement: this._createBillingAgreement.bind(
         this,
         paypalCheckout,
         cart,
@@ -68,29 +107,59 @@ export default class BraintreePaypalPayment extends Payment {
       onError: this.onError.bind(this),
     });
 
-    button.render(this.params.elementId || '#paypal-button');
+    button.render(`#${elementId}`);
   }
 
-  _onCreateBillingAgreement(paypalCheckout, cart) {
+  _createBillingAgreement(paypalCheckout, cart) {
+    const { require: { shipping: requireShipping = true } = {} } = this.params;
+
     return paypalCheckout.createPayment({
       flow: 'vault',
-      currency: cart.currency,
       amount: cart.capture_total,
+      currency: cart.currency,
+      requestBillingAgreement: true,
+      enableShippingAddress: Boolean(requireShipping),
     });
   }
 
   async _onApprove(paypalCheckout, data, actions) {
-    const { nonce } = await paypalCheckout.tokenizePayment(data);
+    const { require: { shipping: requireShipping = true } = {} } = this.params;
+    const { details, nonce } = await paypalCheckout.tokenizePayment(data);
+    const { email, countryCode, firstName, lastName } = details;
 
     await this.updateCart({
+      account: {
+        email: email,
+      },
       billing: {
+        name: `${firstName} ${lastName}`,
+        first_name: firstName,
+        last_name: lastName,
+        country: countryCode,
         method: 'paypal',
         paypal: {
           nonce,
         },
       },
+      ...(requireShipping && {
+        shipping: {
+          name: details.shippingAddress.recipientName,
+          ...this._mapAddress(details.shippingAddress),
+        },
+      }),
     });
 
-    this.onSuccess(data, actions);
+    this.onSuccess();
+  }
+
+  _mapAddress(address) {
+    return {
+      address1: address.line1,
+      address2: address.line2,
+      state: address.state,
+      city: address.city,
+      zip: address.postalCode,
+      country: address.countryCode,
+    };
   }
 }
