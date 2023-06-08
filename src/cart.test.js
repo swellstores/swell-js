@@ -102,46 +102,73 @@ describe('cart', () => {
       );
     });
 
-    it('should wait until the first request/response before making subsequent calls', async () => {
+    it('should execute requests sequentially', async () => {
       fetch
         .mockResponseOnce(
-          () =>
-            new Promise((resolve) =>
-              setTimeout(
-                () => resolve({ body: JSON.stringify({ grand_total: 1000 }) }),
-                100,
-              ),
-            ),
+          () => new Promise((resolve) => {
+            setTimeout(() => resolve({ body: JSON.stringify({
+                ...api.cart.state,
+                grand_total: 1000,
+                index: 1
+              })
+            }), 100);
+          })
         )
         .mockResponseOnce(
-          () =>
-            new Promise((resolve) =>
-              resolve({
-                body: JSON.stringify({
-                  ...(api.cart.state || {}),
-                  waited: true,
-                }),
-              }),
-            ),
+          () => Promise.resolve({
+            body: JSON.stringify({
+              ...api.cart.state,
+              waited: true,
+              index: 2,
+            }),
+          }),
         )
         .mockResponseOnce(
-          () =>
-            new Promise((resolve) =>
-              resolve({
-                body: JSON.stringify({
-                  ...(api.cart.state || {}),
-                  again: true,
-                }),
-              }),
-            ),
+          () => new Promise((resolve) => {
+            setTimeout(() => resolve({ body: JSON.stringify({
+                ...api.cart.state,
+                index: 3
+              })
+            }), 100);
+          })
+        )
+        .mockResponseOnce(
+          () => Promise.resolve({
+            body: JSON.stringify({
+              ...api.cart.state,
+              index: 4,
+            }),
+          }),
+        )
+        .mockResponseOnce(
+          () => Promise.resolve({
+            body: JSON.stringify({
+              ...api.cart.state,
+              again: true,
+              index: 5
+            }),
+          }),
         );
 
       api.cart.state = null;
 
-      const [result1, result2] = await Promise.all([
+      await Promise.all([
         api.cart.addItem({ product_id: '123', options: { color: 'red' } }),
         api.cart.addItem({ product_id: '124', options: { color: 'blue' } }),
       ]);
+
+      expect(api.cart.state).toMatchObject({
+        index: 2,
+      });
+
+      await Promise.all([
+        api.cart.addItem({ product_id: '125', options: { color: 'green' } }),
+        api.cart.addItem({ product_id: '126', options: { color: 'white' } }),
+      ]);
+
+      expect(api.cart.state).toMatchObject({
+        index: 4,
+      });
 
       await api.cart.update({ again: true });
 
@@ -149,6 +176,7 @@ describe('cart', () => {
         grand_total: 1000,
         waited: true,
         again: true,
+        index: 5,
       });
     });
   });
