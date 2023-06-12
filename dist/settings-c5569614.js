@@ -1,13 +1,4 @@
-import {
-  get,
-  find,
-  set,
-  merge,
-  toCamel,
-  isObject,
-  cloneDeep,
-  camelCase,
-} from './utils';
+import { g as get, f as find, s as set, t as toCamel, m as merge, b as cloneDeep, w as isObject, c as camelCase } from './index-512fc30d.js';
 
 function methods(request, opt) {
   return {
@@ -300,4 +291,4 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
   }
 }
 
-export default methods;
+export { methods as m };

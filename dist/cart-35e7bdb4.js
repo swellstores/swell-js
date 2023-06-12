@@ -1,5 +1,8 @@
-import { cloneDeep } from './utils';
-import { cleanProductOptions } from './products';
+import 'qs';
+import { b as cloneDeep } from './index-ca9cb73c.js';
+import 'deepmerge';
+import 'fast-case';
+import { c as cleanProductOptions } from './products-d194c3c6.js';
 
 function methods(request, options) {
   return {
@@ -8,50 +11,36 @@ function methods(request, options) {
     settings: null,
     requested: false,
     pendingRequests: [],
-    cacheClear: false,
+    cacheClear: null,
 
     async requestStateChange(method, url, id, data) {
       return this.requestStateSync(async () => {
         const result = await request(method, url, id, data);
-
         if (result && result.errors) {
           return result;
         }
-
         this.state = result;
         return result;
       });
     },
 
-    nextRequest() {
-      if (this.pendingRequests.length <= 0) {
-        this.requested = false;
-        return;
-      }
-
-      const { handler, resolve, reject } = this.pendingRequests.shift();
-
-      return Promise.resolve().then(handler).then(resolve, reject).finally(() => {
-        this.nextRequest();
-      });
-    },
-
     async requestStateSync(handler) {
-      if (this.requested) {
-        return new Promise((resolve, reject) => {
-          this.pendingRequests.push({ handler, resolve, reject });
+      if (this.state) {
+        return await handler();
+      } else if (this.requested) {
+        return new Promise((resolve) => {
+          this.pendingRequests.push({ handler, resolve });
         });
       }
 
       this.requested = true;
-
-      try {
-        const result = await handler();
-
-        return result;
-      } finally {
-        this.nextRequest();
+      const result = await handler();
+      this.requested = false;
+      while (this.pendingRequests.length > 0) {
+        const { handler, resolve } = this.pendingRequests.shift();
+        resolve(handler());
       }
+      return result;
     },
 
     get() {
@@ -60,7 +49,7 @@ function methods(request, options) {
       }
       let data;
       if (this.cacheClear) {
-        this.cacheClear = false;
+        this.cacheClear = null;
         data = { $cache: false };
       }
       return this.requestStateChange('get', '/cart', undefined, data);
@@ -154,7 +143,7 @@ function methods(request, options) {
     },
 
     async submitOrder() {
-      const result = await this.requestStateChange('post', '/cart/order');
+      const result = await request('post', '/cart/order');
       if (result.errors) {
         return result;
       }
@@ -183,4 +172,4 @@ function methods(request, options) {
   };
 }
 
-export default methods;
+export { methods as m };

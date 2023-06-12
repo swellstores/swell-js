@@ -1,8 +1,12 @@
 import Payment from '../payment';
-import { createKlarnaSource } from '../../utils/stripe';
+import {
+  getKlarnaIntentDetails,
+  getKlarnaConfirmationDetails,
+} from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
+  UnableAuthenticatePaymentMethodError,
 } from '../../utils/errors';
 
 export default class StripeKlarnaPayment extends Payment {
@@ -43,21 +47,49 @@ export default class StripeKlarnaPayment extends Payment {
 
   async tokenize() {
     const cart = await this.getCart();
-    const { source, error: sourceError } = await createKlarnaSource(
-      this.stripe,
-      cart,
+    const intent = await this.createIntent({
+      gateway: 'stripe',
+      intent: getKlarnaIntentDetails(cart),
+    });
+    const { error } = await this.stripe.confirmKlarnaPayment(
+      intent.client_secret,
+      getKlarnaConfirmationDetails(cart),
     );
 
-    if (sourceError) {
-      throw new Error(sourceError.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async handleRedirect(queryParams) {
+    const { redirect_status, payment_intent_client_secret } = queryParams;
+
+    if (redirect_status !== 'succeeded') {
+      throw new UnableAuthenticatePaymentMethodError();
+    }
+
+    const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
+      payment_intent_client_secret,
+    );
+
+    if (error) {
+      throw new Error(error.message);
     }
 
     await this.updateCart({
       billing: {
         method: 'klarna',
+        klarna: {
+          token: paymentIntent.payment_method,
+        },
+        intent: {
+          stripe: {
+            id: paymentIntent.id,
+          },
+        },
       },
     });
 
-    window.location.replace(source.redirect.url);
+    this.onSuccess();
   }
 }

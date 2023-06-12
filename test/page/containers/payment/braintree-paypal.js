@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
@@ -12,7 +11,8 @@ class BraintreePayPal extends React.Component {
   }
 
   componentDidMount() {
-    const { api, onOrderSubmit, onError } = this.props;
+    const { api, cart, onOrderSubmit, onError } = this.props;
+
     api.payment.createElements({
       paypal: {
         style: {
@@ -21,6 +21,9 @@ class BraintreePayPal extends React.Component {
           shape: 'rect',
           label: 'buynow',
           tagline: false,
+        },
+        require: {
+          shipping: Boolean(cart.shipment_delivery),
         },
         onSuccess: () => onOrderSubmit(),
         onError: (err) => onError(err.message),
@@ -33,8 +36,12 @@ class BraintreePayPal extends React.Component {
   }
 }
 
-const mapStateToProps = ({ api }) => ({
+const mapStateToProps = ({ api, cart }) => ({
   api,
+  cart,
 });
 
-export default compose(connect(mapStateToProps), withStyles(styles))(BraintreePayPal);
+export default compose(
+  connect(mapStateToProps),
+  withStyles(styles),
+)(BraintreePayPal);

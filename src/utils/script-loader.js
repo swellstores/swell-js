@@ -12,6 +12,8 @@ const SCRIPT_HANDLERS = {
   'amazon-checkout': loadAmazonCheckout,
 };
 
+const BRAINTREE_VERSION = '3.91.0';
+
 async function loadStripe() {
   if (!window.Stripe || window.Stripe.version !== 3) {
     await loadScript('stripe-js', 'https://js.stripe.com/v3/');
@@ -32,9 +34,27 @@ async function loadStripe() {
 
 async function loadPaypal(params) {
   if (!window.paypal) {
+    const { currency, client_id, merchant_id } = params;
+    const paypalParams = {
+      currency,
+      'client-id': client_id,
+      commit: false,
+    };
+
+    if (merchant_id) {
+      // paypal express and ppcp onboarded
+      paypalParams['merchant-id'] = merchant_id;
+      paypalParams.intent = 'authorize';
+    } else {
+      // ppcp progressive
+      paypalParams.intent = 'capture';
+    }
+
+    const urlSearchParams = new URLSearchParams(paypalParams).toString();
+
     await loadScript(
       'paypal-sdk',
-      `https://www.paypal.com/sdk/js?currency=${params.currency}&client-id=${params.client_id}&merchant-id=${params.merchant_id}&intent=authorize&commit=false`,
+      `https://www.paypal.com/sdk/js?${urlSearchParams}`,
       {
         'data-partner-attribution-id': 'SwellCommerce_SP',
       },
@@ -60,7 +80,7 @@ async function loadBraintree() {
   if (!window.braintree) {
     await loadScript(
       'braintree-web',
-      'https://js.braintreegateway.com/web/3.73.1/js/client.min.js',
+      `https://js.braintreegateway.com/web/${BRAINTREE_VERSION}/js/client.min.js`,
     );
   }
 
@@ -71,9 +91,19 @@ async function loadBraintree() {
 
 async function loadBraintreePaypal(params) {
   if (!window.paypal) {
+    const { currency, client_id, merchant_id } = params;
+    const paypalParams = {
+      currency,
+      'client-id': client_id,
+      'merchant-id': merchant_id,
+      commit: false,
+      vault: true,
+    };
+    const urlSearchParams = new URLSearchParams(paypalParams).toString();
+
     await loadScript(
       'braintree-paypal-sdk',
-      `https://www.paypal.com/sdk/js?client-id=${params.client_id}&merchant-id=${params.merchant_id}&vault=true`,
+      `https://www.paypal.com/sdk/js?${urlSearchParams}`,
     );
   }
 
@@ -86,7 +116,7 @@ async function loadBraintreePaypalCheckout() {
   if (window.braintree && !window.braintree.paypalCheckout) {
     await loadScript(
       'braintree-web-paypal-checkout',
-      'https://js.braintreegateway.com/web/3.73.1/js/paypal-checkout.min.js',
+      `https://js.braintreegateway.com/web/${BRAINTREE_VERSION}/js/paypal-checkout.min.js`,
     );
   }
 
@@ -99,7 +129,7 @@ async function loadBraintreeGoogle() {
   if (window.braintree && !window.braintree.googlePayment) {
     await loadScript(
       'braintree-google-payment',
-      'https://js.braintreegateway.com/web/3.73.1/js/google-payment.min.js',
+      `https://js.braintreegateway.com/web/${BRAINTREE_VERSION}/js/google-payment.min.js`,
     );
   }
 
@@ -112,7 +142,7 @@ async function loadBraintreeApple() {
   if (window.braintree && !window.braintree.applePay) {
     await loadScript(
       'braintree-apple-payment',
-      'https://js.braintreegateway.com/web/3.73.1/js/apple-pay.min.js',
+      `https://js.braintreegateway.com/web/${BRAINTREE_VERSION}/js/apple-pay.min.js`,
     );
   }
 

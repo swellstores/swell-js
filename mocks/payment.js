@@ -13,6 +13,24 @@ const mockPayment = {
         return {
           redirect_url: 'https://www.amazon.com/',
         };
+      case 'stripe':
+        return {
+          id: 'test_stripe_intent_id',
+          client_secret: 'test_stripe_client_secret',
+        };
+      default:
+        throw new Error(`Unknown gateway: ${gateway}`);
+    }
+  }),
+
+  updateIntent: jest.fn((params) => {
+    const { gateway } = params;
+
+    switch (gateway) {
+      case 'paypal':
+        return {
+          id: 'paypal_order_id',
+        };
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }
@@ -27,12 +45,16 @@ const mockPayment = {
           payload: 'test_amazon_session_payload',
           signature: 'test_amazon_session_signature',
         };
+      case 'braintree':
+        return 'braintree_authorization';
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }
   }),
 
   onSuccess: jest.fn(),
+  onCancel: jest.fn(),
+  onError: jest.fn(),
 };
 
 export default mockPayment;
