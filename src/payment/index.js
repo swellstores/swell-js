@@ -12,6 +12,7 @@ import PaysafecardDirectPayment from './paysafecard/paysafecard';
 import KlarnaDirectPayment from './klarna/klarna';
 import PaypalDirectPayment from './paypal/paypal';
 import AmazonDirectPayment from './amazon/amazon';
+import { adjustParams, adjustMethodParams } from './utils';
 import {
   PaymentMethodDisabledError,
   UnsupportedPaymentMethodError,
@@ -130,28 +131,6 @@ export default class PaymentController {
     return this._vaultRequest('post', '/authorization', data);
   }
 
-  _normalizeParams() {
-    if (!this.params) {
-      return;
-    }
-
-    if (this.params.config) {
-      console.warn(
-        'Please move the "config" field to the payment method parameters ("card.config" or/and "ideal.config").',
-      );
-
-      if (this.params.card) {
-        this.params.card.config = this.params.config;
-      }
-
-      if (this.params.ideal) {
-        this.params.ideal.config = this.params.config;
-      }
-
-      delete this.params.config;
-    }
-  }
-
   async _getPaymentMethods() {
     const paymentMethods = await settingsApi(
       this.request,
@@ -186,16 +165,16 @@ export default class PaymentController {
 
   async _performPaymentAction(action, ...args) {
     const paymentMethods = await this._getPaymentMethods();
+    const params = adjustParams(this.params);
 
-    this._normalizeParams();
-
-    Object.entries(this.params).forEach(([method, params]) => {
+    Object.entries(params).forEach(([method, params]) => {
       const methodSettings = paymentMethods[method];
 
       if (!methodSettings) {
         return console.error(new PaymentMethodDisabledError(method));
       }
 
+      const methodParams = adjustMethodParams(params);
       const PaymentClass = this._getPaymentClass(
         method,
         methodSettings.gateway,
@@ -211,7 +190,7 @@ export default class PaymentController {
         const payment = new PaymentClass(
           this.request,
           this.options,
-          params,
+          methodParams,
           paymentMethods,
         );
 

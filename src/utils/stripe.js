@@ -108,6 +108,7 @@ function setBancontactOwner(source, data) {
 function createElement(type, elements, params) {
   const elementParams = params[type] || params;
   const elementOptions = elementParams.options || {};
+  const elementId = elementParams.elementId || `${type}-element`;
   const element = elements.create(type, elementOptions);
 
   elementParams.onChange && element.on('change', elementParams.onChange);
@@ -117,7 +118,7 @@ function createElement(type, elements, params) {
   elementParams.onEscape && element.on('escape', elementParams.onEscape);
   elementParams.onClick && element.on('click', elementParams.onClick);
 
-  element.mount(elementParams.elementId || `#${type}-element`);
+  element.mount(`#${elementId}`);
 
   return element;
 }
