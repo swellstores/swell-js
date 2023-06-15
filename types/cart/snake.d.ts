@@ -31,8 +31,7 @@ interface CartGiftCardItemSnake {
   code?: string;
   code_formatted?: string;
   giftcard?: string;
-  last4?;
-  string;
+  last4?: string;
 }
 
 interface CartItemSnake extends BaseModel {
