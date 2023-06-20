@@ -116,6 +116,7 @@ interface CartSnake extends BaseModel {
   giftcard_delivery?: boolean;
   giftcard_total?: number;
   giftcards?: CartGiftCardItem[];
+  capture_total?: number;
   grand_total?: number;
   guest?: boolean;
   item_discount?: number;
