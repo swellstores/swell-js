@@ -121,14 +121,14 @@ export namespace account {
   function createCard(input: Card): Promise<Card>;
   function deleteAddress(id: string): Promise<Address>;
   function deleteCard(id: string): Promise<Card>;
-  function get(): Promise<Account>;
+  function get(): Promise<Account | null>;
   function getAddresses(input: object): Promise<Address>;
   function getCards(input: object): Promise<Card[]>;
   function getOrder(id: string): Promise<Order>;
   function getOrders(): ResultsResponse<Promise<Order>>;
-  function listAddresses(): Promise<Address[]>;
+  function listAddresses(): Promise<ResultsResponse<Address>>;
   function listCards(): Promise<Card[]>;
-  function listOrders(input?: object): ResultsResponse<Promise<Order>>;
+  function listOrders(input?: object): Promise<ResultsResponse<Order>>;
   function login(
     user: string,
     password: string | PasswordTokenInput,
@@ -154,11 +154,13 @@ export namespace card {
 export namespace cart {
   function addItem(input: CartItem): Promise<Cart>;
   function applyCoupon(input: string): Promise<Cart>;
+  function applyGiftcard(input: string): Promise<Cart>;
   function get(input?: string): Promise<Cart | null>;
   function getSettings(): Promise<Settings>;
-  function getShippingRates(): Promise<ShipmentRating[]>;
+  function getShippingRates(): Promise<ShipmentRating>;
   function recover(input: string): Promise<Cart>;
   function removeCoupon(input: string): Promise<Cart>;
+  function removeGiftcard(input: string): Promise<Cart>;
   function removeItem(input: string): Promise<Cart>;
   function setItems(input: CartItem[]): Promise<Cart>;
   function submitOrder(): Promise<Order>;
