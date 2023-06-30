@@ -43,6 +43,8 @@ export default class StripeCardPayment extends Payment {
   }
 
   async createElements() {
+    await this.loadScripts(this.scripts);
+
     const elements = this.stripe.elements(this.params.config);
 
     if (this.params.separateElements) {
@@ -58,6 +60,8 @@ export default class StripeCardPayment extends Payment {
     if (!this.stripeElement) {
       throw new Error('Stripe payment element is not defined');
     }
+
+    await this.loadScripts(this.scripts);
 
     const cart = await this.getCart();
     const paymentMethod = await createPaymentMethod(
@@ -112,6 +116,8 @@ export default class StripeCardPayment extends Payment {
     if (intent.error) {
       throw new Error(intent.error.message);
     }
+
+    await this.loadScripts(this.scripts);
 
     return this._confirmCardPayment(intent);
   }

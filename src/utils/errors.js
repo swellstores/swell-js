@@ -52,3 +52,10 @@ export class DomElementNotFoundError extends Error {
     super(message);
   }
 }
+
+export class PaymentElementNotCreatedError extends Error {
+  constructor(methodName) {
+    const message = `The ${methodName} payment element was not created`;
+    super(message);
+  }
+}

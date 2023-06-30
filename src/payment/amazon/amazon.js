@@ -4,7 +4,6 @@ import {
   LibraryNotLoadedError,
   MethodPropertyMissingError,
   UnableAuthenticatePaymentMethodError,
-  DomElementNotFoundError,
 } from '../../utils/errors';
 
 export default class AmazonDirectPayment extends Payment {
@@ -51,31 +50,46 @@ export default class AmazonDirectPayment extends Payment {
   }
 
   async createElements() {
-    const cart = await this.getCart();
-    const returnUrl = this.returnUrl;
-    const isSubscription = Boolean(cart.subscription_delivery);
-    const session = await this.authorizeGateway({
-      gateway: 'amazon',
-      params: {
-        chargePermissionType: isSubscription ? 'Recurring' : 'OneTime',
-        ...(isSubscription
-          ? {
-              recurringMetadata: {
-                frequency: {
-                  unit: 'Variable',
-                  value: '0',
-                },
-              },
-            }
-          : {}),
-        webCheckoutDetails: {
-          checkoutReviewReturnUrl: `${returnUrl}&redirect_status=succeeded`,
-          checkoutCancelUrl: `${returnUrl}&redirect_status=canceled`,
-        },
-      },
-    });
+    const {
+      elementId = 'amazonpay-button',
+      locale = 'en_US',
+      placement = 'Checkout',
+      style: { color = 'Gold' } = {},
+      require: { shipping: requireShipping } = {},
+    } = this.params;
 
-    this._renderButton(cart, session);
+    this.setElementContainer(elementId);
+
+    const cart = await this.getCart();
+    const session = await this._createSession(cart);
+
+    await this.loadScripts(this.scripts);
+
+    this.element = {
+      ledgerCurrency: cart.currency,
+      checkoutLanguage: locale,
+      productType: Boolean(requireShipping) ? 'PayAndShip' : 'PayOnly',
+      buttonColor: color,
+      placement,
+      merchantId: this.merchantId,
+      publicKeyId: this.publicKeyId,
+      createCheckoutSessionConfig: {
+        payloadJSON: session.payload,
+        signature: session.signature,
+      },
+    };
+  }
+
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+    const amazon = this.amazon;
+
+    amazon.Pay.renderButton(`#${container.id}`, this.element);
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
   }
 
   async tokenize() {
@@ -131,43 +145,30 @@ export default class AmazonDirectPayment extends Payment {
     }
   }
 
-  _renderButton(cart, session) {
-    const amazon = this.amazon;
-    const merchantId = this.merchantId;
-    const publicKeyId = this.publicKeyId;
-    const { payload: payloadJSON, signature } = session;
-    const {
-      elementId = 'amazonpay-button',
-      locale = 'en_US',
-      placement = 'Checkout',
-      style: { color = 'Gold' } = {},
-      require: { shipping: requireShipping } = {},
-      classes = {},
-    } = this.params;
+  _createSession(cart) {
+    const returnUrl = this.returnUrl;
+    const isSubscription = Boolean(cart.subscription_delivery);
 
-    const container = document.getElementById(elementId);
-
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
-
-    amazon.Pay.renderButton(`#${elementId}`, {
-      ledgerCurrency: cart.currency,
-      checkoutLanguage: locale,
-      productType: Boolean(requireShipping) ? 'PayAndShip' : 'PayOnly',
-      buttonColor: color,
-      placement,
-      merchantId,
-      publicKeyId,
-      createCheckoutSessionConfig: {
-        payloadJSON,
-        signature,
+    return this.authorizeGateway({
+      gateway: 'amazon',
+      params: {
+        chargePermissionType: isSubscription ? 'Recurring' : 'OneTime',
+        ...(isSubscription
+          ? {
+              recurringMetadata: {
+                frequency: {
+                  unit: 'Variable',
+                  value: '0',
+                },
+              },
+            }
+          : {}),
+        webCheckoutDetails: {
+          checkoutReviewReturnUrl: `${returnUrl}&redirect_status=succeeded`,
+          checkoutCancelUrl: `${returnUrl}&redirect_status=canceled`,
+        },
       },
     });
-
-    if (classes.base) {
-      container.classList.add(classes.base);
-    }
   }
 
   async _handleSuccessfulRedirect(queryParams) {

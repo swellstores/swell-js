@@ -2,7 +2,6 @@ import Payment from '../payment';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
-  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const VERSION = 3;
@@ -42,6 +41,11 @@ export default class BraintreeApplePayment extends Payment {
   }
 
   async createElements() {
+    const { elementId = 'applepay-button' } = this.params;
+
+    this.setElementContainer(elementId);
+    await this.loadScripts(this.scripts);
+
     if (!this.ApplePaySession.canMakePayments()) {
       throw new Error(
         'This device is not capable of making Apple Pay payments',
@@ -55,24 +59,23 @@ export default class BraintreeApplePayment extends Payment {
     });
     const paymentRequest = await this._createPaymentRequest(cart, applePayment);
 
-    this._renderButton(applePayment, paymentRequest);
+    this.element = this._createButton(applePayment, paymentRequest);
   }
 
-  _renderButton(applePayment, paymentRequest) {
-    const {
-      elementId = 'applepay-button',
-      style: { type = 'plain', theme = 'black', height = '40px' } = {},
-      classes = {},
-    } = this.params;
-    const container = document.getElementById(elementId);
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
 
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
+    container.appendChild(this.element);
 
     if (classes.base) {
       container.classList.add(classes.base);
     }
+  }
+
+  _createButton(applePayment, paymentRequest) {
+    const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
+      this.params;
 
     const button = document.createElement('div');
 
@@ -86,7 +89,7 @@ export default class BraintreeApplePayment extends Payment {
       this._createPaymentSession.bind(this, applePayment, paymentRequest),
     );
 
-    container.appendChild(button);
+    return button;
   }
 
   async _createBraintreeClient() {

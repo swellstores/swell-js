@@ -1,8 +1,5 @@
 import Payment from '../payment';
-import {
-  LibraryNotLoadedError,
-  DomElementNotFoundError,
-} from '../../utils/errors';
+import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class BraintreePaypalPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -47,7 +44,6 @@ export default class BraintreePaypalPayment extends Payment {
   }
 
   async createElements() {
-    const cart = await this.getCart();
     const {
       elementId = 'paypal-button',
       locale = 'en_US',
@@ -59,13 +55,9 @@ export default class BraintreePaypalPayment extends Payment {
         label = 'paypal',
         tagline = false,
       } = {},
-      classes = {},
     } = this.params;
-    const container = document.getElementById(elementId);
 
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
+    this.setElementContainer(elementId);
 
     const authorization = await this.authorizeGateway({
       gateway: 'braintree',
@@ -75,18 +67,17 @@ export default class BraintreePaypalPayment extends Payment {
       throw new Error(authorization.error.message);
     }
 
+    await this.loadScripts(this.scripts);
+
     const braintreeClient = await this.braintree.client.create({
       authorization,
     });
     const paypalCheckout = await this.braintreePaypalCheckout.create({
       client: braintreeClient,
     });
+    const cart = await this.getCart();
 
-    if (classes.base) {
-      container.classList.add(classes.base);
-    }
-
-    const button = this.paypal.Buttons({
+    this.element = this.paypal.Buttons({
       locale,
       style: {
         layout,
@@ -106,8 +97,17 @@ export default class BraintreePaypalPayment extends Payment {
       onCancel: this.onCancel.bind(this),
       onError: this.onError.bind(this),
     });
+  }
 
-    button.render(`#${elementId}`);
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+
+    this.element.render(`#${container.id}`);
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
   }
 
   _createBillingAgreement(paypalCheckout, cart) {

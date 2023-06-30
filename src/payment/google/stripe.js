@@ -3,7 +3,6 @@ import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
-  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const VERSION = '2018-10-31';
@@ -103,9 +102,18 @@ export default class StripeGooglePayment extends Payment {
   }
 
   async createElements() {
+    const {
+      elementId = 'googlepay-button',
+      locale = 'en',
+      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
+    } = this.params;
+
     if (!this.method.merchant_id) {
       throw new Error('Google merchant ID is not defined');
     }
+
+    this.setElementContainer(elementId);
+    await this.loadScripts(this.scripts);
 
     const isReadyToPay = await this.googleClient.isReadyToPay({
       apiVersion: API_VERSION,
@@ -123,7 +131,24 @@ export default class StripeGooglePayment extends Payment {
     const cart = await this.getCart();
     const paymentRequestData = this._createPaymentRequestData(cart);
 
-    this._renderButton(paymentRequestData);
+    this.element = this.googleClient.createButton({
+      buttonColor: color,
+      buttonType: type,
+      buttonSizeMode: sizeMode,
+      buttonLocale: locale,
+      onClick: this._onClick.bind(this, paymentRequestData),
+    });
+  }
+
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+
+    container.appendChild(this.element);
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
   }
 
   _createPaymentRequestData(cart) {
@@ -153,35 +178,6 @@ export default class StripeGooglePayment extends Payment {
         merchantId: this.method.merchant_id,
       },
     };
-  }
-
-  _renderButton(paymentRequestData) {
-    const {
-      elementId = 'googlepay-button',
-      locale = 'en',
-      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
-      classes = {},
-    } = this.params;
-
-    const container = document.getElementById(elementId);
-
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
-
-    if (classes.base) {
-      container.classList.add(classes.base);
-    }
-
-    const button = this.googleClient.createButton({
-      buttonColor: color,
-      buttonType: type,
-      buttonSizeMode: sizeMode,
-      buttonLocale: locale,
-      onClick: this._onClick.bind(this, paymentRequestData),
-    });
-
-    container.appendChild(button);
   }
 
   async _onClick(paymentRequestData) {

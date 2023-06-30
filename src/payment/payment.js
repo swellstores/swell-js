@@ -9,13 +9,44 @@ import {
   cloneDeep,
 } from '../utils';
 import loadScripts from '../utils/script-loader';
+import {
+  DomElementNotFoundError,
+  PaymentElementNotCreatedError,
+} from '../utils/errors';
 
 export default class Payment {
+  _element = null;
+  _elementContainer = null;
+
   constructor(request, options, params, method) {
     this.request = request;
     this.options = options;
     this.params = params;
     this.method = method;
+  }
+
+  get element() {
+    if (!this._element) {
+      throw new PaymentElementNotCreatedError(this.method.name);
+    }
+
+    return this._element;
+  }
+
+  set element(element) {
+    this._element = element;
+  }
+
+  get elementContainer() {
+    return this._elementContainer;
+  }
+
+  setElementContainer(elementId) {
+    this._elementContainer = document.getElementById(elementId);
+
+    if (!this.elementContainer) {
+      throw new DomElementNotFoundError(elementId);
+    }
   }
 
   async loadScripts(scripts) {

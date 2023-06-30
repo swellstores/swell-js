@@ -42,6 +42,8 @@ export default class StripeBancontactPayment extends Payment {
   }
 
   async tokenize() {
+    await this.loadScripts(this.scripts);
+
     const cart = await this.getCart();
     const { source, error: sourceError } = await createBancontactSource(
       this.stripe,

@@ -38,7 +38,8 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
       };
 
       global.document = {
-        getElementById: jest.fn(() => ({
+        getElementById: jest.fn((elementId) => ({
+          id: elementId,
           classList: {
             add: jest.fn(),
           },
@@ -59,6 +60,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
       );
 
       await payment.createElements();
+      payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({
         gateway: 'amazon',
@@ -108,6 +110,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
       );
 
       await payment.createElements();
+      payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({
         gateway: 'amazon',
@@ -155,6 +158,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
       );
 
       await payment.createElements();
+      payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({
         gateway: 'amazon',
