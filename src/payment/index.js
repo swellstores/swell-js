@@ -215,7 +215,7 @@ export default class PaymentController {
 
         acc.push(paymentInstance);
       } catch (error) {
-        console.error(error.message);
+        console.error(error);
       }
 
       return acc;
