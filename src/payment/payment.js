@@ -25,6 +25,11 @@ export default class Payment {
     this.method = method;
   }
 
+  /**
+   * Returns a payment element.
+   *
+   * @returns {any}
+   */
   get element() {
     if (!this._element) {
       throw new PaymentElementNotCreatedError(this.method.name);
@@ -33,14 +38,29 @@ export default class Payment {
     return this._element;
   }
 
+  /**
+   * Sets a payment element.
+   *
+   * @param {any} element
+   */
   set element(element) {
     this._element = element;
   }
 
+  /**
+   * Returns a HTMLElement container of the payment element.
+   *
+   * @returns {HTMLElement}
+   */
   get elementContainer() {
     return this._elementContainer;
   }
 
+  /**
+   * Sets a HTMLElement container of the payment element.
+   *
+   * @param {string} elementId
+   */
   setElementContainer(elementId) {
     this._elementContainer = document.getElementById(elementId);
 
@@ -49,11 +69,21 @@ export default class Payment {
     }
   }
 
+  /**
+   * Loads payment scripts.
+   *
+   * @param {Array<string | object>} scripts
+   */
   async loadScripts(scripts) {
     await this._populateScriptsParams(scripts);
     await loadScripts(scripts);
   }
 
+  /**
+   * Returns a cart.
+   *
+   * @returns {object}
+   */
   async getCart() {
     const cart = await cartApi(this.request, this.options).get();
 
@@ -64,6 +94,12 @@ export default class Payment {
     return this._adjustCart(cart);
   }
 
+  /**
+   * Updates a cart.
+   *
+   * @param {object} data
+   * @returns {object}
+   */
   async updateCart(data) {
     const updateData = cloneDeep(data);
 
@@ -84,22 +120,51 @@ export default class Payment {
     return this._adjustCart(updatedCart);
   }
 
+  /**
+   * Returns the store settings.
+   *
+   * @returns {object}
+   */
   async getSettings() {
     return settingsApi(this.request, this.options).get();
   }
 
+  /**
+   * Creates a payment intent.
+   *
+   * @param {object} data
+   * @returns {object}
+   */
   async createIntent(data) {
     return this._vaultRequest('post', '/intent', data);
   }
 
+  /**
+   * Updates a payment intent.
+   *
+   * @param {object} data
+   * @returns {object}
+   */
   async updateIntent(data) {
     return this._vaultRequest('put', '/intent', data);
   }
 
+  /**
+   * Authorizes a payment gateway.
+   *
+   * @param {object} data
+   * @returns {object}
+   */
   async authorizeGateway(data) {
     return this._vaultRequest('post', '/authorization', data);
   }
 
+  /**
+   * Calls the onSuccess handler.
+   *
+   * @param {object | undefined} data
+   * @returns {any}
+   */
   onSuccess(data) {
     const successHandler = get(this.params, 'onSuccess');
 
@@ -108,6 +173,11 @@ export default class Payment {
     }
   }
 
+  /**
+   * Calls the onCancel handler.
+   *
+   * @returns {any}
+   */
   onCancel() {
     const cancelHandler = get(this.params, 'onCancel');
 
@@ -116,6 +186,12 @@ export default class Payment {
     }
   }
 
+  /**
+   * Calls the onError handler.
+   *
+   * @param {Error} error
+   * @returns {any}
+   */
   onError(error) {
     const errorHandler = get(this.params, 'onError');
 
@@ -126,10 +202,22 @@ export default class Payment {
     console.error(error.message);
   }
 
+  /**
+   * Adjusts cart data.
+   *
+   * @param {object} cart
+   * @returns {object}
+   */
   async _adjustCart(cart) {
     return this._ensureCartSettings(cart).then(toSnake);
   }
 
+  /**
+   * Sets the store settings to cart.
+   *
+   * @param {object} cart
+   * @returns {object}
+   */
   async _ensureCartSettings(cart) {
     if (cart.settings) {
       return cart;
@@ -140,6 +228,14 @@ export default class Payment {
     return { ...cart, settings: { ...settings.store } };
   }
 
+  /**
+   * Sends a Vault request.
+   *
+   * @param {string} method
+   * @param {string} url
+   * @param {object} data
+   * @returns {object}
+   */
   async _vaultRequest(method, url, data) {
     const response = await vaultRequest(method, url, data);
 
@@ -155,12 +251,22 @@ export default class Payment {
     return response;
   }
 
+  /**
+   * Sets values for payment scripts.
+   *
+   * @param {Array<string | object>} scripts
+   */
   async _populateScriptsParams(scripts = []) {
     for (const script of scripts) {
       await this._populateScriptWithCartParams(script);
     }
   }
 
+  /**
+   * Sets the cart values to the payment script params.
+   *
+   * @param {string | object} script
+   */
   async _populateScriptWithCartParams(script) {
     const cartParams = get(script, 'params.cart');
 
