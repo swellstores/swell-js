@@ -53,7 +53,12 @@ export default class PaymentController {
       throw new Error('Payment element parameters are not provided');
     }
 
-    this._performPaymentAction('createElements');
+    const paymentInstances = await this._createPaymentInstances();
+
+    await this._performPaymentAction(paymentInstances, 'createElements').then(
+      (paymentInstances) =>
+        this._performPaymentAction(paymentInstances, 'mountElements'),
+    );
   }
 
   async tokenize(params = this.params) {
@@ -63,7 +68,9 @@ export default class PaymentController {
       throw new Error('Tokenization parameters are not provided');
     }
 
-    this._performPaymentAction('tokenize');
+    const paymentInstances = await this._createPaymentInstances();
+
+    await this._performPaymentAction(paymentInstances, 'tokenize');
   }
 
   async handleRedirect(params = this.params) {
@@ -80,7 +87,14 @@ export default class PaymentController {
     }
 
     removeUrlParams();
-    this._performPaymentAction('handleRedirect', queryParams);
+
+    const paymentInstances = await this._createPaymentInstances();
+
+    await this._performPaymentAction(
+      paymentInstances,
+      'handleRedirect',
+      queryParams,
+    );
   }
 
   async authenticate(id) {
@@ -163,45 +177,70 @@ export default class PaymentController {
     return response;
   }
 
-  async _performPaymentAction(action, ...args) {
+  async _createPaymentInstances() {
     const paymentMethods = await this._getPaymentMethods();
     const params = adjustParams(this.params);
 
-    Object.entries(params).forEach(([method, params]) => {
+    return Object.entries(params).reduce((acc, [method, params]) => {
       const methodSettings = paymentMethods[method];
 
       if (!methodSettings) {
-        return console.error(new PaymentMethodDisabledError(method));
+        console.error(new PaymentMethodDisabledError(method));
+
+        return acc;
       }
 
-      const methodParams = adjustMethodParams(params);
       const PaymentClass = this._getPaymentClass(
         method,
         methodSettings.gateway,
       );
 
       if (!PaymentClass) {
-        return console.error(
+        console.error(
           new UnsupportedPaymentMethodError(method, methodSettings.gateway),
         );
+
+        return acc;
       }
 
+      const methodParams = adjustMethodParams(params);
+
       try {
-        const payment = new PaymentClass(
+        const paymentInstance = new PaymentClass(
           this.request,
           this.options,
           methodParams,
           paymentMethods,
         );
 
-        payment
-          .loadScripts(payment.scripts)
-          .then(payment[action].bind(payment, ...args))
-          .catch(payment.onError.bind(payment));
+        acc.push(paymentInstance);
       } catch (error) {
-        return console.error(error.message);
+        console.error(error);
       }
-    });
+
+      return acc;
+    }, []);
+  }
+
+  async _performPaymentAction(paymentInstances, action, ...args) {
+    const nextPaymentInstances = [];
+
+    for (const paymentInstance of paymentInstances) {
+      try {
+        const paymentAction = paymentInstance[action];
+
+        if (paymentAction) {
+          await paymentAction.call(paymentInstance, ...args);
+          nextPaymentInstances.push(paymentInstance);
+        }
+      } catch (error) {
+        const onPaymentError = paymentInstance.onError.bind(paymentInstance);
+
+        onPaymentError(error);
+      }
+    }
+
+    return nextPaymentInstances;
   }
 
   _getPaymentClass(method, gateway) {

@@ -3,7 +3,6 @@ import { stripeAmountByCurrency } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
-  DomElementNotFoundError,
 } from '../../utils/errors';
 
 export default class StripeApplePayment extends Payment {
@@ -43,6 +42,14 @@ export default class StripeApplePayment extends Payment {
   }
 
   async createElements() {
+    const {
+      elementId = 'applepay-button',
+      style: { type = 'default', theme = 'dark', height = '40px' } = {},
+      classes = {},
+    } = this.params;
+
+    this.setElementContainer(elementId);
+    await this.loadScripts(this.scripts);
     await this._authorizeDomain();
 
     const cart = await this.getCart();
@@ -55,7 +62,21 @@ export default class StripeApplePayment extends Payment {
       );
     }
 
-    this._renderButton(paymentRequest);
+    this.element = this.stripe.elements().create('paymentRequestButton', {
+      paymentRequest,
+      style: {
+        paymentRequestButton: {
+          type,
+          theme,
+          height,
+        },
+      },
+      classes,
+    });
+  }
+
+  mountElements() {
+    this.element.mount(`#${this.elementContainer.id}`);
   }
 
   async _authorizeDomain() {
@@ -95,34 +116,6 @@ export default class StripeApplePayment extends Payment {
     paymentRequest.on('paymentmethod', this._onPaymentMethod.bind(this));
 
     return paymentRequest;
-  }
-
-  _renderButton(paymentRequest) {
-    const {
-      elementId = 'applepay-button',
-      style: { type = 'default', theme = 'dark', height = '40px' } = {},
-      classes = {},
-    } = this.params;
-
-    const container = document.getElementById(elementId);
-
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
-
-    const button = this.stripe.elements().create('paymentRequestButton', {
-      paymentRequest,
-      style: {
-        paymentRequestButton: {
-          type,
-          theme,
-          height,
-        },
-      },
-      classes,
-    });
-
-    button.mount(`#${elementId}`);
   }
 
   _getPaymentRequestData(cart) {

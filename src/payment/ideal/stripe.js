@@ -54,6 +54,8 @@ export default class StripeIDealPayment extends Payment {
   }
 
   async createElements() {
+    await this.loadScripts(this.scripts);
+
     const elements = this.stripe.elements(this.params.config);
 
     this.stripeElement = createElement('idealBank', elements, this.params);
@@ -63,6 +65,8 @@ export default class StripeIDealPayment extends Payment {
     if (!this.stripeElement) {
       throw new Error('Stripe payment element is not defined');
     }
+
+    await this.loadScripts(this.scripts);
 
     const cart = await this.getCart();
     const { paymentMethod, error: paymentMethodError } =

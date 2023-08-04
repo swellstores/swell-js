@@ -1,4 +1,10 @@
 const mockPayment = {
+  setElementContainer: function (elementId) {
+    this.elementContainer = document.getElementById(elementId);
+  },
+
+  loadScripts: jest.fn(),
+
   getCart: jest.fn(() => {
     return Promise.resolve({});
   }),
@@ -17,6 +23,10 @@ const mockPayment = {
         return {
           id: 'test_stripe_intent_id',
           client_secret: 'test_stripe_client_secret',
+        };
+      case 'paypal':
+        return {
+          id: 'paypal_order_id',
         };
       default:
         throw new Error(`Unknown gateway: ${gateway}`);

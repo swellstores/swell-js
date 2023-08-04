@@ -3,7 +3,6 @@ import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
-  DomElementNotFoundError,
 } from '../../utils/errors';
 
 const API_VERSION = 2;
@@ -87,9 +86,18 @@ export default class BraintreeGooglePayment extends Payment {
   }
 
   async createElements() {
+    const {
+      elementId = 'googlepay-button',
+      locale = 'en',
+      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
+    } = this.params;
+
     if (!this.method.merchant_id) {
       throw new Error('Google merchant ID is not defined');
     }
+
+    this.setElementContainer(elementId);
+    await this.loadScripts(this.scripts);
 
     const isReadyToPay = await this.googleClient.isReadyToPay({
       apiVersion: API_VERSION,
@@ -115,7 +123,24 @@ export default class BraintreeGooglePayment extends Payment {
     const paymentDataRequest =
       googlePayment.createPaymentDataRequest(paymentRequestData);
 
-    this._renderButton(googlePayment, paymentDataRequest);
+    this.element = this.googleClient.createButton({
+      buttonColor: color,
+      buttonType: type,
+      buttonSizeMode: sizeMode,
+      buttonLocale: locale,
+      onClick: this._onClick.bind(this, googlePayment, paymentDataRequest),
+    });
+  }
+
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+
+    container.appendChild(this.element);
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
   }
 
   async _createBraintreeClient() {
@@ -159,35 +184,6 @@ export default class BraintreeGooglePayment extends Payment {
         merchantId: this.method.merchant_id,
       },
     };
-  }
-
-  _renderButton(googlePayment, paymentDataRequest) {
-    const {
-      elementId = 'googlepay-button',
-      locale = 'en',
-      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
-      classes = {},
-    } = this.params;
-
-    const container = document.getElementById(elementId);
-
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
-
-    if (classes.base) {
-      container.classList.add(classes.base);
-    }
-
-    const button = this.googleClient.createButton({
-      buttonColor: color,
-      buttonType: type,
-      buttonSizeMode: sizeMode,
-      buttonLocale: locale,
-      onClick: this._onClick.bind(this, googlePayment, paymentDataRequest),
-    });
-
-    container.appendChild(button);
   }
 
   async _onClick(googlePayment, paymentDataRequest) {

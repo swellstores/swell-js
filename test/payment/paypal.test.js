@@ -129,10 +129,11 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         };
 
         global.document = {
-          getElementById: jest.fn(() => {
+          getElementById: jest.fn((elementId) => {
             addClassMock = jest.fn();
 
             return {
+              id: elementId,
               classList: {
                 add: addClassMock,
               },
@@ -154,6 +155,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         );
 
         await payment.createElements();
+        payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
           locale: 'de_DE',
@@ -194,6 +196,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         );
 
         await payment.createElements();
+        payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
           locale: 'en_US',
@@ -731,10 +734,11 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         };
 
         global.document = {
-          getElementById: jest.fn(() => {
+          getElementById: jest.fn((elementId) => {
             addClassMock = jest.fn();
 
             return {
+              id: elementId,
               classList: {
                 add: addClassMock,
               },
@@ -752,6 +756,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         );
 
         await payment.createElements();
+        payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
           fundingSource: 'paypal',
@@ -798,6 +803,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         );
 
         await payment.createElements();
+        payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
           fundingSource: 'paypal',

@@ -1,9 +1,6 @@
 import Payment from '../payment';
 import { get, isEmpty } from '../../utils';
-import {
-  LibraryNotLoadedError,
-  DomElementNotFoundError,
-} from '../../utils/errors';
+import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class PaypalDirectPayment extends Payment {
   constructor(request, options, params, methods) {
@@ -46,21 +43,6 @@ export default class PaypalDirectPayment extends Payment {
   }
 
   async createElements() {
-    const cart = await this.getCart();
-    const hasSubscriptionProduct = Boolean(cart.subscription_delivery);
-
-    if (hasSubscriptionProduct && !this.method.ppcp) {
-      throw new Error(
-        'Subscriptions are only supported by PayPal Commerce Platform. See Payment settings in the Swell dashboard to enable PayPal Commerce Platform',
-      );
-    }
-
-    if (!(cart.capture_total > 0)) {
-      throw new Error(
-        'Invalid PayPal button amount. Value should be greater than zero.',
-      );
-    }
-
     const {
       elementId = 'paypal-button',
       locale = 'en_US',
@@ -72,15 +54,16 @@ export default class PaypalDirectPayment extends Payment {
         label = 'paypal',
         tagline = false,
       } = {},
-      classes = {},
     } = this.params;
-    const container = document.getElementById(elementId);
 
-    if (!container) {
-      throw new DomElementNotFoundError(elementId);
-    }
+    this.setElementContainer(elementId);
 
-    const button = this.paypal.Buttons({
+    const cart = await this.getCart();
+
+    this._validateCart(cart);
+    await this.loadScripts(this.scripts);
+
+    this.element = this.paypal.Buttons({
       locale,
       style: {
         layout,
@@ -95,11 +78,32 @@ export default class PaypalDirectPayment extends Payment {
       onApprove: this._onApprove.bind(this),
       onError: this.onError.bind(this),
     });
+  }
 
-    button.render(`#${elementId}`);
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+
+    this.element.render(`#${container.id}`);
 
     if (classes.base) {
       container.classList.add(classes.base);
+    }
+  }
+
+  _validateCart(cart) {
+    const hasSubscriptionProduct = Boolean(cart.subscription_delivery);
+
+    if (hasSubscriptionProduct && !this.method.ppcp) {
+      throw new Error(
+        'Subscriptions are only supported by PayPal Commerce Platform. See Payment settings in the Swell dashboard to enable PayPal Commerce Platform',
+      );
+    }
+
+    if (!(cart.capture_total > 0)) {
+      throw new Error(
+        'Invalid PayPal button amount. Value should be greater than zero.',
+      );
     }
   }
 

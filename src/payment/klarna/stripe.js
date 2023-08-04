@@ -51,6 +51,9 @@ export default class StripeKlarnaPayment extends Payment {
       gateway: 'stripe',
       intent: getKlarnaIntentDetails(cart),
     });
+
+    await this.loadScripts(this.scripts);
+
     const { error } = await this.stripe.confirmKlarnaPayment(
       intent.client_secret,
       getKlarnaConfirmationDetails(cart),
