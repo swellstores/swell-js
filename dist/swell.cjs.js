@@ -7339,6 +7339,8 @@ class StripeKlarnaPayment extends Payment {
       throw new UnableAuthenticatePaymentMethodError();
     }
 
+    await this.loadScripts(this.scripts);
+
     const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
       payment_intent_client_secret,
     );
@@ -9867,7 +9869,7 @@ const options = {
 };
 
 const api = {
-  version: '3.22.2',
+  version: '3.22.3',
   options,
   request,
 
