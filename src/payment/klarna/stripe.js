@@ -71,6 +71,8 @@ export default class StripeKlarnaPayment extends Payment {
       throw new UnableAuthenticatePaymentMethodError();
     }
 
+    await this.loadScripts(this.scripts);
+
     const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
       payment_intent_client_secret,
     );
