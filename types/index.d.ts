@@ -166,6 +166,7 @@ export namespace cart {
   function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;
+  function getOrder(input?: string): Promise<Order>
 }
 
 export namespace categories {
