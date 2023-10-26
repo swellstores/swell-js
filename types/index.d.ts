@@ -88,11 +88,12 @@ export interface ResultsResponse<T> {
   count: number;
   page: number;
   pages?: {
-    [index: number]: {
-      start: number;
-      end: number;
-    };
+      [index: number]: {
+          start: number;
+          end: number;
+      };
   };
+  page_count?: number;
   results: Array<T>;
 }
 
@@ -166,7 +167,7 @@ export namespace cart {
   function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;
-  function getOrder(input?: string): Promise<Order>
+  function getOrder(checkoutId?: string): Promise<Order>
 }
 
 export namespace categories {
