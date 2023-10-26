@@ -60,7 +60,7 @@ interface ProductOptionSnake {
     | 'select'
     | 'multi_select'
     | 'file'
-    | 'muti_file';
+    | 'multi_file';
   name?: string;
   parent_id?: string;
   parent_value_ids?: string[];
