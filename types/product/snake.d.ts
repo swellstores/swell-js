@@ -60,7 +60,7 @@ interface ProductOptionSnake {
     | 'select'
     | 'multi_select'
     | 'file'
-    | 'muti_file';
+    | 'multi_file';
   name?: string;
   parent_id?: string;
   parent_value_ids?: string[];
@@ -124,7 +124,7 @@ interface VariantSnake extends BaseModel {
 
 export interface ProductSnake extends BaseModel {
   active?: boolean;
-  attributes?: Attribute[];
+  attributes?: Record<string, AttributeSnake>;
   bundle?: boolean;
   bundle_items?: Bundle[];
   category?: unknown;
