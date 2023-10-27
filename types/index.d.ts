@@ -88,10 +88,10 @@ export interface ResultsResponse<T> {
   count: number;
   page: number;
   pages?: {
-      [index: number]: {
-          start: number;
-          end: number;
-      };
+    [index: number]: {
+        start: number;
+        end: number;
+    };
   };
   page_count?: number;
   results: Array<T>;
