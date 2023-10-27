@@ -93,6 +93,7 @@ export interface ResultsResponse<T> {
       end: number;
     };
   };
+  page_count?: number;
   results: Array<T>;
 }
 
@@ -166,6 +167,7 @@ export namespace cart {
   function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;
+  function getOrder(checkoutId?: string): Promise<Order>
 }
 
 export namespace categories {
