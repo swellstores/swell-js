@@ -135,6 +135,34 @@ describe('api', () => {
       await api.request('get', '/test');
       expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
     });
+
+    it('should allow custom cookie handler', async () => {
+      const cookies = {}
+
+      const handlers = {
+        getCookie(name) {
+          return cookies[name]
+        },
+        setCookie(name, value) {
+          cookies[name] = value
+        },
+      }
+
+      const setCookieSpy = jest.spyOn(handlers, 'setCookie');
+
+      
+      api.init('test', 'pk_test', {
+        getCookie: handlers.getCookie,
+        setCookie: handlers.setCookie,
+      });
+
+      fetch.mockResponseOnce(JSON.stringify({ data: '123' }), {
+        headers: { 'X-Session': 'new-session' },
+      });
+
+      await api.request('get', '/test');
+      expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
+    });
   });
 
   describe('get', () => {
