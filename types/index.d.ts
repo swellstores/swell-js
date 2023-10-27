@@ -89,8 +89,8 @@ export interface ResultsResponse<T> {
   page: number;
   pages?: {
     [index: number]: {
-        start: number;
-        end: number;
+      start: number;
+      end: number;
     };
   };
   page_count?: number;
