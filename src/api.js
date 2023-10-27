@@ -44,6 +44,8 @@ const api = {
     options.locale = opt.locale;
     options.currency = opt.currency;
     options.api = api;
+    options.getCookie = opt.getCookie || getCookie;
+    options.setCookie = opt.setCookie || setCookie;
     options.getCart = opt.getCart;
     options.updateCart = opt.updateCart;
     utils.setOptions(options);
@@ -113,9 +115,9 @@ async function request(
     ...opt,
   };
 
-  const session = allOptions.session || getCookie('swell-session');
-  const locale = allOptions.locale || getCookie('swell-locale');
-  const currency = allOptions.currency || getCookie('swell-currency');
+  const session = allOptions.session || allOptions.getCookie('swell-session');
+  const locale = allOptions.locale || allOptions.getCookie('swell-locale');
+  const currency = allOptions.currency || allOptions.getCookie('swell-currency');
 
   const baseUrl = `${allOptions.url}${allOptions.base || ''}/api`;
   const reqMethod = String(method).toLowerCase();
@@ -172,7 +174,7 @@ async function request(
   const responseSession = response.headers.get('X-Session');
 
   if (typeof responseSession === 'string' && session !== responseSession) {
-    setCookie('swell-session', responseSession);
+    allOptions.setCookie('swell-session', responseSession);
   }
 
   const result = await response.json();

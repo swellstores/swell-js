@@ -1,5 +1,4 @@
 import { get, find, round } from './utils';
-import { getCookie, setCookie } from './cookie';
 
 const FORMATTERS = {};
 
@@ -22,7 +21,7 @@ function methods(request, opt) {
     selected() {
       if (!this.code) {
         this.set(
-          getCookie('swell-currency') || opt.api.settings.get('store.currency'),
+          opt.getCookie('swell-currency') || opt.api.settings.get('store.currency'),
         );
       }
 
@@ -50,7 +49,7 @@ function methods(request, opt) {
         ),
       );
 
-      setCookie('swell-currency', code);
+      opt.setCookie('swell-currency', code);
 
       return this.state;
     },

@@ -1,5 +1,4 @@
 import { find } from './utils';
-import { getCookie, setCookie } from './cookie';
 
 function methods(request, opt) {
   return {
@@ -12,7 +11,7 @@ function methods(request, opt) {
 
     async select(locale) {
       this.set(locale);
-      setCookie('swell-locale', locale);
+      opt.setCookie('swell-locale', locale);
       opt.api.settings.locale = locale;
       return await request('put', '/session', { locale });
     },
@@ -22,7 +21,7 @@ function methods(request, opt) {
         return this.code;
       }
       const storeLocale = opt.api.settings.getStoreLocale();
-      const cookieLocale = getCookie('swell-locale');
+      const cookieLocale = opt.getCookie('swell-locale');
       opt.api.settings.locale = cookieLocale || storeLocale;
       return cookieLocale || storeLocale;
     },

@@ -1,5 +1,4 @@
 import api from './api';
-import * as cookie from './cookie';
 
 describe('api', () => {
   beforeEach(() => {
@@ -18,6 +17,8 @@ describe('api', () => {
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
         api: api.options.api,
+        setCookie: api.options.setCookie,
+        getCookie: api.options.getCookie,
       });
     });
   });
@@ -34,6 +35,8 @@ describe('api', () => {
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
         api: api.options.api,
+        setCookie: api.options.setCookie,
+        getCookie: api.options.getCookie,
       });
     });
 
@@ -50,6 +53,8 @@ describe('api', () => {
         vaultUrl: 'https://vault.schema.io',
         useCamelCase: false,
         api: api.options.api,
+        setCookie: api.options.setCookie,
+        getCookie: api.options.getCookie,
       });
     });
   });
@@ -121,7 +126,35 @@ describe('api', () => {
     });
 
     it('updates session cookies', async () => {
-      const setCookieSpy = jest.spyOn(cookie, 'setCookie');
+      const setCookieSpy = jest.spyOn(api.options, 'setCookie');
+
+      fetch.mockResponseOnce(JSON.stringify({ data: '123' }), {
+        headers: { 'X-Session': 'new-session' },
+      });
+
+      await api.request('get', '/test');
+      expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
+    });
+
+    it('should allow custom cookie handler', async () => {
+      const cookies = {}
+
+      const handlers = {
+        getCookie(name) {
+          return cookies[name]
+        },
+        setCookie(name, value) {
+          cookies[name] = value
+        },
+      }
+
+      const setCookieSpy = jest.spyOn(handlers, 'setCookie');
+
+      
+      api.init('test', 'pk_test', {
+        getCookie: handlers.getCookie,
+        setCookie: handlers.setCookie,
+      });
 
       fetch.mockResponseOnce(JSON.stringify({ data: '123' }), {
         headers: { 'X-Session': 'new-session' },
