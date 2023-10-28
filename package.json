@@ -11,10 +11,18 @@
     "url": "https://github.com/swellstores/swell-js"
   },
   "license": "MIT",
-  "main": "./dist/swell.cjs.js",
-  "module": "./dist/index.js",
+  "type": "module",
+  "main": "./dist/swell.cjs",
+  "module": "./dist/index.mjs",
   "browser": "./dist/swell.umd.min.js",
   "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/swell.cjs"
+    }
+  },
   "files": [
     "dist",
     "types"
@@ -58,6 +66,7 @@
     "recompose": "0.30.0",
     "redux": "4.0.5",
     "redux-thunk": "2.3.0",
+    "rimraf": "^5.0.5",
     "rollup": "2.72.1",
     "rollup-plugin-delete": "2.0.0",
     "rollup-plugin-esbuild": "5.0.0",
@@ -80,6 +89,7 @@
     "dev": "rollup -c -w",
     "version": "npm run build && git add -A dist",
     "bump": "npm version patch && npm publish",
+    "prepack": "rimraf dist && npm run build",
     "lint": "prettier --write \"{src,types}/**/*.{js,jsx,json,ts}\""
   }
 }
