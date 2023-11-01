@@ -35,7 +35,12 @@ export default [
       index: './src/index.js',
     },
     external,
-    output: { dir: './dist', entryFileNames: '[name].js' },
+    output: { 
+      dir: './dist', 
+      chunkFileNames: '[name].[hash].mjs',
+      entryFileNames: '[name].mjs',
+      format: 'es',
+    },
     plugins: [
       replace,
       nodePolyfills(),
