@@ -200,7 +200,7 @@ async function request(
     throw err;
   }
 
-  return options.useCamelCase ? utils.toCamel(result) : result;
+  return allOptions.useCamelCase ? utils.toCamel(result) : result;
 }
 
 export default api;

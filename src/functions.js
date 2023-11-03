@@ -4,6 +4,7 @@ function methods(request, _opt) {
       return request(method, functionName, undefined, data, {
         ...options,
         path: `/functions/${appId}`,
+        useCamelCase: false, // avoid mutating data
       });
     },
 

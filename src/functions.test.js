@@ -17,6 +17,19 @@ describe('functions', () => {
       );
       expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
     });
+
+    it('should ignore useCamelCase', async () => {
+      api.init('test', 'pk_test', { useCamelCase: true });
+
+      await api.functions.request('put', 'app_id', 'function_name', {
+        camelCase: 'test',
+      });
+
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ camelCase: 'test' }),
+      );
+    });
   });
 
   describe('get', () => {
