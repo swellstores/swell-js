@@ -10,9 +10,11 @@ import subscriptions from './subscriptions';
 import invoices from './invoices';
 import content from './content';
 import settings from './settings';
+import session from './session';
 import Payment from './payment';
 import locale from './locale';
 import currency from './currency';
+import functions from './functions';
 import * as utils from './utils';
 
 const options = {
@@ -100,6 +102,10 @@ const api = {
 
   currency: currency(request, options),
 
+  session: session(request, options),
+
+  functions: functions(request, options),
+
   utils,
 };
 
@@ -118,8 +124,9 @@ async function request(
   const session = allOptions.session || allOptions.getCookie('swell-session');
   const locale = allOptions.locale || allOptions.getCookie('swell-locale');
   const currency = allOptions.currency || allOptions.getCookie('swell-currency');
+  const path = allOptions.path || '/api';
 
-  const baseUrl = `${allOptions.url}${allOptions.base || ''}/api`;
+  const baseUrl = `${allOptions.url}${allOptions.base || ''}${path}`;
   const reqMethod = String(method).toLowerCase();
 
   let reqUrl = url;

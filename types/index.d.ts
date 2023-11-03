@@ -306,6 +306,34 @@ export namespace invoices {
   function list(): Promise<ResultsResponse<Invoice>>;
 }
 
+export namespace session {
+  function get(): Promise<{ [key: string]: any }>;
+  function getCookie(): string;
+  function setCookie(): string;
+}
+
+export namespace functions {
+  function request(method: string, appId: string, functionName: string, data?: any, options?: any): Promise<any>;
+  function get(
+    appId: string,
+    functionName: string,
+    data?: any,
+    options?: any,
+  ): Promise<any>;
+  function put(
+    appId: string,
+    functionName: string,
+    data?: any,
+    options?: any,
+  ): Promise<any>;
+  function post(
+    appId: string,
+    functionName: string,
+    data?: any,
+    options?: any,
+  ): Promise<any>;
+}
+
 // Backward compatible functions
 
 export function auth(
