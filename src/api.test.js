@@ -102,6 +102,22 @@ describe('api', () => {
       expect(result).toEqual({ data: '123' });
     });
 
+    it('should handle text response', async () => {
+      fetch.mockResponseOnce('foo');
+
+      const result = await api.request('get', '/test');
+
+      expect(result).toEqual('foo');
+    });
+
+    it('should handle empty response', async () => {
+      fetch.mockResponseOnce('');
+
+      const result = await api.request('get', '/test');
+
+      expect(result).toEqual('');
+    });
+
     it('should encode json body by method', async () => {
       await api.request('get', '/test', { data: '123' });
       expect(fetch.mock.calls[0][1]).toHaveProperty('body', undefined);
@@ -137,20 +153,19 @@ describe('api', () => {
     });
 
     it('should allow custom cookie handler', async () => {
-      const cookies = {}
+      const cookies = {};
 
       const handlers = {
         getCookie(name) {
-          return cookies[name]
+          return cookies[name];
         },
         setCookie(name, value) {
-          cookies[name] = value
+          cookies[name] = value;
         },
-      }
+      };
 
       const setCookieSpy = jest.spyOn(handlers, 'setCookie');
 
-      
       api.init('test', 'pk_test', {
         getCookie: handlers.getCookie,
         setCookie: handlers.setCookie,
@@ -162,6 +177,30 @@ describe('api', () => {
 
       await api.request('get', '/test');
       expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
+    });
+
+    it('should throw on response error', async () => {
+      // Error as string
+      try {
+        fetch.mockResponseOnce(
+          JSON.stringify({ error: 'something went wrong' }),
+        );
+        await api.request('get', '/test');
+        throw new Error('failed');
+      } catch (err) {
+        expect(err.message).toEqual('something went wrong');
+      }
+
+      // Error as object
+      try {
+        fetch.mockResponseOnce(
+          JSON.stringify({ error: { message: 'something went wrong' } }),
+        );
+        await api.request('get', '/test');
+        throw new Error('failed');
+      } catch (err) {
+        expect(err.message).toEqual('something went wrong');
+      }
     });
   });
 
