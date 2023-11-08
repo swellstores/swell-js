@@ -68,7 +68,18 @@ export interface BaseModel {
 export interface Query {
   limit?: number;
   page?: number;
+  where?: { [key: string]: any };
   expand?: string[] | string;
+  search?: string;
+  [key: string]: any;
+}
+
+export interface IncludeQuery {
+  [key: string]: {
+    url: string;
+    data?: Query;
+    params?: Query;
+  };
 }
 
 export interface InitOptions {
@@ -167,7 +178,7 @@ export namespace cart {
   function submitOrder(): Promise<Order>;
   function updateItem(id: string, input: CartItem): Promise<Cart>;
   function update(input: object): Promise<Cart>;
-  function getOrder(checkoutId?: string): Promise<Order>
+  function getOrder(checkoutId?: string): Promise<Order>;
 }
 
 export namespace categories {
@@ -179,12 +190,9 @@ export namespace content {
   function get(
     type: string,
     id: string,
-    query?: object,
+    query?: Query,
   ): Promise<Content> | Promise<ResultsResponse<Content>>;
-  function list(
-    type: string,
-    query?: object,
-  ): Promise<ResultsResponse<Content>>;
+  function list(type: string, query?: Query): Promise<ResultsResponse<Content>>;
 }
 
 export namespace currency {
@@ -244,10 +252,8 @@ export interface ProductQuery extends Query {
   category?: string;
   categories?: string[];
   $filters?: unknown;
-  search?: string;
-  where?: object;
-  include?: string[];
 }
+
 export namespace products {
   function categories(
     products: FlexibleProductInput,
@@ -313,7 +319,13 @@ export namespace session {
 }
 
 export namespace functions {
-  function request(method: string, appId: string, functionName: string, data?: any, options?: any): Promise<any>;
+  function request(
+    method: string,
+    appId: string,
+    functionName: string,
+    data?: any,
+    options?: any,
+  ): Promise<any>;
   function get(
     appId: string,
     functionName: string,
@@ -342,8 +354,8 @@ export function auth(
   options?: InitOptions,
 ): void;
 
-export function get(url: string, query: object): Promise<unknown>;
+export function get(url: string, query?: Query): Promise<unknown>;
 
-export function put(url: string, query: object): Promise<unknown>;
+export function put(url: string, query?: Query): Promise<unknown>;
 
-export function post(url: string, query: object): Promise<unknown>;
+export function post(url: string, query?: Query): Promise<unknown>;

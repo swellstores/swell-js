@@ -123,7 +123,8 @@ async function request(
 
   const session = allOptions.session || allOptions.getCookie('swell-session');
   const locale = allOptions.locale || allOptions.getCookie('swell-locale');
-  const currency = allOptions.currency || allOptions.getCookie('swell-currency');
+  const currency =
+    allOptions.currency || allOptions.getCookie('swell-currency');
   const path = allOptions.path || '/api';
 
   const baseUrl = `${allOptions.url}${allOptions.base || ''}${path}`;
@@ -184,10 +185,21 @@ async function request(
     allOptions.setCookie('swell-session', responseSession);
   }
 
-  const result = await response.json();
+  // Response could be text, json, or empty
+  let result = null;
+  try {
+    result = await response.text();
+    try {
+      result = JSON.parse(result);
+    } catch (err) {
+      // noop
+    }
+  } catch (err) {
+    // noop
+  }
 
   if (result && result.error) {
-    const err = new Error(result.error.message);
+    const err = new Error(result.error.message || result.error);
     err.status = response.status;
     err.code = result.error.code;
     err.param = result.error.param;
