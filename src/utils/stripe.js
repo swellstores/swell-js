@@ -201,6 +201,68 @@ async function createBancontactSource(stripe, cart) {
   return await stripe.createSource(sourceObject);
 }
 
+function getPaymentRequestData(cart, params) {
+  const {
+    currency,
+    shipping,
+    items,
+    capture_total,
+    shipment_rating,
+    shipment_total,
+    tax_included_total,
+    settings,
+  } = cart;
+  const { price: shippingPrice, service_name } = shipping || {};
+  const { country, name } = settings || {};
+  const { require: { shipping: requireShipping } = {} } = params;
+
+  const stripeCurrency = currency.toLowerCase();
+  const displayItems = items.map((item) => ({
+    label: get(item, 'product.name', 'Unknown product'),
+    amount: stripeAmountByCurrency(
+      currency,
+      item.price_total - item.discount_total,
+    ),
+  }));
+
+  if (tax_included_total) {
+    displayItems.push({
+      label: 'Taxes',
+      amount: stripeAmountByCurrency(currency, tax_included_total),
+    });
+  }
+
+  if (shippingPrice && shipment_total) {
+    displayItems.push({
+      label: service_name,
+      amount: stripeAmountByCurrency(currency, shipment_total),
+    });
+  }
+
+  let shippingOptions;
+  const services = get(shipment_rating, 'services');
+  if (Array.isArray(services) && services.length > 0) {
+    shippingOptions = services.map((service) => ({
+      id: service.id,
+      label: service.name,
+      detail: service.description,
+      amount: stripeAmountByCurrency(currency, service.price),
+    }));
+  }
+
+  return {
+    country: country || 'US',
+    currency: stripeCurrency,
+    total: {
+      label: name || 'Swell store',
+      amount: stripeAmountByCurrency(currency, capture_total),
+      pending: true,
+    },
+    displayItems,
+    ...(requireShipping && { shippingOptions }),
+  };
+}
+
 function stripeAmountByCurrency(currency, amount) {
   const zeroDecimalCurrencies = [
     'BIF', // Burundian Franc
@@ -238,6 +300,7 @@ export {
   getKlarnaIntentDetails,
   getKlarnaConfirmationDetails,
   createBancontactSource,
+  getPaymentRequestData,
   stripeAmountByCurrency,
   isStripeChargeableAmount,
 };

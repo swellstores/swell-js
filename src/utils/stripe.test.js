@@ -3,6 +3,7 @@ import {
   createIDealPaymentMethod,
   getKlarnaIntentDetails,
   getKlarnaConfirmationDetails,
+  getPaymentRequestData,
 } from './stripe';
 
 describe('utils/stripe', () => {
@@ -285,6 +286,76 @@ describe('utils/stripe', () => {
           },
         },
         return_url: 'http://test.swell.test/checkout?gateway=stripe',
+      });
+    });
+  });
+
+  describe('#getPaymentRequestData', () => {
+    let cart = {};
+    let params = {};
+
+    beforeEach(() => {
+      cart = {
+        currency: 'USD',
+        capture_total: 15,
+        tax_included_total: 4,
+        shipment_total: 3,
+        shipping: {
+          price: 3,
+          service_name: 'standard',
+        },
+        items: [
+          {
+            product: {
+              name: 'Test product',
+            },
+            price_total: 10,
+            discount_total: 2,
+          },
+        ],
+        shipment_rating: {
+          services: [
+            {
+              id: 'standard',
+              name: 'Standard',
+              description: 'Standard service',
+              price: 3,
+            },
+          ],
+        },
+        settings: {
+          country: 'CA',
+          name: 'Test store',
+        },
+      };
+
+      params = {
+        require: {
+          shipping: true,
+        },
+      };
+    });
+
+    it('should return payment request data', () => {
+      const result = getPaymentRequestData(cart, params);
+
+      expect(result).toEqual({
+        country: 'CA',
+        currency: 'usd',
+        total: { label: 'Test store', amount: 1500, pending: true },
+        displayItems: [
+          { label: 'Test product', amount: 800 },
+          { label: 'Taxes', amount: 400 },
+          { label: 'standard', amount: 300 },
+        ],
+        shippingOptions: [
+          {
+            id: 'standard',
+            label: 'Standard',
+            detail: 'Standard service',
+            amount: 300,
+          },
+        ],
       });
     });
   });
