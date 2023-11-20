@@ -40,7 +40,7 @@ export default class BraintreeApplePayment extends Payment {
     return window.ApplePaySession;
   }
 
-  async createElements() {
+  async createElements(cart) {
     const { elementId = 'applepay-button' } = this.params;
 
     this.setElementContainer(elementId);
@@ -52,7 +52,6 @@ export default class BraintreeApplePayment extends Payment {
       );
     }
 
-    const cart = await this.getCart();
     const braintreeClient = await this._createBraintreeClient();
     const applePayment = await this.braintree.applePay.create({
       client: braintreeClient,

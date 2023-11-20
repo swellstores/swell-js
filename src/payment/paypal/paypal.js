@@ -42,7 +42,7 @@ export default class PaypalDirectPayment extends Payment {
     }?gateway=paypal`;
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'paypal-button',
       locale = 'en_US',
@@ -57,8 +57,6 @@ export default class PaypalDirectPayment extends Payment {
     } = this.params;
 
     this.setElementContainer(elementId);
-
-    const cart = await this.getCart();
 
     this._validateCart(cart);
     await this.loadScripts(this.scripts);

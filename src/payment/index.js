@@ -1,3 +1,4 @@
+import Payment from './payment';
 import StripeCardPayment from './card/stripe';
 import StripeIDealPayment from './ideal/stripe';
 import StripeBancontactPayment from './bancontact/stripe';
@@ -30,6 +31,7 @@ export default class PaymentController {
   constructor(request, options) {
     this.request = request;
     this.options = options;
+    this.payment = new Payment(this.request, this.options);
   }
 
   get(id) {
@@ -54,10 +56,14 @@ export default class PaymentController {
     }
 
     const paymentInstances = await this._createPaymentInstances();
+    const cart = await this.payment.getCart();
 
-    await this._performPaymentAction(paymentInstances, 'createElements').then(
-      (paymentInstances) =>
-        this._performPaymentAction(paymentInstances, 'mountElements'),
+    await this._performPaymentAction(
+      paymentInstances,
+      'createElements',
+      cart,
+    ).then((paymentInstances) =>
+      this._performPaymentAction(paymentInstances, 'mountElements'),
     );
   }
 
@@ -223,18 +229,26 @@ export default class PaymentController {
   }
 
   async _performPaymentAction(paymentInstances, action, ...args) {
+    const actions = paymentInstances.reduce((acc, instance) => {
+      const paymentAction = instance[action];
+
+      if (paymentAction) {
+        acc.set(instance, paymentAction.call(instance, ...args));
+      }
+
+      return acc;
+    }, new Map());
+
+    await Promise.allSettled(actions.values());
+
     const nextPaymentInstances = [];
 
-    for (const paymentInstance of paymentInstances) {
+    for (const [instance, resultPromise] of actions.entries()) {
       try {
-        const paymentAction = paymentInstance[action];
-
-        if (paymentAction) {
-          await paymentAction.call(paymentInstance, ...args);
-          nextPaymentInstances.push(paymentInstance);
-        }
+        await resultPromise;
+        nextPaymentInstances.push(instance);
       } catch (error) {
-        const onPaymentError = paymentInstance.onError.bind(paymentInstance);
+        const onPaymentError = instance.onError.bind(instance);
 
         onPaymentError(error);
       }

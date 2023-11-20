@@ -5,6 +5,7 @@ import AmazonDirectPayment from '../../src/payment/amazon/amazon';
 describePayment('payment/amazon', (request, options, paymentMock) => {
   let params;
   let methods;
+  let cart;
 
   beforeEach(() => {
     params = {
@@ -27,6 +28,9 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
         public_key_id: 'test_amazon_public_key_id',
       },
     };
+    cart = {
+      currency: 'EUR',
+    };
   });
 
   describe('#createElements', () => {
@@ -48,10 +52,6 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
     });
 
     it('should create elements', async () => {
-      paymentMock.getCart.mockImplementation(() =>
-        Promise.resolve({ currency: 'EUR' }),
-      );
-
       const payment = new AmazonDirectPayment(
         request,
         options,
@@ -59,7 +59,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
         methods,
       );
 
-      await payment.createElements();
+      await payment.createElements(cart);
       payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({
@@ -96,10 +96,6 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
     });
 
     it('should create elements with default params', async () => {
-      paymentMock.getCart.mockImplementation(() =>
-        Promise.resolve({ currency: 'EUR' }),
-      );
-
       params = {};
 
       const payment = new AmazonDirectPayment(
@@ -109,7 +105,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
         methods,
       );
 
-      await payment.createElements();
+      await payment.createElements(cart);
       payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({
@@ -146,9 +142,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
     });
 
     it('should create elements with subscription delivery', async () => {
-      paymentMock.getCart.mockImplementation(() =>
-        Promise.resolve({ subscription_delivery: true, currency: 'EUR' }),
-      );
+      cart.subscription_delivery = true;
 
       const payment = new AmazonDirectPayment(
         request,
@@ -157,7 +151,7 @@ describePayment('payment/amazon', (request, options, paymentMock) => {
         methods,
       );
 
-      await payment.createElements();
+      await payment.createElements(cart);
       payment.mountElements();
 
       expect(paymentMock.authorizeGateway).toHaveBeenCalledWith({

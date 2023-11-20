@@ -43,7 +43,7 @@ export default class BraintreePaypalPayment extends Payment {
     return this.braintree.paypalCheckout;
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'paypal-button',
       locale = 'en_US',
@@ -75,7 +75,6 @@ export default class BraintreePaypalPayment extends Payment {
     const paypalCheckout = await this.braintreePaypalCheckout.create({
       client: braintreeClient,
     });
-    const cart = await this.getCart();
 
     this.element = this.paypal.Buttons({
       locale,

@@ -85,7 +85,7 @@ export default class BraintreeGooglePayment extends Payment {
     return [this.cardPaymentMethod];
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'googlepay-button',
       locale = 'en',
@@ -118,7 +118,6 @@ export default class BraintreeGooglePayment extends Payment {
       googleMerchantId: this.method.merchant_id,
       googlePayVersion: API_VERSION,
     });
-    const cart = await this.getCart();
     const paymentRequestData = this._createPaymentRequestData(cart);
     const paymentDataRequest =
       googlePayment.createPaymentDataRequest(paymentRequestData);

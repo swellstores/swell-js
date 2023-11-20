@@ -101,7 +101,7 @@ export default class StripeGooglePayment extends Payment {
     return [this.cardPaymentMethod];
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'googlepay-button',
       locale = 'en',
@@ -128,7 +128,6 @@ export default class StripeGooglePayment extends Payment {
       );
     }
 
-    const cart = await this.getCart();
     const paymentRequestData = this._createPaymentRequestData(cart);
 
     this.element = this.googleClient.createButton({
