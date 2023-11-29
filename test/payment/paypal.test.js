@@ -112,6 +112,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
       let createOrder;
       let onShippingChange;
       let onApprove;
+      let cart;
 
       beforeEach(() => {
         global.window.paypal = {
@@ -140,13 +141,14 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             };
           }),
         };
+
+        cart = {
+          capture_total: 10,
+          currency: 'EUR',
+        };
       });
 
       it('should create elements', async () => {
-        paymentMock.getCart.mockImplementationOnce(() =>
-          Promise.resolve({ capture_total: 10 }),
-        );
-
         const payment = new PaypalDirectPayment(
           request,
           options,
@@ -154,7 +156,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           methods,
         );
 
-        await payment.createElements();
+        await payment.createElements(cart);
         payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
@@ -182,10 +184,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
       });
 
       it('should create elements with default params', async () => {
-        paymentMock.getCart.mockImplementationOnce(() =>
-          Promise.resolve({ capture_total: 10 }),
-        );
-
         params = {};
 
         const payment = new PaypalDirectPayment(
@@ -195,7 +193,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           methods,
         );
 
-        await payment.createElements();
+        await payment.createElements(cart);
         payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
@@ -221,10 +219,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
       describe('#_createOrder', () => {
         it('should create order for PayPal Express', async () => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-
           const payment = new PaypalDirectPayment(
             request,
             options,
@@ -232,7 +226,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
 
           createOrder();
 
@@ -252,10 +246,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         });
 
         it('should create order when shipping is not required', async () => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-
           params.require.shipping = false;
 
           const payment = new PaypalDirectPayment(
@@ -265,7 +255,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
 
           createOrder();
 
@@ -285,10 +275,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         });
 
         it('should create order for PayPal Progressive Checkout', async () => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-
           methods.paypal.merchant_id = null;
 
           const payment = new PaypalDirectPayment(
@@ -298,7 +284,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
 
           createOrder();
 
@@ -321,13 +307,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
         it('should create order for PayPal Progressive Checkout with token vaulting', async () => {
           methods.paypal.ppcp = true;
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({
-              currency: 'EUR',
-              capture_total: 10,
-              subscription_delivery: true,
-            }),
-          );
+          cart.subscription_delivery = true;
 
           const payment = new PaypalDirectPayment(
             request,
@@ -336,7 +316,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
 
           createOrder();
 
@@ -375,13 +355,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
         it('should throw an error when the cart has subscription delivery and ppсp is disabled', async () => {
           methods.paypal.ppcp = false;
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({
-              currency: 'EUR',
-              capture_total: 10,
-              subscription_delivery: true,
-            }),
-          );
+          cart.subscription_delivery = true;
 
           const payment = new PaypalDirectPayment(
             request,
@@ -390,7 +364,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await expect(payment.createElements()).rejects.toThrow(
+          await expect(payment.createElements(cart)).rejects.toThrow(
             'Subscriptions are only supported by PayPal Commerce Platform. See Payment settings in the Swell dashboard to enable PayPal Commerce Platform',
           );
         });
@@ -415,13 +389,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
               id: 'express',
             },
           };
-
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({
-              currency: 'EUR',
-              capture_total: 10,
-            }),
-          );
 
           paymentMock.updateCart.mockImplementation((updateData) => {
             if (
@@ -470,7 +437,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await onShippingChange(data, actions);
 
           expect(paymentMock.updateCart).toHaveBeenCalledTimes(1);
@@ -504,7 +471,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await onShippingChange(data, actions);
 
           expect(paymentMock.updateCart).toHaveBeenCalledTimes(2);
@@ -542,7 +509,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await onShippingChange(data, actions);
 
           expect(actions.reject).toHaveBeenCalled();
@@ -590,12 +557,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           },
         };
 
-        beforeEach(() => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-        });
-
         it('should update cart with PayPal order details', async () => {
           const payment = new PaypalDirectPayment(
             request,
@@ -604,7 +565,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await onApprove(data, actions);
 
           expect(paymentMock.updateCart).toHaveBeenCalledWith({
@@ -645,7 +606,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await onApprove(data, actions);
 
           expect(paymentMock.updateCart).toHaveBeenCalledWith({
@@ -699,6 +660,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
       let createPaymentMock;
       let createBillingAgreement;
       let onApprove;
+      let cart;
 
       beforeEach(() => {
         global.window.paypal = {
@@ -744,6 +706,11 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
               },
             };
           }),
+        };
+
+        cart = {
+          currency: 'EUR',
+          capture_total: 10,
         };
       });
 
@@ -838,10 +805,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
       describe('#_createBillingAgreement', () => {
         it('should create PayPal billing agreement', async () => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-
           const payment = new BraintreePaypalPayment(
             request,
             options,
@@ -849,7 +812,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await createBillingAgreement();
 
           expect(createPaymentMock).toHaveBeenCalledWith({
@@ -862,10 +825,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         });
 
         it('should create PayPal billing agreement when shipping is not required', async () => {
-          paymentMock.getCart.mockImplementationOnce(() =>
-            Promise.resolve({ currency: 'EUR', capture_total: 10 }),
-          );
-
           params.require.shipping = false;
 
           const payment = new BraintreePaypalPayment(
@@ -875,7 +834,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             methods,
           );
 
-          await payment.createElements();
+          await payment.createElements(cart);
           await createBillingAgreement();
 
           expect(createPaymentMock).toHaveBeenCalledWith({

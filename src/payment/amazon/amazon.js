@@ -49,7 +49,7 @@ export default class AmazonDirectPayment extends Payment {
     }?gateway=amazon`;
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'amazonpay-button',
       locale = 'en_US',
@@ -60,7 +60,6 @@ export default class AmazonDirectPayment extends Payment {
 
     this.setElementContainer(elementId);
 
-    const cart = await this.getCart();
     const session = await this._createSession(cart);
 
     await this.loadScripts(this.scripts);

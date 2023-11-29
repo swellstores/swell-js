@@ -41,7 +41,7 @@ export default class StripeApplePayment extends Payment {
     StripeApplePayment.stripe = stripe;
   }
 
-  async createElements() {
+  async createElements(cart) {
     const {
       elementId = 'applepay-button',
       style: { type = 'default', theme = 'dark', height = '40px' } = {},
@@ -52,7 +52,6 @@ export default class StripeApplePayment extends Payment {
     await this.loadScripts(this.scripts);
     await this._authorizeDomain();
 
-    const cart = await this.getCart();
     const paymentRequest = this._createPaymentRequest(cart);
     const canMakePayment = await paymentRequest.canMakePayment();
 
