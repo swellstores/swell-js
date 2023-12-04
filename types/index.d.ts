@@ -93,6 +93,8 @@ export interface InitOptions {
   useCamelCase?: boolean;
   url?: string;
   vaultUrl?: string;
+  setCookie?: (key: string, value: string) => void;
+  getCookie?: (key: string) => string | undefined;
 }
 
 export interface ResultsResponse<T> {
