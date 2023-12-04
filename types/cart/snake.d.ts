@@ -20,7 +20,7 @@ interface CartItemOptionsSnake {
   id?: string;
   name?: string;
   price?: number;
-  shipment_weight: number;
+  shipment_weight?: number;
   value?: string;
   variant?: boolean;
 }
