@@ -141,7 +141,7 @@ export namespace account {
   function getOrder(id: string): Promise<Order>;
   function getOrders(): Promise<ResultsResponse<Order>>;
   function listAddresses(): Promise<ResultsResponse<Address>>;
-  function listCards(): Promise<Card[]>;
+  function listCards(): Promise<ResultsResponse<Card>>;
   function listOrders(input?: object): Promise<ResultsResponse<Order>>;
   function login(
     user: string,
