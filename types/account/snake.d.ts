@@ -2,6 +2,7 @@ import { BaseModel } from '..';
 import { Subscription } from '../subscription';
 import { Card } from '../card';
 import { Order } from '../order';
+import { Billing } from '../billing';
 
 interface PasswordTokenInputSnake {
   password_token?: string;
@@ -10,7 +11,7 @@ interface PasswordTokenInputSnake {
 interface AccountSnake extends BaseModel {
   addresses?: AddressSnake[];
   balance?: number;
-  billing?: AddressSnake;
+  billing?: Billing;
   cards?: Card[];
   date_first_order?: string;
   date_last_order?: string;

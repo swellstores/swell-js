@@ -1,4 +1,4 @@
-import { BaseModel, CartItemOption, Discount, Tax } from '../index';
+import { BaseModel, CartItemOption, Card, Discount, Tax } from '../index';
 
 interface BillingSnake {
   name?: string;
@@ -12,7 +12,7 @@ interface BillingSnake {
   country?: string;
   phone?: string;
   method?: 'card' | 'account' | 'amazon' | 'paypal';
-  card?: any;
+  card?: Omit<Card, 'billing'>;
   default?: boolean;
   account_card_id?: string;
   account_card?: any;
