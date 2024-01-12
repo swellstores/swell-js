@@ -3,8 +3,7 @@
   "version": "3.24.5",
   "description": "Swell JS library for client-side stores",
   "engines": {
-    "node": ">=14.19.1",
-    "npm": ">=8.17.0"
+    "node": ">=16"
   },
   "repository": {
     "type": "git",
