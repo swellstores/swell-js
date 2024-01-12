@@ -81,7 +81,7 @@
     "webpack-dev-server": "3.11.2"
   },
   "scripts": {
-    "test": "jest --config=jest.config.json",
+    "test": "jest --config=jest.config.json --detectOpenHandles",
     "test:watch": "jest --config=jest.config.json --watch",
     "test:page": "webpack-dev-server --open --config test/page/webpack.config.js",
     "watch": "nodemon --watch src --exec 'npm run build'",
