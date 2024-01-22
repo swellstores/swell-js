@@ -1,8 +1,10 @@
-var dotenv = require('dotenv');
+'use strict';
+
+const dotenv = require('dotenv');
 
 dotenv.config({ silent: true });
 
-var raw = {
+const raw = {
   STORE_ID: process.env.STORE_ID,
   PUBLIC_KEY: process.env.PUBLIC_KEY,
   STORE_URL: process.env.STORE_URL,

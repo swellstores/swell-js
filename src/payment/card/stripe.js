@@ -108,6 +108,7 @@ export default class StripeCardPayment extends Payment {
 
   async authenticate(payment) {
     const { transaction_id: id, card: { token } = {} } = payment;
+
     const intent = await this.updateIntent({
       gateway: 'stripe',
       intent: { id, payment_method: token },
@@ -119,7 +120,23 @@ export default class StripeCardPayment extends Payment {
 
     await this.loadScripts(this.scripts);
 
-    return this._confirmCardPayment(intent);
+    try {
+      const result = await this._confirmCardPayment(intent);
+
+      return result;
+    } finally {
+      await this._resetAsyncPayment(payment.id);
+    }
+  }
+
+  /**
+   * Reset the payment timer to update the payment status faster
+   *
+   * @param {string} id
+   * @returns {Promise<object>}
+   */
+  _resetAsyncPayment(id) {
+    return this.request('put', '/payments', id, { $async_reset: true });
   }
 
   async _createIntent(cart, paymentMethod) {
@@ -143,10 +160,13 @@ export default class StripeCardPayment extends Payment {
       throw new Error('Stripe payment intent is not defined');
     }
 
-    if (
-      !['requires_capture', 'requires_confirmation'].includes(intent.status)
-    ) {
-      throw new Error(`Unsupported intent status: ${intent.status}`);
+    switch (intent.status) {
+      case 'requires_capture':
+      case 'requires_confirmation':
+        break;
+
+      default:
+        throw new Error(`Unsupported intent status: ${intent.status}`);
     }
 
     // Confirm the payment intent
@@ -166,6 +186,6 @@ export default class StripeCardPayment extends Payment {
       throw new Error(actionResult.error.message);
     }
 
-    return { status: actionResult.status };
+    return { status: actionResult.paymentIntent.status };
   }
 }

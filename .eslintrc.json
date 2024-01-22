@@ -1,0 +1,46 @@
+{
+  "root": true,
+  "parser": "@babel/eslint-parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "requireConfigFile": false,
+    "sourceType": "module",
+    "ecmaVersion": 2021
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "rules": {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.test.js",
+        "test/**/*.{js,cjs}",
+        "mocks/**/*.js"
+      ],
+      "plugins": ["jest"],
+      "extends": [
+        "plugin:react/recommended",
+        "plugin:jest/recommended"
+      ],
+      "env": {
+        "node": true,
+        "jest/globals": true
+      },
+      "rules": {
+        "n/no-unpublished-require": "off"
+      }
+    }
+  ]
+}

@@ -41,6 +41,10 @@ const mockPayment = {
         return {
           id: 'paypal_order_id',
         };
+
+      case 'stripe':
+        return { id: 'stripe' };
+
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }
