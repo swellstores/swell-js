@@ -160,6 +160,16 @@ export default class Payment {
   }
 
   /**
+   * Reset the payment timer to update the payment status faster
+   *
+   * @param {string} id
+   * @returns {Promise<object>}
+   */
+  resetAsyncPayment(id) {
+    return this.request('put', '/payments', id, { $async_reset: true });
+  }
+
+  /**
    * Calls the onSuccess handler.
    *
    * @param {object | undefined} data

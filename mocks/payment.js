@@ -66,6 +66,10 @@ const mockPayment = {
     }
   }),
 
+  resetAsyncPayment(id) {
+    return this.request('put', '/payments', id, { $async_reset: true });
+  },
+
   onSuccess: jest.fn(),
   onCancel: jest.fn(),
   onError: jest.fn(),

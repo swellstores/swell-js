@@ -125,18 +125,8 @@ export default class StripeCardPayment extends Payment {
 
       return result;
     } finally {
-      await this._resetAsyncPayment(payment.id);
+      await this.resetAsyncPayment(payment.id);
     }
-  }
-
-  /**
-   * Reset the payment timer to update the payment status faster
-   *
-   * @param {string} id
-   * @returns {Promise<object>}
-   */
-  _resetAsyncPayment(id) {
-    return this.request('put', '/payments', id, { $async_reset: true });
   }
 
   async _createIntent(cart, paymentMethod) {
