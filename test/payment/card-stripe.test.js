@@ -62,7 +62,7 @@ describePayment('payment/card/stripe', (_request, options, _paymentMock) => {
       expect(result).toEqual({ status: 'succeeded' });
 
       expect(request).toHaveBeenCalledWith('put', '/payments', paymentId, {
-        $async_reset: true,
+        $reset_async_payment: true,
       });
     });
   });

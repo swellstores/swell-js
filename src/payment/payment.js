@@ -166,7 +166,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   resetAsyncPayment(id) {
-    return this.request('put', '/payments', id, { $async_reset: true });
+    return this.request('put', '/payments', id, { $reset_async_payment: true });
   }
 
   /**
