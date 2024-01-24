@@ -1,18 +1,22 @@
 import replacePlugin from '@rollup/plugin-replace';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 import esbuild from 'rollup-plugin-esbuild';
 import filesize from 'rollup-plugin-filesize';
-import pkg from './package.json';
+
+import pkg from './package.json' assert { type: 'json' };
 
 const deps = Object.keys(pkg.dependencies);
-const external = (id) => deps.filter((dep) => id.startsWith(dep)).length;
+
+const external = (id) => deps.some((dep) => id.startsWith(dep));
+
 const replace = replacePlugin({
   preventAssignment: true,
   __VERSION__: pkg.version,
 });
 
+/** @type {import('rollup').MergedRollupOptions[]} */
 export default [
   {
     input: {
@@ -35,12 +39,19 @@ export default [
       index: './src/index.js',
     },
     external,
-    output: { 
-      dir: './dist', 
-      chunkFileNames: '[name].[hash].mjs',
-      entryFileNames: '[name].mjs',
-      format: 'es',
-    },
+    output: [
+      {
+        dir: './dist',
+        chunkFileNames: '[name].[hash].mjs',
+        entryFileNames: '[name].mjs',
+        generatedCode: {
+          preset: 'es2015',
+          constBindings: true,
+          objectShorthand: true,
+        },
+        format: 'es',
+      },
+    ],
     plugins: [
       replace,
       nodePolyfills(),
@@ -53,13 +64,15 @@ export default [
   },
   {
     input: './src/index.js',
-    output: {
-      name: 'swell',
-      sourcemap: true,
-      exports: 'default',
-      file: pkg.main,
-      format: 'cjs',
-    },
+    output: [
+      {
+        name: 'swell',
+        sourcemap: true,
+        exports: 'default',
+        file: pkg.main,
+        format: 'cjs',
+      },
+    ],
     external,
     plugins: [
       replace,
@@ -75,13 +88,15 @@ export default [
   },
   {
     input: './src/index.js',
-    output: {
-      name: 'swell',
-      sourcemap: true,
-      exports: 'default',
-      file: pkg.browser,
-      format: 'umd',
-    },
+    output: [
+      {
+        name: 'swell',
+        sourcemap: true,
+        exports: 'default',
+        file: pkg.browser,
+        format: 'umd',
+      },
+    ],
     plugins: [
       replace,
       nodePolyfills(),

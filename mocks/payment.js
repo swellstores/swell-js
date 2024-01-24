@@ -41,6 +41,10 @@ const mockPayment = {
         return {
           id: 'paypal_order_id',
         };
+
+      case 'stripe':
+        return { id: 'stripe' };
+
       default:
         throw new Error(`Unknown gateway: ${gateway}`);
     }
@@ -61,6 +65,10 @@ const mockPayment = {
         throw new Error(`Unknown gateway: ${gateway}`);
     }
   }),
+
+  resetAsyncPayment(id) {
+    return this.request('put', '/payments', id, { $reset_async_payment: true });
+  },
 
   onSuccess: jest.fn(),
   onCancel: jest.fn(),

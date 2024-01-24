@@ -1,0 +1,11 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.watcherExclude": {
+    "**/dist/*": true
+  },
+  "search.exclude": {
+    "**/dist/*": true
+  }
+}

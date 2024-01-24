@@ -133,10 +133,23 @@ export default class PaymentController {
       );
 
       await paymentInstance.loadScripts(paymentInstance.scripts);
-      return await paymentInstance.authenticate(payment);
+
+      const result = await paymentInstance.authenticate(payment);
+
+      return result;
     } catch (error) {
       return { error };
     }
+  }
+
+  /**
+   * Reset the payment timer to update the payment status faster
+   *
+   * @param {string} id
+   * @returns {Promise<object>}
+   */
+  resetAsyncPayment(id) {
+    return this.payment.resetAsyncPayment(id);
   }
 
   async createIntent(data) {
