@@ -237,6 +237,7 @@ export namespace payment {
     klarna?: InputPaymentRedirect;
   }): Promise<unknown>;
   function authenticate(id: string): Promise<unknown>;
+  function resetAsyncPayment(id: string): Promise<unknown>;
   function createIntent(input: {
     gateway: string;
     intent: object;

@@ -1,11 +1,15 @@
+'use strict';
+
 const path = require('path');
 const webpack = require('webpack');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const env = require('./env');
+
+const env = require('./env.cjs');
 
 console.log('Environment', env.stringified);
 
+/** @type {webpack.WebpackOptionsNormalized} */
 module.exports = {
   entry: './test/page/index.js',
   devtool: 'cheap-module-source-map',
@@ -17,15 +21,11 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js)$/,
+        test: /\.js$/,
+        resolve: { fullySpecified: false },
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: {
-            plugins: ['@babel/plugin-transform-runtime'],
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-            sourceType: 'unambiguous',
-          },
         },
       },
       { test: /\.css$/, use: ['style-loader', 'css-loader'] },
@@ -35,9 +35,6 @@ module.exports = {
     historyApiFallback: true,
   },
   mode: 'development',
-  resolve: {
-    extensions: ['.js'],
-  },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'test/page/index.html',
