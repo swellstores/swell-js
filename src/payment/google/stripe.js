@@ -50,7 +50,7 @@ export default class StripeGooglePayment extends Payment {
     const paymentRequest = this._createPaymentRequest(cart);
     const canMakePayment = await paymentRequest.canMakePayment();
 
-    if (!canMakePayment || !canMakePayment.googlePay) {
+    if (!canMakePayment?.googlePay) {
       throw new Error(
         'This device is not capable of making Google Pay payments',
       );
