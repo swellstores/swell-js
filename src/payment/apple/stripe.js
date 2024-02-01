@@ -1,5 +1,5 @@
 import Payment from '../payment';
-import { stripeAmountByCurrency } from '../../utils/stripe';
+import { getPaymentRequestData } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
@@ -101,7 +101,7 @@ export default class StripeApplePayment extends Payment {
       requestPayerPhone: Boolean(phone),
       requestShipping: Boolean(shipping),
       disableWallets: ['googlePay', 'browserCard', 'link'],
-      ...this._getPaymentRequestData(cart),
+      ...getPaymentRequestData(cart, this.params),
     });
 
     paymentRequest.on(
@@ -117,65 +117,6 @@ export default class StripeApplePayment extends Payment {
     return paymentRequest;
   }
 
-  _getPaymentRequestData(cart) {
-    const {
-      currency,
-      shipping,
-      items,
-      capture_total,
-      shipment_rating,
-      shipment_total,
-      tax_included_total,
-      settings,
-    } = cart;
-
-    const stripeCurrency = currency.toLowerCase();
-    const displayItems = items.map((item) => ({
-      label: item.product.name,
-      amount: stripeAmountByCurrency(
-        currency,
-        item.price_total - item.discount_total,
-      ),
-    }));
-
-    if (tax_included_total) {
-      displayItems.push({
-        label: 'Taxes',
-        amount: stripeAmountByCurrency(currency, tax_included_total),
-      });
-    }
-
-    if (shipping.price && shipment_total) {
-      displayItems.push({
-        label: shipping.service_name,
-        amount: stripeAmountByCurrency(currency, shipment_total),
-      });
-    }
-
-    const services = shipment_rating && shipment_rating.services;
-    let shippingOptions;
-    if (services) {
-      shippingOptions = services.map((service) => ({
-        id: service.id,
-        label: service.name,
-        detail: service.description,
-        amount: stripeAmountByCurrency(currency, service.price),
-      }));
-    }
-
-    return {
-      country: settings.country,
-      currency: stripeCurrency,
-      total: {
-        label: settings.name,
-        amount: stripeAmountByCurrency(currency, capture_total),
-        pending: true,
-      },
-      displayItems,
-      shippingOptions,
-    };
-  }
-
   async _onShippingAddressChange(event) {
     const { shippingAddress, updateWith } = event;
     const shipping = this._mapShippingAddress(shippingAddress);
@@ -185,7 +126,10 @@ export default class StripeApplePayment extends Payment {
     });
 
     if (cart) {
-      updateWith({ status: 'success', ...this._getPaymentRequestData(cart) });
+      updateWith({
+        status: 'success',
+        ...getPaymentRequestData(cart, this.params),
+      });
     } else {
       updateWith({ status: 'invalid_shipping_address' });
     }
@@ -198,7 +142,10 @@ export default class StripeApplePayment extends Payment {
     });
 
     if (cart) {
-      updateWith({ status: 'success', ...this._getPaymentRequestData(cart) });
+      updateWith({
+        status: 'success',
+        ...getPaymentRequestData(cart, this.params),
+      });
     } else {
       updateWith({ status: 'fail' });
     }
