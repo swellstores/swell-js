@@ -187,9 +187,8 @@ export default class BraintreeGooglePayment extends Payment {
 
   async _onClick(googlePayment, paymentDataRequest) {
     try {
-      const paymentData = await this.googleClient.loadPaymentData(
-        paymentDataRequest,
-      );
+      const paymentData =
+        await this.googleClient.loadPaymentData(paymentDataRequest);
 
       if (paymentData) {
         await this._submitPayment(googlePayment, paymentData);

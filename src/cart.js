@@ -31,9 +31,12 @@ function methods(request, options) {
 
       const { handler, resolve, reject } = this.pendingRequests.shift();
 
-      return Promise.resolve().then(handler).then(resolve, reject).finally(() => {
-        this.nextRequest();
-      });
+      return Promise.resolve()
+        .then(handler)
+        .then(resolve, reject)
+        .finally(() => {
+          this.nextRequest();
+        });
     },
 
     async requestStateSync(handler) {
