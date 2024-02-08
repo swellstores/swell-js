@@ -188,7 +188,9 @@ async function vaultRequest(method, url, data) {
     connectionError.status = result?.$status;
 
     throw connectionError;
-  } else return result.$data;
+  }
+
+  return result.$data;
 }
 
 function serializeData(data) {
