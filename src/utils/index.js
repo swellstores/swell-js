@@ -135,64 +135,62 @@ function defaultMethods(request, uri, methods) {
   };
 }
 
-async function vaultRequest(method, url, data, opt = undefined) {
-  const vaultUrl = options.vaultUrl;
-  const timeout = options.timeout;
-  const requestId = vaultRequestId();
-  const callback = `swell_vault_response_${requestId}`;
-
-  data = {
+async function vaultRequest(method, url, data) {
+  const { vaultUrl, timeout, key } = options;
+  const requestData = {
     $jsonp: {
       method,
-      callback,
+      callback: 'none',
     },
     $data: data,
-    $key: options.key,
+    $key: key,
   };
+  const requestUrl = `${trimEnd(vaultUrl)}/${trimStart(url)}?${serializeData(
+    requestData,
+  )}`;
 
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = `${trimEnd(vaultUrl)}/${trimStart(url)}?${serializeData(
-      data,
-    )}`;
+  const abortController = new AbortController();
+  const id = setTimeout(() => abortController.abort(), timeout);
 
-    const errorTimeout = setTimeout(() => {
-      window[callback]({
-        $error: `Request timed out after ${timeout / 1000} seconds`,
-        $status: 500,
-      });
-    }, timeout);
-
-    window[callback] = (result) => {
-      clearTimeout(errorTimeout);
-      if (result && result.$error) {
-        const err = new Error(result.$error);
-        err.code = 'request_error';
-        err.status = result.$status;
-        reject(err);
-      } else if (!result || result.$status >= 300) {
-        const err = new Error(
-          'A connection error occurred while making the request',
+  const result = await fetch(requestUrl, {
+    signal: abortController.signal,
+  })
+    .then((response) => response.json())
+    .catch((error) => {
+      if (error.name === 'AbortError') {
+        const timeoutError = new Error(
+          `Request timed out after ${timeout / 1000} seconds`,
         );
-        err.code = 'connection_error';
-        err.status = result.$status;
-        reject(err);
-      } else {
-        resolve(result.$data);
+
+        timeoutError.status = 500;
+
+        throw timeoutError;
       }
-      delete window[callback];
-      script.parentNode.removeChild(script);
-    };
 
-    document.getElementsByTagName('head')[0].appendChild(script);
-  });
-}
+      throw new Error(error.message);
+    });
 
-function vaultRequestId() {
-  window.__swell_vault_request_id = window.__swell_vault_request_id || 0;
-  window.__swell_vault_request_id++;
-  return window.__swell_vault_request_id;
+  clearTimeout(id);
+
+  if (result?.$error) {
+    const requestError = new Error(result.$error);
+
+    requestError.code = 'request_error';
+    requestError.status = result.$status;
+
+    throw requestError;
+  } else if (!result || result.$status >= 300) {
+    const connectionError = new Error(
+      'A connection error occurred while making the request',
+    );
+
+    connectionError.code = 'connection_error';
+    connectionError.status = result?.$status;
+
+    throw connectionError;
+  }
+
+  return result.$data;
 }
 
 function serializeData(data) {
@@ -212,7 +210,9 @@ function serializeData(data) {
   }
   return s.join('&').replace(' ', '+');
 }
+
 const rbracket = /\[\]$/;
+
 function buildParams(key, obj, add) {
   let name;
   if (obj instanceof Array) {

@@ -196,8 +196,8 @@ function findPurchaseOption(product, purchaseOption) {
     typeof purchaseOption === 'string'
       ? purchaseOption
       : plan !== undefined
-      ? 'subscription'
-      : 'standard',
+        ? 'subscription'
+        : 'standard',
   );
   let option = get(product, `purchase_options.${type}`);
   if (!option && type !== 'standard') {

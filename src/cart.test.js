@@ -105,17 +105,23 @@ describe('cart', () => {
     it('should execute requests sequentially', async () => {
       fetch
         .mockResponseOnce(
-          () => new Promise((resolve) => {
-            setTimeout(() => resolve({ body: JSON.stringify({
-                ...api.cart.state,
-                grand_total: 1000,
-                index: 1
-              })
-            }), 100);
-          })
+          () =>
+            new Promise((resolve) => {
+              setTimeout(
+                () =>
+                  resolve({
+                    body: JSON.stringify({
+                      ...api.cart.state,
+                      grand_total: 1000,
+                      index: 1,
+                    }),
+                  }),
+                100,
+              );
+            }),
         )
-        .mockResponseOnce(
-          () => Promise.resolve({
+        .mockResponseOnce(() =>
+          Promise.resolve({
             body: JSON.stringify({
               ...api.cart.state,
               waited: true,
@@ -124,28 +130,34 @@ describe('cart', () => {
           }),
         )
         .mockResponseOnce(
-          () => new Promise((resolve) => {
-            setTimeout(() => resolve({ body: JSON.stringify({
-                ...api.cart.state,
-                index: 3
-              })
-            }), 100);
-          })
+          () =>
+            new Promise((resolve) => {
+              setTimeout(
+                () =>
+                  resolve({
+                    body: JSON.stringify({
+                      ...api.cart.state,
+                      index: 3,
+                    }),
+                  }),
+                100,
+              );
+            }),
         )
-        .mockResponseOnce(
-          () => Promise.resolve({
+        .mockResponseOnce(() =>
+          Promise.resolve({
             body: JSON.stringify({
               ...api.cart.state,
               index: 4,
             }),
           }),
         )
-        .mockResponseOnce(
-          () => Promise.resolve({
+        .mockResponseOnce(() =>
+          Promise.resolve({
             body: JSON.stringify({
               ...api.cart.state,
               again: true,
-              index: 5
+              index: 5,
             }),
           }),
         );

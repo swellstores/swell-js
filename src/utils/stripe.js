@@ -99,8 +99,8 @@ function setBancontactOwner(source, data) {
     ...(billingData.phone
       ? { phone: billingData.phone }
       : account.phone
-      ? { phone: account.phone }
-      : {}),
+        ? { phone: account.phone }
+        : {}),
     ...(!isEmpty(billingAddress) ? { address: billingAddress } : {}),
   };
 }

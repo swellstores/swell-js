@@ -21,7 +21,8 @@ function methods(request, opt) {
     selected() {
       if (!this.code) {
         this.set(
-          opt.getCookie('swell-currency') || opt.api.settings.get('store.currency'),
+          opt.getCookie('swell-currency') ||
+            opt.api.settings.get('store.currency'),
         );
       }
 
@@ -65,8 +66,7 @@ function methods(request, opt) {
       const formatCode = params.code || code;
       const formatRate = params.rate || rate;
       const formatLocale = params.locale || this.locale;
-      const formatDecimals =
-        'decimals' in params ? params.decimals : decimals;
+      const formatDecimals = 'decimals' in params ? params.decimals : decimals;
       const { convert = true } = params;
 
       let formatAmount = amount;
@@ -167,8 +167,8 @@ function methods(request, opt) {
               ? 'up'
               : 'down'
             : diff <= -0.5
-            ? 'down'
-            : 'up'
+              ? 'down'
+              : 'up'
           : config.round;
 
       switch (direction) {
