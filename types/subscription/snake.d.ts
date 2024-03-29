@@ -128,7 +128,9 @@ interface SubscriptionSnake extends BaseModel {
     | 'unpaid'
     | 'canceled'
     | 'paid'
-    | 'complete';
+    | 'complete'
+    | 'draft'
+    | 'paused';
   sub_total?: number;
   tax_included_total?: number;
   tax_total?: number;
