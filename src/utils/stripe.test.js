@@ -36,7 +36,7 @@ describe('utils/stripe', () => {
               checks: {
                 address_line1_check: 'address_line1_check',
                 cvc_check: 'cvc_check',
-                address_zip_check: 'address_zip_check',
+                address_postal_code_check: 'address_zip_check',
               },
             },
           },

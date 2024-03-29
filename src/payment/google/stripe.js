@@ -5,6 +5,9 @@ import {
   PaymentMethodDisabledError,
 } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+/** @typedef {import('@stripe/stripe-js').PaymentRequestPaymentMethodEvent} PaymentRequestPaymentMethodEvent */
+
 export default class StripeGooglePayment extends Payment {
   constructor(request, options, params, methods) {
     if (!methods.card) {
@@ -23,6 +26,7 @@ export default class StripeGooglePayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeGooglePayment.stripe) {
       if (window.Stripe) {
@@ -37,6 +41,7 @@ export default class StripeGooglePayment extends Payment {
     return StripeGooglePayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeGooglePayment.stripe = stripe;
   }
@@ -94,6 +99,7 @@ export default class StripeGooglePayment extends Payment {
     return paymentRequest;
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingAddressEvent} event */
   async _onShippingAddressChange(event) {
     const { shippingAddress, updateWith } = event;
     const shipping = this._mapShippingAddress(shippingAddress);
@@ -112,6 +118,7 @@ export default class StripeGooglePayment extends Payment {
     }
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingOptionEvent} event */
   async _onShippingOptionChange(event) {
     const { shippingOption, updateWith } = event;
     const cart = await this.updateCart({
@@ -128,6 +135,7 @@ export default class StripeGooglePayment extends Payment {
     }
   }
 
+  /** @param {PaymentRequestPaymentMethodEvent} event */
   async _onPaymentMethod(event) {
     const {
       payerEmail,
@@ -170,8 +178,11 @@ export default class StripeGooglePayment extends Payment {
     this.onSuccess();
   }
 
-  // Provides backward compatibility with Google Pay button options
-  // https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions
+  /**
+   * Provides backward compatibility with Google Pay button options
+   *
+   * @see {@link https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions}
+   */
   _getButtonStyles() {
     let { style: { color = 'dark', type = 'default', height = '45px' } = {} } =
       this.params;
@@ -201,6 +212,7 @@ export default class StripeGooglePayment extends Payment {
     };
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingAddress} [address] */
   _mapShippingAddress(address = {}) {
     return {
       name: address.recipient,
@@ -214,6 +226,7 @@ export default class StripeGooglePayment extends Payment {
     };
   }
 
+  /** @param {PaymentRequestPaymentMethodEvent['paymentMethod']['billing_details']} [address] */
   _mapBillingAddress(address = {}) {
     return {
       name: address.name,

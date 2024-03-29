@@ -5,6 +5,8 @@ import {
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+
 export default class StripeBancontactPayment extends Payment {
   constructor(request, options, params, methods) {
     if (!methods.card) {
@@ -23,6 +25,7 @@ export default class StripeBancontactPayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeBancontactPayment.stripe) {
       if (window.Stripe) {
@@ -37,6 +40,7 @@ export default class StripeBancontactPayment extends Payment {
     return StripeBancontactPayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeBancontactPayment.stripe = stripe;
   }
