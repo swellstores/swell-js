@@ -159,6 +159,7 @@ async function createPaymentMethod(stripe, cardElement, cart) {
         exp_month: paymentMethod.card.exp_month,
         exp_year: paymentMethod.card.exp_year,
         brand: paymentMethod.card.brand,
+        display_brand: paymentMethod.card.display_brand,
         address_check: paymentMethod.card.checks.address_line1_check,
         cvc_check: paymentMethod.card.checks.cvc_check,
         zip_check: paymentMethod.card.checks.address_postal_code_check,

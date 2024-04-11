@@ -163,6 +163,7 @@ export default class StripeGooglePayment extends Payment {
           gateway: 'stripe',
           token: paymentMethod,
           brand: card.brand,
+          display_brand: card.display_brand,
           exp_month: card.exp_month,
           exp_year: card.exp_year,
           last4: card.last4,

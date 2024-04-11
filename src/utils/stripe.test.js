@@ -14,9 +14,10 @@ describe('utils/stripe', () => {
       exp_month: 12,
       exp_year: 99,
       brand: 'Visa',
+      display_brand: 'cartes_bancaires',
       address_check: 'address_line1_check',
       cvc_check: 'cvc_check',
-      zip_check: 'address_zip_check',
+      zip_check: 'address_postal_code_check',
     };
 
     const stripe = {
@@ -33,10 +34,11 @@ describe('utils/stripe', () => {
               exp_month: 12,
               exp_year: 99,
               brand: 'Visa',
+              display_brand: 'cartes_bancaires',
               checks: {
                 address_line1_check: 'address_line1_check',
                 cvc_check: 'cvc_check',
-                address_postal_code_check: 'address_zip_check',
+                address_postal_code_check: 'address_postal_code_check',
               },
             },
           },
@@ -112,10 +114,11 @@ describe('utils/stripe', () => {
               exp_month: 12,
               exp_year: 99,
               brand: 'Visa',
+              display_brand: 'cartes_bancaires',
               checks: {
                 address_line1_check: 'address_line1_check',
                 cvc_check: 'cvc_check',
-                address_zip_check: 'address_zip_check',
+                address_postal_code_check: 'address_postal_code_check',
               },
             },
           },
@@ -153,10 +156,11 @@ describe('utils/stripe', () => {
           exp_month: 12,
           exp_year: 99,
           brand: 'Visa',
+          display_brand: 'cartes_bancaires',
           checks: {
             address_line1_check: 'address_line1_check',
             cvc_check: 'cvc_check',
-            address_zip_check: 'address_zip_check',
+            address_postal_code_check: 'address_postal_code_check',
           },
         },
       });

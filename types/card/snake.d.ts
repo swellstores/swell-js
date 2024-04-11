@@ -27,6 +27,7 @@ interface CardSnake extends BaseModel {
   address_check?: 'unchecked' | 'pass' | 'fail';
   billing?: Billing;
   brand?: string;
+  display_brand?: string;
   cvc_check?: 'unchecked' | 'pass' | 'fail';
   exp_month?: number;
   exp_year?: number;
