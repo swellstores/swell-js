@@ -82,7 +82,7 @@ export default class Payment {
   /**
    * Returns a cart.
    *
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async getCart() {
     const cart = await cartApi(this.request, this.options).get();
@@ -98,7 +98,7 @@ export default class Payment {
    * Updates a cart.
    *
    * @param {object} data
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async updateCart(data) {
     const updateData = cloneDeep(data);
@@ -123,7 +123,7 @@ export default class Payment {
   /**
    * Returns the store settings.
    *
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async getSettings() {
     return settingsApi(this.request, this.options).get();
@@ -133,7 +133,7 @@ export default class Payment {
    * Creates a payment intent.
    *
    * @param {object} data
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async createIntent(data) {
     return this._vaultRequest('post', '/intent', data);
@@ -143,7 +143,7 @@ export default class Payment {
    * Updates a payment intent.
    *
    * @param {object} data
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async updateIntent(data) {
     return this._vaultRequest('put', '/intent', data);
@@ -153,7 +153,7 @@ export default class Payment {
    * Authorizes a payment gateway.
    *
    * @param {object} data
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async authorizeGateway(data) {
     return this._vaultRequest('post', '/authorization', data);
@@ -216,7 +216,7 @@ export default class Payment {
    * Adjusts cart data.
    *
    * @param {object} cart
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async _adjustCart(cart) {
     return this._ensureCartSettings(cart).then(toSnake);
@@ -226,7 +226,7 @@ export default class Payment {
    * Sets the store settings to cart.
    *
    * @param {object} cart
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async _ensureCartSettings(cart) {
     if (cart.settings) {
@@ -244,7 +244,7 @@ export default class Payment {
    * @param {string} method
    * @param {string} url
    * @param {object} data
-   * @returns {object}
+   * @returns {Promise<object>}
    */
   async _vaultRequest(method, url, data) {
     const response = await vaultRequest(method, url, data);

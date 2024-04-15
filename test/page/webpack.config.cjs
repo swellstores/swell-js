@@ -33,6 +33,8 @@ module.exports = {
   },
   devServer: {
     historyApiFallback: true,
+    allowedHosts: ['.swell.test', 'localhost'],
+    host: process.env.DEV_SERVER_HOST,
   },
   mode: 'development',
   plugins: [

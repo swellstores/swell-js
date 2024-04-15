@@ -7,6 +7,10 @@ import {
 } from '../../utils/stripe';
 import { LibraryNotLoadedError } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+/** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
+/** @typedef {import('@stripe/stripe-js').StripeCardNumberElement} StripeCardNumberElement */
+
 export default class StripeCardPayment extends Payment {
   constructor(request, options, params, methods) {
     super(request, options, params, methods.card);
@@ -16,6 +20,7 @@ export default class StripeCardPayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeCardPayment.stripe) {
       if (window.Stripe) {
@@ -30,14 +35,17 @@ export default class StripeCardPayment extends Payment {
     return StripeCardPayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeCardPayment.stripe = stripe;
   }
 
+  /** @returns {StripeCardElement | StripeCardNumberElement} */
   get stripeElement() {
     return StripeCardPayment.stripeElement;
   }
 
+  /** @param {StripeCardElement | StripeCardNumberElement} stripeElement */
   set stripeElement(stripeElement) {
     StripeCardPayment.stripeElement = stripeElement;
   }

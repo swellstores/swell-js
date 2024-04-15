@@ -9,6 +9,9 @@ import {
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+/** @typedef {import('@stripe/stripe-js').StripeIdealBankElement} StripeIdealBankElement */
+
 export default class StripeIDealPayment extends Payment {
   constructor(request, options, params, methods) {
     if (!methods.card) {
@@ -27,6 +30,7 @@ export default class StripeIDealPayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeIDealPayment.stripe) {
       if (window.Stripe) {
@@ -41,14 +45,17 @@ export default class StripeIDealPayment extends Payment {
     return StripeIDealPayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeIDealPayment.stripe = stripe;
   }
 
+  /** @returns {StripeIdealBankElement} */
   get stripeElement() {
     return StripeIDealPayment.stripeElement;
   }
 
+  /** @param {StripeIdealBankElement} stripeElement */
   set stripeElement(stripeElement) {
     StripeIDealPayment.stripeElement = stripeElement;
   }
@@ -81,6 +88,10 @@ export default class StripeIDealPayment extends Payment {
     await this.stripe.handleCardAction(intent.client_secret);
   }
 
+  /**
+   * @param {object} cart
+   * @param {import('@stripe/stripe-js').PaymentMethod} paymentMethod
+   */
   async _createIntent(cart, paymentMethod) {
     const { currency, capture_total } = cart;
     const stripeCurrency = (currency || 'EUR').toLowerCase();

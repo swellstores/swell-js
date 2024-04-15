@@ -56,17 +56,22 @@ interface InputPaymentElementBaseSnake {
 }
 
 interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
-  options?: any; // https://stripe.com/docs/js/elements_object/create_element?type=card
+  /** @see {@link https://docs.stripe.com/js/elements_object/create_element?type=card#elements_create-options} */
+  options?: object;
   separate_elements?: boolean;
   card_number?: {
-    elementId?: string; // default: #card-element
+    /** @default "#card-element" */
+    elementId?: string;
+    /** @see {@link https://docs.stripe.com/js/elements_object/create_element?type=cardNumber#elements_create-options} */
     options?: object;
   };
   card_expiry?: {
-    elementId?: string; // default: #cardExpiry-element
+    /** @default "#cardExpiry-element" */
+    elementId?: string;
   };
   card_cvc?: {
-    elementId?: string; // default: #cardCvc-element
+    /** @default #cardCvc-element */
+    elementId?: string;
   };
 }
 
@@ -77,7 +82,8 @@ interface InputPaymentElementIdealSnake extends InputPaymentElementBaseSnake {
 }
 
 interface InputPaymentElementPaypalSnake extends InputPaymentElementBaseSnake {
-  style?: any; // https://developer.paypal.com/docs/checkout/integration-features/customize-button/
+  /** @see {@link https://developer.paypal.com/docs/checkout/integration-features/customize-button} */
+  style?: any;
 }
 
 interface InputPaymentElementAppleSnake extends InputPaymentElementBaseSnake {

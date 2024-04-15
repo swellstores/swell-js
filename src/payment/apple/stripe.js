@@ -5,6 +5,9 @@ import {
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+/** @typedef {import('@stripe/stripe-js').PaymentRequestPaymentMethodEvent} PaymentRequestPaymentMethodEvent */
+
 export default class StripeApplePayment extends Payment {
   constructor(request, options, params, methods) {
     if (!methods.card) {
@@ -23,6 +26,7 @@ export default class StripeApplePayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeApplePayment.stripe) {
       if (window.Stripe) {
@@ -37,6 +41,7 @@ export default class StripeApplePayment extends Payment {
     return StripeApplePayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeApplePayment.stripe = stripe;
   }
@@ -117,6 +122,7 @@ export default class StripeApplePayment extends Payment {
     return paymentRequest;
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingAddressEvent} event */
   async _onShippingAddressChange(event) {
     const { shippingAddress, updateWith } = event;
     const shipping = this._mapShippingAddress(shippingAddress);
@@ -135,6 +141,7 @@ export default class StripeApplePayment extends Payment {
     }
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingOptionEvent} event */
   async _onShippingOptionChange(event) {
     const { shippingOption, updateWith } = event;
     const cart = await this.updateCart({
@@ -151,6 +158,7 @@ export default class StripeApplePayment extends Payment {
     }
   }
 
+  /** @param {PaymentRequestPaymentMethodEvent} event */
   async _onPaymentMethod(event) {
     const {
       payerEmail,
@@ -178,6 +186,7 @@ export default class StripeApplePayment extends Payment {
           gateway: 'stripe',
           token: paymentMethod,
           brand: card.brand,
+          display_brand: card.display_brand,
           exp_month: card.exp_month,
           exp_year: card.exp_year,
           last4: card.last4,
@@ -193,6 +202,7 @@ export default class StripeApplePayment extends Payment {
     this.onSuccess();
   }
 
+  /** @param {import('@stripe/stripe-js').PaymentRequestShippingAddress} [address] */
   _mapShippingAddress(address = {}) {
     return {
       name: address.recipient,
@@ -206,6 +216,7 @@ export default class StripeApplePayment extends Payment {
     };
   }
 
+  /** @param {PaymentRequestPaymentMethodEvent['paymentMethod']['billing_details']} [address] */
   _mapBillingAddress(address = {}) {
     return {
       name: address.name,

@@ -9,6 +9,8 @@ import {
   UnableAuthenticatePaymentMethodError,
 } from '../../utils/errors';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+
 export default class StripeKlarnaPayment extends Payment {
   constructor(request, options, params, methods) {
     if (!methods.card) {
@@ -27,6 +29,7 @@ export default class StripeKlarnaPayment extends Payment {
     return ['stripe-js'];
   }
 
+  /** @returns {Stripe} */
   get stripe() {
     if (!StripeKlarnaPayment.stripe) {
       if (window.Stripe) {
@@ -41,6 +44,7 @@ export default class StripeKlarnaPayment extends Payment {
     return StripeKlarnaPayment.stripe;
   }
 
+  /** @param {Stripe} stripe */
   set stripe(stripe) {
     StripeKlarnaPayment.stripe = stripe;
   }

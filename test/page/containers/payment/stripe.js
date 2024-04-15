@@ -137,12 +137,14 @@ class Stripe extends React.Component {
           <CardContent>
             <FormControl>
               <FormLabel>Type</FormLabel>
+
               <RadioGroup defaultValue="card" row onChange={this.onChangeType}>
                 <FormControlLabel
                   value="card"
                   control={<Radio />}
                   label="Card"
                 />
+
                 <FormControlLabel
                   value="separate"
                   control={<Radio />}
@@ -150,22 +152,27 @@ class Stripe extends React.Component {
                 />
               </RadioGroup>
             </FormControl>
+
             <FormControl>
               <FormLabel>Font</FormLabel>
+
               <RadioGroup
-                defaultValue="default"
                 row
-                onChange={this.onChangeFont}>
+                defaultValue="default"
+                onChange={this.onChangeFont}
+              >
                 <FormControlLabel
                   value="default"
                   control={<Radio />}
                   label="Default"
                 />
+
                 <FormControlLabel
                   value="audiowide"
                   control={<Radio />}
                   label="Audiowide"
                 />
+
                 <FormControlLabel
                   value="festive"
                   control={<Radio />}
@@ -173,6 +180,7 @@ class Stripe extends React.Component {
                 />
               </RadioGroup>
             </FormControl>
+
             {type === 'card' ? (
               <div id="card-element" className={classes.cardInput} />
             ) : (
@@ -182,6 +190,7 @@ class Stripe extends React.Component {
                 <div id="cardCvc-element" className={classes.cardInput} />
               </Fragment>
             )}
+
             <div className={classes.submitContainer}>
               <Button
                 id="stripe-submit-button"
@@ -189,16 +198,19 @@ class Stripe extends React.Component {
                 color="primary"
                 size="small"
                 classes={{ root: classes.button }}
-                onClick={this.onClickTokenize}>
+                onClick={this.onClickTokenize}
+              >
                 Tokenize
               </Button>
+
               <Button
                 variant="contained"
                 color="secondary"
                 size="small"
                 disabled={!tokenized}
                 classes={{ root: classes.button }}
-                onClick={onOrderSubmit}>
+                onClick={onOrderSubmit}
+              >
                 Submit
               </Button>
             </div>

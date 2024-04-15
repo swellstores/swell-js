@@ -1,5 +1,10 @@
 import { get, reduce, toLower, isEmpty } from './index';
 
+/** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
+/** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
+/** @typedef {import('@stripe/stripe-js').StripeCardNumberElement} StripeCardNumberElement */
+/** @typedef {import('@stripe/stripe-js').CreateSourceData} CreateSourceData */
+
 // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
 const MINIMUM_CHARGE_AMOUNT = {
   USD: 0.5,
@@ -71,6 +76,10 @@ function getBillingDetails(cart) {
   return details;
 }
 
+/**
+ * @param {CreateSourceData} source
+ * @param {object} data
+ */
 function setBancontactOwner(source, data) {
   const fillValues = (fieldsMap, data) =>
     reduce(
@@ -100,11 +109,17 @@ function setBancontactOwner(source, data) {
       ? { phone: billingData.phone }
       : account.phone
         ? { phone: account.phone }
-        : {}),
-    ...(!isEmpty(billingAddress) ? { address: billingAddress } : {}),
+        : undefined),
+    ...(!isEmpty(billingAddress) ? { address: billingAddress } : undefined),
   };
 }
 
+/**
+ * @param {string} type
+ * @param {import('@stripe/stripe-js').StripeElements} elements
+ * @param {object} params
+ * @returns {import('@stripe/stripe-js').StripeElement}
+ */
 function createElement(type, elements, params) {
   const elementParams = params[type] || params;
   const elementOptions = elementParams.options || {};
@@ -123,6 +138,11 @@ function createElement(type, elements, params) {
   return element;
 }
 
+/**
+ * @param {Stripe} stripe
+ * @param {StripeCardElement | StripeCardNumberElement} cardElement
+ * @param {object} cart
+ */
 async function createPaymentMethod(stripe, cardElement, cart) {
   const billingDetails = getBillingDetails(cart);
   const { paymentMethod, error } = await stripe.createPaymentMethod({
@@ -139,18 +159,24 @@ async function createPaymentMethod(stripe, cardElement, cart) {
         exp_month: paymentMethod.card.exp_month,
         exp_year: paymentMethod.card.exp_year,
         brand: paymentMethod.card.brand,
+        display_brand: paymentMethod.card.display_brand,
         address_check: paymentMethod.card.checks.address_line1_check,
         cvc_check: paymentMethod.card.checks.cvc_check,
-        zip_check: paymentMethod.card.checks.address_zip_check,
+        zip_check: paymentMethod.card.checks.address_postal_code_check,
       };
 }
 
+/**
+ * @param {Stripe} stripe
+ * @param {import('@stripe/stripe-js').StripeIdealBankElement} element
+ * @param {object} cart
+ */
 async function createIDealPaymentMethod(stripe, element, cart) {
   const billingDetails = getBillingDetails(cart);
-  return await stripe.createPaymentMethod({
+  return stripe.createPaymentMethod({
     type: 'ideal',
     ideal: element,
-    ...(billingDetails ? { billing_details: billingDetails } : {}),
+    ...(billingDetails ? { billing_details: billingDetails } : undefined),
   });
 }
 
@@ -173,6 +199,10 @@ function getKlarnaIntentDetails(cart) {
   return details;
 }
 
+/**
+ * @param {object} cart
+ * @returns {import('@stripe/stripe-js').ConfirmKlarnaPaymentData}
+ */
 function getKlarnaConfirmationDetails(cart) {
   const billingDetails = getBillingDetails(cart);
   const returnUrl = `${
@@ -187,7 +217,12 @@ function getKlarnaConfirmationDetails(cart) {
   };
 }
 
+/**
+ * @param {Stripe} stripe
+ * @param {object} cart
+ */
 async function createBancontactSource(stripe, cart) {
+  /** @type {CreateSourceData} */
   const sourceObject = {
     type: 'bancontact',
     amount: Math.round(get(cart, 'grand_total', 0) * 100),
@@ -196,11 +231,17 @@ async function createBancontactSource(stripe, cart) {
       return_url: window.location.href,
     },
   };
+
   setBancontactOwner(sourceObject, cart);
 
-  return await stripe.createSource(sourceObject);
+  return stripe.createSource(sourceObject);
 }
 
+/**
+ * @param {object} cart
+ * @param {object} params
+ * @returns {import('@stripe/stripe-js').PaymentRequestOptions}
+ */
 function getPaymentRequestData(cart, params) {
   const {
     currency,
@@ -263,29 +304,30 @@ function getPaymentRequestData(cart, params) {
   };
 }
 
+const zeroDecimalCurrencies = new Set([
+  'BIF', // Burundian Franc
+  'DJF', // Djiboutian Franc,
+  'JPY', // Japanese Yen
+  'KRW', // South Korean Won
+  'PYG', // Paraguayan Guaraní
+  'VND', // Vietnamese Đồng
+  'XAF', // Central African Cfa Franc
+  'XPF', // Cfp Franc
+  'CLP', // Chilean Peso
+  'GNF', // Guinean Franc
+  'KMF', // Comorian Franc
+  'MGA', // Malagasy Ariary
+  'RWF', // Rwandan Franc
+  'VUV', // Vanuatu Vatu
+  'XOF', // West African Cfa Franc
+]);
+
 function stripeAmountByCurrency(currency, amount) {
-  const zeroDecimalCurrencies = [
-    'BIF', // Burundian Franc
-    'DJF', // Djiboutian Franc,
-    'JPY', // Japanese Yen
-    'KRW', // South Korean Won
-    'PYG', // Paraguayan Guaraní
-    'VND', // Vietnamese Đồng
-    'XAF', // Central African Cfa Franc
-    'XPF', // Cfp Franc
-    'CLP', // Chilean Peso
-    'GNF', // Guinean Franc
-    'KMF', // Comorian Franc
-    'MGA', // Malagasy Ariary
-    'RWF', // Rwandan Franc
-    'VUV', // Vanuatu Vatu
-    'XOF', // West African Cfa Franc
-  ];
-  if (zeroDecimalCurrencies.includes(currency.toUpperCase())) {
+  if (zeroDecimalCurrencies.has(currency.toUpperCase())) {
     return amount;
-  } else {
-    return Math.round(amount * 100);
   }
+
+  return Math.round(amount * 100);
 }
 
 function isStripeChargeableAmount(amount, currency) {
