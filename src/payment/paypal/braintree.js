@@ -121,7 +121,7 @@ export default class BraintreePaypalPayment extends Payment {
     });
   }
 
-  async _onApprove(paypalCheckout, data, actions) {
+  async _onApprove(paypalCheckout, data, _actions) {
     const { require: { shipping: requireShipping = true } = {} } = this.params;
     const { details, nonce } = await paypalCheckout.tokenizePayment(data);
     const { email, countryCode, firstName, lastName } = details;

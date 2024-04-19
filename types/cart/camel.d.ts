@@ -1,24 +1,32 @@
-import { SnakeToCamelCase } from '..';
+import { ConvertSnakeToCamelCase } from '..';
+
 import {
   CartSnake,
   CartItemSnake,
   CartItemOptionsSnake,
+  CartItemPurchaseOptionSnake,
+  CartItemBillingScheduleSnake,
+  CartItemOrderScheduleSnake,
   CartGiftCardItemSnake,
   CartShippingSnake,
 } from './snake';
 
-export type CartCamel = {
-  [K in keyof CartSnake as SnakeToCamelCase<K>]: CartSnake[K];
-};
-export type CartItemCamel = {
-  [K in keyof CartItemSnake as SnakeToCamelCase<K>]: CartItemSnake[K];
-};
-export type CartItemOptionsCamel = {
-  [K in keyof CartItemOptionsSnake as SnakeToCamelCase<K>]: CartItemOptionsSnake[K];
-};
-export type CartGiftCardItemCamel = {
-  [K in keyof CartGiftCardItemSnake as SnakeToCamelCase<K>]: CartGiftCardItemSnake[K];
-};
-export type CartShippingCamel = {
-  [K in keyof CartShippingSnake as SnakeToCamelCase<K>]: CartShippingSnake[K];
-};
+export type CartCamel = ConvertSnakeToCamelCase<CartSnake>;
+export type CartItemCamel = ConvertSnakeToCamelCase<CartItemSnake>;
+
+export type CartItemOptionsCamel =
+  ConvertSnakeToCamelCase<CartItemOptionsSnake>;
+
+export type CartItemPurchaseOptionCamel =
+  ConvertSnakeToCamelCase<CartItemPurchaseOptionSnake>;
+
+export type CartItemBillingScheduleCamel =
+  ConvertSnakeToCamelCase<CartItemBillingScheduleSnake>;
+
+export type CartItemOrderScheduleCamel =
+  ConvertSnakeToCamelCase<CartItemOrderScheduleSnake>;
+
+export type CartGiftCardItemCamel =
+  ConvertSnakeToCamelCase<CartGiftCardItemSnake>;
+
+export type CartShippingCamel = ConvertSnakeToCamelCase<CartShippingSnake>;

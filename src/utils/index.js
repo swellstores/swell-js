@@ -14,11 +14,13 @@ import isEmpty from 'lodash-es/isEmpty';
 import deepmerge from 'deepmerge';
 import { camelize, decamelize, camelizeKeys, decamelizeKeys } from 'fast-case';
 
+/* global Buffer */
+
 const LOADING_SCRIPTS = {};
 
 let options = {};
 
-function merge(x, y, opt = {}) {
+function merge(x, y, _opt = {}) {
   if (!y || typeof y !== 'object') {
     return x;
   }
@@ -194,7 +196,6 @@ async function vaultRequest(method, url, data) {
 }
 
 function serializeData(data) {
-  let key;
   const s = [];
   const add = function (key, value) {
     // If value is a function, invoke it and return its value

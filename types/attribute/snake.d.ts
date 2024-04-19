@@ -1,4 +1,5 @@
-import { BaseModel } from '..';
+import { BaseModel, ResultsResponse } from '..';
+
 import { Product } from '../product';
 
 export interface AttributeSnake extends BaseModel {
@@ -7,7 +8,7 @@ export interface AttributeSnake extends BaseModel {
   localized?: boolean;
   multi?: boolean;
   name?: string;
-  products?: Product[];
+  products?: ResultsResponse<Product>;
   required?: boolean;
   searchable?: boolean;
   type?:

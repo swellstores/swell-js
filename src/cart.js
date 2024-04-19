@@ -130,7 +130,7 @@ function methods(request, options) {
       if (options.updateCart) {
         return options.updateCart(input);
       }
-      return this.requestStateChange('put', `/cart`, data);
+      return this.requestStateChange('put', '/cart', data);
     },
 
     applyCoupon(code) {
@@ -169,11 +169,11 @@ function methods(request, options) {
     async getOrder(checkoutId = undefined) {
       let result;
       if (checkoutId) {
-        result = await request('get', `/cart/order`, {
+        result = await request('get', '/cart/order', {
           checkout_id: checkoutId,
         });
       } else {
-        result = await request('get', `/cart/order`);
+        result = await request('get', '/cart/order');
       }
       this.order = result;
       return result;

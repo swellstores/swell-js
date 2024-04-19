@@ -1,16 +1,15 @@
-import { SnakeToCamelCase } from '..';
+import { ConvertSnakeToCamelCase } from '..';
+
 import {
   FormatInputSnake,
   SelectCurrencyReturnSnake,
   EnabledCurrencySnake,
 } from './snake';
 
-export type FormatInputCamel = {
-  [K in keyof FormatInputSnake as SnakeToCamelCase<K>]: FormatInputSnake[K];
-};
-export type SelectCurrencyReturnCamel = {
-  [K in keyof SelectCurrencyReturnSnake as SnakeToCamelCase<K>]: SelectCurrencyReturnSnake[K];
-};
-export type EnabledCurrencyCamel = {
-  [K in keyof EnabledCurrencySnake as SnakeToCamelCase<K>]: EnabledCurrencySnake[K];
-};
+export type FormatInputCamel = ConvertSnakeToCamelCase<FormatInputSnake>;
+
+export type SelectCurrencyReturnCamel =
+  ConvertSnakeToCamelCase<SelectCurrencyReturnSnake>;
+
+export type EnabledCurrencyCamel =
+  ConvertSnakeToCamelCase<EnabledCurrencySnake>;

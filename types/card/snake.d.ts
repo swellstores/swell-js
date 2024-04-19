@@ -1,17 +1,18 @@
 import { BaseModel } from '..';
+
 import { Account } from '../account';
 import { Billing } from '../billing';
 
-interface InputCreateTokenSnake {
+export interface InputCreateTokenSnake {
   account_id?: string;
   billing?: Billing;
-  cvc?: number;
+  cvc?: string;
   exp_month?: number;
   exp_year?: number;
   number?: string;
 }
 
-interface TokenResponseSnake {
+export interface TokenResponseSnake {
   address_check?: 'pass' | 'failed' | 'checked' | 'unchecked';
   brand?: string;
   cvc_check?: 'pass' | 'failed' | 'checked' | 'unchecked';
@@ -22,7 +23,7 @@ interface TokenResponseSnake {
   zip_check?: 'pass' | 'failed' | 'checked' | 'unchecked';
 }
 
-interface CardSnake extends BaseModel {
+export interface CardSnake extends BaseModel {
   active?: boolean;
   address_check?: 'unchecked' | 'pass' | 'fail';
   billing?: Billing;

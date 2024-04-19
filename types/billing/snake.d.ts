@@ -1,6 +1,15 @@
-import { BaseModel, CartItemOption, Card, Discount, Tax } from '../index';
+import { Card } from '../card';
 
-interface BillingSnake {
+import {
+  BillingAffirm,
+  BillingKlarna,
+  BillingIdeal,
+  BillingBancontact,
+  BillingGoogle,
+  BillingApple,
+} from './index';
+
+export interface BillingSnake {
   name?: string;
   first_name?: string;
   last_name?: string;
@@ -15,44 +24,44 @@ interface BillingSnake {
   card?: Omit<Card, 'billing'>;
   default?: boolean;
   account_card_id?: string;
-  account_card?: any;
-  amazon?: any;
-  paypal?: any;
-  intent?: any;
-  affirm?: BillingAffirmSnake;
-  klarna?: BillingKlarnaSnake;
-  ideal?: BillingIdealSnake;
-  bancontact?: BillingBancontactSnake;
-  google?: BillingGoogleSnake;
-  apple?: BillingAppleSnake;
+  account_card?: Card;
+  amazon?: unknown;
+  paypal?: unknown;
+  intent?: unknown;
+  affirm?: BillingAffirm;
+  klarna?: BillingKlarna;
+  ideal?: BillingIdeal;
+  bancontact?: BillingBancontact;
+  google?: BillingGoogle;
+  apple?: BillingApple;
 }
 
-interface BillingAffirmSnake {
+export interface BillingAffirmSnake {
   checkout_token?: string;
 }
 
-interface BillingResolveSnake {
+export interface BillingResolveSnake {
   charge_id?: string;
 }
 
-interface BillingKlarnaSnake {
+export interface BillingKlarnaSnake {
   source?: string;
 }
 
-interface BillingIdealSnake {
+export interface BillingIdealSnake {
   token?: string;
 }
 
-interface BillingBancontactSnake {
+export interface BillingBancontactSnake {
   source?: string;
 }
 
-interface BillingGoogleSnake {
+export interface BillingGoogleSnake {
   nonce?: string;
   gateway?: string;
 }
 
-interface BillingAppleSnake {
+export interface BillingAppleSnake {
   nonce?: string;
   gateway?: string;
 }

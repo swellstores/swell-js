@@ -1,44 +1,49 @@
-import {
-  BaseModel,
-  Bundle,
-  CrossSell,
-  Image,
-  ProductOption,
-  Upsell,
-  Variant,
-} from '../index';
-import { Attribute } from '../attribute';
-import { Price, PurchaseOption } from './index';
+import { BaseModel, ResultsResponse } from '../index';
 
-interface ContentObject {
+import { Attribute } from '../attribute';
+
+import {
+  Product,
+  Variant,
+  Price,
+  ProductOption,
+  PurchaseOptions,
+  OptionValue,
+  CrossSell,
+  Upsell,
+  Bundle,
+  Image,
+} from './index';
+
+export interface ContentObject {
   [key: string]: unknown;
 }
 
-interface BundleSnake {
+export interface BundleSnake {
   id?: string;
   product_id?: string;
-  product?: ProductSnake;
+  product?: Product;
   product_name?: string;
   quantity?: number;
   variant_id?: string;
-  variant?: VariantSnake;
+  variant?: Variant;
 }
 
-interface CrossSellSnake {
+export interface CrossSellSnake {
   discount_type?: string;
   discount_amount?: number;
   discount_percent?: number;
   id?: string;
   product_id?: string;
-  product?: ProductSnake;
+  product?: Product;
 }
 
-interface OptionValueSnake {
+export interface OptionValueSnake {
   color?: string;
   description?: string;
   id?: string;
-  image?: ImageSnake;
-  images?: ImageSnake[];
+  image?: Image;
+  images?: Image[];
   name?: string;
   price?: number;
   shipment_weight?: number;
@@ -47,7 +52,7 @@ interface OptionValueSnake {
   subscription_trial_days?: number;
 }
 
-interface ProductOptionSnake {
+export interface ProductOptionSnake {
   active?: boolean;
   attribute_id?: string;
   description?: string;
@@ -68,15 +73,15 @@ interface ProductOptionSnake {
   required?: boolean;
   subscription?: boolean;
   variant?: boolean;
-  values?: OptionValueSnake[];
+  values?: OptionValue[];
 }
 
-interface UpsellSnake {
+export interface UpsellSnake {
   product?: string;
   product_id?: string;
 }
 
-interface ImageSnake {
+export interface ImageSnake {
   caption?: string;
   file?: {
     content_type?: string;
@@ -93,14 +98,14 @@ interface ImageSnake {
   id?: string;
 }
 
-interface PriceSnake {
+export interface PriceSnake {
   account_group?: string;
   price?: number;
   quantity_max?: number;
   quantity_min?: number;
 }
 
-interface VariantSnake extends BaseModel {
+export interface VariantSnake extends BaseModel {
   active?: boolean;
   archived?: boolean;
   attributes?: Attribute[];
@@ -108,23 +113,25 @@ interface VariantSnake extends BaseModel {
   cost?: number;
   currency?: string;
   name?: string;
-  images?: ImageSnake[];
+  images?: Image[];
   option_value_ids?: string[];
   orig_price?: number;
-  parent?: ProductSnake;
+  parent?: Product;
   parent_id?: string;
   price?: number;
-  prices?: PriceSnake[];
-  purchase_options?: PurchaseOption;
+  prices?: Price[];
+  purchase_options?: PurchaseOptions;
   sku?: string;
   stock_level?: number;
+  /** @deprecated use `purchase_options.subscription` instead */
   subscription_interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
+  /** @deprecated use `purchase_options.subscription` instead */
   subscription_trial_days?: number;
 }
 
 export interface ProductSnake extends BaseModel {
   active?: boolean;
-  attributes?: Record<string, AttributeSnake>;
+  attributes?: Record<string, Attribute>;
   bundle?: boolean;
   bundle_items?: Bundle[];
   category?: unknown;
@@ -152,7 +159,7 @@ export interface ProductSnake extends BaseModel {
   orig_price?: number;
   price?: number;
   prices?: Price[];
-  purchase_options?: PurchaseOption;
+  purchase_options?: PurchaseOptions;
   quantity_min?: number;
   quantity_inc?: number;
   related_product_ids?: string[];
@@ -180,6 +187,6 @@ export interface ProductSnake extends BaseModel {
   tags?: string[];
   up_sells?: Upsell[];
   variable?: boolean;
-  variants?: Variant[];
+  variants?: ResultsResponse<Variant>;
   virtual?: boolean;
 }

@@ -105,7 +105,7 @@ export default class PaypalDirectPayment extends Payment {
     }
   }
 
-  async _onCreateOrder(cart, data, actions) {
+  async _onCreateOrder(cart, _data, _actions) {
     const { require: { shipping: requireShipping = true } = {} } = this.params;
     const { capture_total, currency, subscription_delivery } = cart;
     const hasSubscriptionProduct = Boolean(subscription_delivery);

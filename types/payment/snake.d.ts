@@ -1,16 +1,18 @@
-import { Account } from '../account';
-import { Card } from '../card';
-import { BaseModel } from '../index';
-import { Invoice } from '../invoice';
-import { Order } from '../order';
-import { Refund } from '../refund';
-import { Subscription } from '../subscription';
+import { BaseModel, ResultsResponse } from '../index';
 
-interface PaymentSnake extends BaseModel {
+import { Account } from '../account';
+import { Subscription } from '../subscription';
+import { Giftcard } from '../giftcard';
+import { Invoice } from '../invoice';
+import { Refund } from '../refund';
+import { Order } from '../order';
+import { Card } from '../card';
+
+export interface PaymentSnake extends BaseModel {
   account?: Account;
-  account_card?: object; // TODO: Account Card
-  account_card_id?: string;
   account_id?: string;
+  account_card?: Card;
+  account_card_id?: string;
   amazon?: object;
   amount: number;
   amount_refundable?: number;
@@ -24,7 +26,7 @@ interface PaymentSnake extends BaseModel {
   date_async_update?: string;
   error?: object;
   gateway?: string;
-  giftcard?: object; // TODO: Add Gift Card
+  giftcard?: Giftcard;
   giftcard_id?: string;
   intent?: object;
   invoice?: Invoice;
@@ -33,8 +35,8 @@ interface PaymentSnake extends BaseModel {
   number?: string;
   order?: Order;
   order_id?: string;
-  paypal?: object; //TODO: Add Paypal Object
-  refunds?: Refund[];
+  paypal?: object; // TODO: Add Paypal Object
+  refunds?: ResultsResponse<Refund>;
   status?: 'pending' | 'error' | 'success' | 'authorized';
   subscription?: Subscription;
   subscription_id?: string;
@@ -43,19 +45,28 @@ interface PaymentSnake extends BaseModel {
   transaction_id?: string;
 }
 
-interface InputPaymentElementBaseSnake {
+export interface InputPaymentElementBaseSnake {
   element_id?: string;
-  on_change?: (event: unknown) => void; // optional, called when the Element value changes
-  on_ready?: (event: unknown) => void; // optional, called when the Element is fully rendered
-  on_focus?: (event: unknown) => void; // optional, called when the Element gains focus
-  on_blur?: (event: unknown) => void; // optional, called when the Element loses focus
+  /** @optional called when the Element value changes */
+  on_change?: (event: unknown) => void;
+  /** @optional called when the Element is fully rendered */
+  on_ready?: (event: unknown) => void;
+  /** @optional called when the Element gains focus */
+  on_focus?: (event: unknown) => void;
+  /** @optional called when the Element loses focus */
+  on_blur?: (event: unknown) => void;
+  /** @optional */
   on_escape?: (event: unknown) => void;
-  on_click?: (event: unknown) => void; // optional, called when the Element is clicked
-  on_success?: (event: unknown) => void; // optional, called on card payment success
-  on_error?: (event: unknown) => void; // optional, called on card payment error
+  /** @optional optional, called when the Element is clicked */
+  on_click?: (event: unknown) => void;
+  /** @optional called on card payment success */
+  on_success?: (event: unknown) => void;
+  /** @optional called on card payment error */
+  on_error?: (event: unknown) => void;
 }
 
-interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
+export interface InputPaymentElementCardSnake
+  extends InputPaymentElementBaseSnake {
   /** @see {@link https://docs.stripe.com/js/elements_object/create_element?type=card#elements_create-options} */
   options?: object;
   separate_elements?: boolean;
@@ -75,19 +86,22 @@ interface InputPaymentElementCardSnake extends InputPaymentElementBaseSnake {
   };
 }
 
-interface InputPaymentElementIdealSnake extends InputPaymentElementBaseSnake {
+export interface InputPaymentElementIdealSnake
+  extends InputPaymentElementBaseSnake {
   options?: {
-    style?: any;
+    style?: unknown;
   };
 }
 
-interface InputPaymentElementPaypalSnake extends InputPaymentElementBaseSnake {
+export interface InputPaymentElementPaypalSnake
+  extends InputPaymentElementBaseSnake {
   /** @see {@link https://developer.paypal.com/docs/checkout/integration-features/customize-button} */
-  style?: any;
+  style?: unknown;
 }
 
-interface InputPaymentElementAppleSnake extends InputPaymentElementBaseSnake {
-  style?: any;
+export interface InputPaymentElementAppleSnake
+  extends InputPaymentElementBaseSnake {
+  style?: unknown;
   require?: {
     shipping?: boolean;
     name?: boolean;
@@ -104,9 +118,10 @@ interface InputPaymentElementAppleSnake extends InputPaymentElementBaseSnake {
   };
 }
 
-interface InputPaymentElementGoogleSnake extends InputPaymentElementBaseSnake {
+export interface InputPaymentElementGoogleSnake
+  extends InputPaymentElementBaseSnake {
   locale?: string;
-  style?: any;
+  style?: unknown;
   require?: {
     email?: boolean;
     shipping?: boolean;
@@ -117,7 +132,9 @@ interface InputPaymentElementGoogleSnake extends InputPaymentElementBaseSnake {
   };
 }
 
-interface InputPaymentRedirectSnake {
-  on_success?: (event: unknown) => void; // optional, called on card payment success
-  on_error?: (event: unknown) => void; // optional, called on card payment error
+export interface InputPaymentRedirectSnake {
+  /** @optional called on card payment success */
+  on_success?: (event: unknown) => void;
+  /** @optional called on card payment error */
+  on_error?: (event: unknown) => void;
 }

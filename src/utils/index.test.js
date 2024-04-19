@@ -9,7 +9,7 @@ describe('utils/index', () => {
         head: {
           appendChild: (script) => global.headScripts.push(script),
         },
-        createElement: (tag) => {
+        createElement: (_tag) => {
           const script = {
             addEventListener(eventName, handler) {
               if (eventName === 'load') {

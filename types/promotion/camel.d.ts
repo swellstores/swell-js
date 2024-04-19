@@ -1,6 +1,7 @@
-import { SnakeToCamelCase } from '..';
-import { PromotionSnake } from './snake';
+import { ConvertSnakeToCamelCase } from '..';
+import { PromotionSnake, PromotionExclusionSnake } from './snake';
 
-export type PromotionCamel = {
-  [K in keyof PromotionSnake as SnakeToCamelCase<K>]: PromotionSnake[K];
-};
+export type PromotionExclusionCamel =
+  ConvertSnakeToCamelCase<PromotionExclusionSnake>;
+
+export type PromotionCamel = ConvertSnakeToCamelCase<PromotionSnake>;

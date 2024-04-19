@@ -8,6 +8,7 @@ import {
   BillingGoogleCamel,
   BillingAppleCamel,
 } from './camel';
+
 import {
   BillingSnake,
   BillingAffirmSnake,
@@ -21,13 +22,17 @@ import {
 
 export interface Billing extends BillingCamel, BillingSnake {}
 export interface BillingAffirm extends BillingAffirmCamel, BillingAffirmSnake {}
+
 export interface BilingResolve
   extends BillingResolveCamel,
     BillingResolveSnake {}
+
 export interface BillingKlarna extends BillingKlarnaCamel, BillingKlarnaSnake {}
 export interface BillingIdeal extends BillingIdealCamel, BillingIdealSnake {}
+
 export interface BillingBancontact
   extends BillingBancontactCamel,
     BillingBancontactSnake {}
+
 export interface BillingGoogle extends BillingGoogleCamel, BillingGoogleSnake {}
 export interface BillingApple extends BillingAppleCamel, BillingAppleSnake {}

@@ -49,6 +49,8 @@
     "@rollup/plugin-replace": "5.0.5",
     "@stripe/stripe-js": "^3.1.0",
     "@types/jest": "^29.5.11",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "babel-jest": "^29.5.0",
     "babel-loader": "^9.1.3",
     "cross-var": "^1.1.0",
@@ -57,6 +59,8 @@
     "esbuild": "^0.19.5",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jest": "^27.6.3",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "^7.33.2",
@@ -84,6 +88,7 @@
     "rollup-plugin-node-globals": "1.4.0",
     "rollup-plugin-polyfill-node": "0.13.0",
     "style-loader": "^3.3.4",
+    "typescript": "~5.3.3",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
@@ -97,7 +102,9 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "bump": "npm version patch && npm publish",
+    "prepare": "git config core.hooksPath .git-hooks || echo 'Not in a git repo'",
     "prepack": "rimraf dist && npm run build",
-    "lint": "prettier --write \"{src,types}/**/*.{js,jsx,json,ts}\""
+    "lint": "eslint \"{src,types}/**/*.{js,jsx,json,ts}\"",
+    "lint:fix": "npm run lint -- --fix"
   }
 }

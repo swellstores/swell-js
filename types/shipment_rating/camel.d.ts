@@ -1,10 +1,7 @@
-import { SnakeToCamelCase } from '..';
+import { ConvertSnakeToCamelCase } from '..';
 import { ShipmentRatingSnake, ShipmentServiceSnake } from './snake';
 
-export type ShipmentRatingCamel = {
-  [K in keyof ShipmentRatingSnake as SnakeToCamelCase<K>]: ShipmentRatingSnake[K];
-};
+export type ShipmentRatingCamel = ConvertSnakeToCamelCase<ShipmentRatingSnake>;
 
-export type ShipmentServiceCamel = {
-  [K in keyof ShipmentServiceSnake as SnakeToCamelCase<K>]: ShipmentServiceSnake[K];
-};
+export type ShipmentServiceCamel =
+  ConvertSnakeToCamelCase<ShipmentServiceSnake>;

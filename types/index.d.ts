@@ -3,16 +3,6 @@
 // Thanks to contributor Gus Fune <https://github.com/gusfune>
 // Credit Stackoverflow user ford04 for SnakeToCamelCase function
 // https://stackoverflow.com/questions/60269936/typescript-convert-generic-object-from-snake-to-camel-case
-/// <reference path="./attribute/index.d.ts" />
-/// <reference path="./account/index.d.ts" />
-/// <reference path="./card/index.d.ts" />
-/// <reference path="./category/index.d.ts" />
-/// <reference path="./content/index.d.ts" />
-/// <reference path="./currency/index.d.ts" />
-/// <reference path="./locale/index.d.ts" />
-/// <reference path="./order/index.d.ts" />
-/// <reference path="./product/index.d.ts" />
-/// <reference path="./settings/index.d.ts" />
 
 import { Account, Address, PasswordTokenInput } from './account';
 import { Attribute } from './attribute';
@@ -24,6 +14,7 @@ import { Category } from './category';
 import { Locale } from './locale';
 import { Order } from './order';
 import { Product, FlexibleProductInput, PriceRange } from './product';
+
 import {
   InputPaymentElementCard,
   InputPaymentElementIdeal,
@@ -33,6 +24,7 @@ import {
   Payment,
   InputPaymentRedirect,
 } from './payment';
+
 import { Settings } from './settings';
 import { Subscription } from './subscription';
 import { Invoice } from './invoice';
@@ -40,38 +32,50 @@ import { ShipmentRating } from './shipment_rating';
 
 export * from './account';
 export * from './attribute';
+export * from './billing';
 export * from './card';
 export * from './cart';
 export * from './category';
-export * from './category';
 export * from './content';
+export * from './coupon';
 export * from './currency';
+export * from './discount';
+export * from './giftcard';
+export * from './invoice';
 export * from './locale';
 export * from './order';
 export * from './payment';
 export * from './product';
+export * from './promotion';
+export * from './purchase_link';
+export * from './refund';
 export * from './settings';
+export * from './shipment_rating';
 export * from './subscription';
 
 export as namespace swell;
 
-export type SnakeToCamelCase<S extends any> = S extends `${infer T}_${infer U}`
+export type SnakeToCamelCase<S> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
   : S;
 
+export type ConvertSnakeToCamelCase<T> = {
+  [K in keyof T as SnakeToCamelCase<K>]: T[K];
+};
+
 export interface BaseModel {
+  id?: string;
   date_created?: string;
   date_updated?: string;
-  id?: string;
 }
 
 export interface Query {
   limit?: number;
   page?: number;
-  where?: { [key: string]: any };
+  where?: Record<string, unknown>;
   expand?: string[] | string;
   search?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface IncludeQuery {
@@ -107,20 +111,21 @@ export interface ResultsResponse<T> {
     };
   };
   page_count?: number;
-  results: Array<T>;
+  pageCount?: number;
+  results: T[];
 }
 
 export interface Tax {
-  amount?: number;
   id?: string;
   name?: string;
+  amount?: number;
   priority?: number;
   rate?: number;
 }
 
-export interface Discount {
-  amount?: number;
+export interface ItemDiscount {
   id?: string;
+  amount?: number;
 }
 
 export function init(
@@ -130,126 +135,158 @@ export function init(
 ): void;
 
 export namespace account {
-  function create(input: Account): Promise<Account>;
-  function createAddress(input: Address): Promise<Address>;
-  function createCard(input: Card): Promise<Card>;
-  function deleteAddress(id: string): Promise<Address>;
-  function deleteCard(id: string): Promise<Card>;
-  function get(): Promise<Account | null>;
-  function getAddresses(input: object): Promise<Address>;
-  function getCards(input: object): Promise<Card[]>;
-  function getOrder(id: string): Promise<Order>;
-  function getOrders(): Promise<ResultsResponse<Order>>;
-  function listAddresses(): Promise<ResultsResponse<Address>>;
-  function listCards(): Promise<ResultsResponse<Card>>;
-  function updateCard(id: string, input: Card): Promise<Card>;
-  function listOrders(input?: object): Promise<ResultsResponse<Order>>;
-  function login(
+  export function create(input: Account): Promise<Account>;
+
+  export function login(
     user: string,
     password: string | PasswordTokenInput,
   ): Promise<Account | null>;
-  function logout(): Promise<unknown>;
-  function recover(input: object): Promise<Account>;
-  function update(input: Account): Promise<Account>;
-  function updateAddress(id: string, input: Address): Promise<Address>;
+
+  export function logout(): Promise<unknown>;
+  export function recover(input: object): Promise<Account>;
+  export function update(input: Account): Promise<Account>;
+  export function get(query?: object): Promise<Account | null>;
+
+  export function listAddresses(
+    input?: object,
+  ): Promise<ResultsResponse<Address>>;
+
+  /** @deprecated use `listAddresses` instead */
+  export function getAddresses(
+    input?: object,
+  ): Promise<ResultsResponse<Address>>;
+
+  export function createAddress(input: Address): Promise<Address>;
+  export function updateAddress(id: string, input: Address): Promise<Address>;
+  export function deleteAddress(id: string): Promise<Address>;
+
+  export function listCards(query?: object): Promise<ResultsResponse<Card>>;
+  /** @deprecated use `listCards` instead */
+  export function getCards(query?: object): Promise<ResultsResponse<Card>>;
+  export function createCard(input: Card): Promise<Card>;
+  export function updateCard(id: string, input: Card): Promise<Card>;
+  export function deleteCard(id: string): Promise<Card>;
+
+  export function listOrders(query?: object): Promise<ResultsResponse<Order>>;
+  /** @deprecated use `listOrders` instead */
+  export function getOrders(query?: object): Promise<ResultsResponse<Order>>;
+  export function getOrder(id: string): Promise<Order | null>;
 }
 
 export namespace attributes {
-  function get(input: string): Promise<Attribute>;
-  function list(input?: object): Promise<ResultsResponse<Attribute>>;
+  export function get(id: string, query?: object): Promise<Attribute | null>;
+  export function list(query?: object): Promise<ResultsResponse<Attribute>>;
 }
 
 export namespace card {
-  function createToken(input: InputCreateToken): Promise<TokenResponse>;
-  function validateCVC(code: string): boolean;
-  function validateExpiry(month: string, year: string): boolean;
-  function validateNumber(input: string): boolean;
+  export function createToken(input: InputCreateToken): Promise<TokenResponse>;
+  export function validateCVC(code: string): boolean;
+  export function validateExpiry(month: string, year: string): boolean;
+  export function validateNumber(cardNumber: string): boolean;
 }
 
 export namespace cart {
-  function addItem(input: CartItem): Promise<Cart>;
-  function applyCoupon(input: string): Promise<Cart>;
-  function applyGiftcard(input: string): Promise<Cart>;
-  function get(input?: string): Promise<Cart | null>;
-  function getSettings(): Promise<Settings>;
-  function getShippingRates(): Promise<ShipmentRating>;
-  function recover(input: string): Promise<Cart>;
-  function removeCoupon(input: string): Promise<Cart>;
-  function removeGiftcard(input: string): Promise<Cart>;
-  function removeItem(input: string): Promise<Cart>;
-  function setItems(input: CartItem[]): Promise<Cart>;
-  function submitOrder(): Promise<Order>;
-  function updateItem(id: string, input: CartItem): Promise<Cart>;
-  function update(input: object): Promise<Cart>;
-  function getOrder(checkoutId?: string): Promise<Order>;
+  export function get(): Promise<Cart | null>;
+  export function update(input: object): Promise<Cart>;
+  export function recover(input: string): Promise<Cart>;
+
+  export function getSettings(): Promise<Settings>;
+  export function getShippingRates(): Promise<ShipmentRating>;
+
+  export function addItem(input: CartItem): Promise<Cart>;
+  export function setItems(input: CartItem[]): Promise<Cart>;
+  export function updateItem(id: string, input: CartItem): Promise<Cart>;
+  export function removeItem(id: string): Promise<Cart>;
+
+  export function applyCoupon(code: string): Promise<Cart>;
+  export function removeCoupon(): Promise<Cart>;
+
+  export function applyGiftcard(code: string): Promise<Cart>;
+  export function removeGiftcard(id: string): Promise<Cart>;
+
+  export function submitOrder(): Promise<Order>;
+  export function getOrder(checkoutId?: string): Promise<Order | null>;
 }
 
 export namespace categories {
-  function get(input: string): Promise<Category>;
-  function list(input?: object): Promise<ResultsResponse<Category>>;
+  export function get(id: string, query?: object): Promise<Category | null>;
+  export function list(query?: object): Promise<ResultsResponse<Category>>;
 }
 
 export namespace content {
-  function get(
+  export function get(
     type: string,
     id: string,
     query?: Query,
-  ): Promise<Content> | Promise<ResultsResponse<Content>>;
-  function list(type: string, query?: Query): Promise<ResultsResponse<Content>>;
+  ): Promise<Content | ResultsResponse<Content>>;
+
+  export function list(
+    type: string,
+    query?: Query,
+  ): Promise<ResultsResponse<Content>>;
 }
 
 export namespace currency {
-  function format(input: number, format: FormatInput): string;
-  function list(): Promise<Array<EnabledCurrency>>;
-  function select(input: string): Promise<SelectCurrencyReturn>;
-  function selected(): Promise<string>;
+  export function format(amount: number, format: FormatInput): string;
+  export function set(code?: string): EnabledCurrency;
+  export function get(): EnabledCurrency;
+  export function list(): EnabledCurrency[] | Promise<EnabledCurrency[]>;
+  export function select(currency: string): Promise<SelectCurrencyReturn>;
+  export function selected(): string;
 }
 
 export namespace locale {
-  function get(): Promise<Locale>;
-  function list(): Promise<Array<Locale>>;
-  function selected(): Promise<string>;
-  function select(locale: string): Promise<{ locale: string }>;
-  function set(code: string): Promise<Locale>;
+  export function get(): Locale;
+  export function set(code: string): Locale;
+  export function list(): Locale[] | Promise<Locale[]>;
+  export function select(locale: string): Promise<{ locale: string }>;
+  export function selected(): string;
 }
 
 export namespace payment {
-  function get(id: string): Promise<Payment>;
-  function methods(): Promise<object>;
-  function createElements(input: {
+  export function get(id: string): Promise<Payment>;
+  export function methods(): Promise<object>;
+
+  export function createElements(input: {
     card?: InputPaymentElementCard;
     ideal?: InputPaymentElementIdeal;
     paypal?: InputPaymentElementPaypal;
     google?: InputPaymentElementGoogle;
     apple?: InputPaymentElementApple;
   }): Promise<void>;
-  function tokenize(input: {
+
+  export function tokenize(input?: {
     card?: object;
     ideal?: object;
     klarna?: object;
     bancontact?: object;
     paysafecard?: object;
     amazon?: object;
-  }): Promise<unknown>;
-  function handleRedirect(input: {
+  }): Promise<void>;
+
+  export function handleRedirect(input?: {
     card?: InputPaymentRedirect;
     paysafecard?: InputPaymentRedirect;
     klarna?: InputPaymentRedirect;
-  }): Promise<unknown>;
-  function authenticate(id: string): Promise<unknown>;
-  function resetAsyncPayment(id: string): Promise<unknown>;
-  function createIntent(input: {
+  }): Promise<void>;
+
+  export function authenticate(id: string): Promise<object>;
+  export function resetAsyncPayment(id: string): Promise<object>;
+
+  export function createIntent(input: {
     gateway: string;
     intent: object;
-  }): Promise<unknown>;
-  function updateIntent(input: {
+  }): Promise<object>;
+
+  export function updateIntent(input: {
     gateway: string;
     intent: object;
-  }): Promise<unknown>;
-  function authorizeGateway(input: {
+  }): Promise<object>;
+
+  export function authorizeGateway(input: {
     gateway: string;
     params?: object;
-  }): Promise<unknown>;
+  }): Promise<object>;
 }
 
 export interface ProductQuery extends Query {
@@ -259,95 +296,121 @@ export interface ProductQuery extends Query {
 }
 
 export namespace products {
-  function categories(
+  export function categories(products: FlexibleProductInput): Category[];
+
+  export function filters(
     products: FlexibleProductInput,
-  ): Promise<ResultsResponse<Category>>;
-  function filters(products: FlexibleProductInput): Promise<object[]>;
-  function filterableAttributeFilters(
-    products: Array<Product>,
     options?: object,
-  ): Array<Attribute>;
-  function get(id: string, input?: ProductQuery): Promise<Product>;
-  function list(input?: ProductQuery): Promise<ResultsResponse<Product>>;
-  function priceRange(product: FlexibleProductInput): PriceRange;
-  function variation(product: Product, options: object): Promise<Product>;
+  ): object[];
+
+  export function filterableAttributeFilters(
+    products: Product[],
+    options?: object,
+  ): Promise<object[]>;
+
+  export function get(id: string, query?: ProductQuery): Promise<Product>;
+  export function list(query?: ProductQuery): Promise<ResultsResponse<Product>>;
+  export function priceRange(product: FlexibleProductInput): PriceRange;
+
+  export function attributes(products: FlexibleProductInput): Attribute[];
+
+  export function variation(
+    product: Product,
+    options: object,
+    purchaseOption?: object,
+  ): Product;
 }
 
 export namespace settings {
-  function get(
+  export function get(
     id?: string,
-    def?: string | number | Settings,
-  ): Promise<Settings>;
-  function getCurrentLocale(): Promise<string>;
-  function getStoreLocale(): Promise<string>;
-  function getStoreLocales(): Promise<Array<string>>;
-  function load(): Promise<Settings> | null;
-  function menus(input?: string): Promise<Settings>;
-  function payments(
+    defaultValue?: string | number | Settings,
+  ): Settings | Promise<Settings>;
+
+  export function refresh(): Promise<Settings>;
+  export function getCurrentLocale(): string;
+  export function getStoreLocale(): string;
+  export function getStoreLocales(): Locale[];
+  export function load(): Promise<void>;
+
+  export function menus(
     id?: string,
-    def?: string | number | Settings,
-  ): Promise<Settings>;
-  function subscriptions(
+    defaultValue?: unknown,
+  ): Settings | Promise<Settings>;
+
+  export function payments(
     id?: string,
-    def?: string | number | Settings,
-  ): Promise<Settings>;
-  function session(
+    defaultValue?: string | number | Settings,
+  ): Settings | Promise<Settings>;
+
+  export function subscriptions(
     id?: string,
-    def?: string | number | Settings,
-  ): Promise<Settings>;
+    defaultValue?: string | number | Settings,
+  ): Settings | Promise<Settings>;
+
+  export function session(
+    id?: string,
+    defaultValue?: string | number | Settings,
+  ): Settings | Promise<Settings>;
 }
 
 export namespace subscriptions {
-  function addItem(id: string, input: object): Promise<Subscription>;
-  function create(input: object): Promise<Subscription>;
-  function get(id: string): Promise<Subscription>;
-  function list(): Promise<ResultsResponse<Subscription>>;
-  function removeItem(id: string, itemId: string): Promise<unknown>;
-  function update(id: string, input: object): Promise<Subscription>;
-  function updateItem(
+  export function create(input: object): Promise<Subscription>;
+  export function update(id: string, input: object): Promise<Subscription>;
+  export function list(query?: object): Promise<ResultsResponse<Subscription>>;
+  export function get(id: string, query?: object): Promise<Subscription | null>;
+
+  export function addItem(id: string, input: object): Promise<Subscription>;
+
+  export function updateItem(
     id: string,
     itemId: string,
-    input: any,
+    input: object,
   ): Promise<Subscription>;
+
+  export function removeItem(id: string, itemId: string): Promise<unknown>;
 }
 
 export namespace invoices {
-  function get(id: string): Promise<Invoice>;
-  function list(): Promise<ResultsResponse<Invoice>>;
+  export function get(id: string, query?: object): Promise<Invoice | null>;
+  export function list(query?: object): Promise<ResultsResponse<Invoice>>;
 }
 
 export namespace session {
-  function get(): Promise<{ [key: string]: any }>;
-  function getCookie(): string;
-  function setCookie(): string;
+  export function get(): Promise<Record<string, unknown>>;
+  export function getCookie(): string;
+  export function setCookie(): string;
 }
 
 export namespace functions {
-  function request(
+  export function request<T>(
     method: string,
     appId: string,
     functionName: string,
-    data?: any,
-    options?: any,
-  ): Promise<any>;
-  function get(
+    data?: unknown,
+    options?: unknown,
+  ): Promise<T>;
+
+  export function get(
     appId: string,
     functionName: string,
-    data?: any,
-    options?: any,
-  ): Promise<any>;
-  function put(
+    data?: unknown,
+    options?: unknown,
+  ): Promise<object | null>;
+
+  export function put(
     appId: string,
     functionName: string,
-    data?: any,
-    options?: any,
-  ): Promise<any>;
-  function post(
+    data?: unknown,
+    options?: unknown,
+  ): Promise<object>;
+
+  export function post(
     appId: string,
     functionName: string,
-    data?: any,
-    options?: any,
-  ): Promise<any>;
+    data?: unknown,
+    options?: unknown,
+  ): Promise<object>;
 }
 
 // Backward compatible functions
@@ -358,8 +421,8 @@ export function auth(
   options?: InitOptions,
 ): void;
 
-export function get(url: string, query?: Query): Promise<unknown>;
+export function get<T>(url: string, query?: Query): Promise<T>;
 
-export function put(url: string, query?: Query): Promise<unknown>;
+export function put<T>(url: string, query?: Query): Promise<T>;
 
-export function post(url: string, query?: Query): Promise<unknown>;
+export function post<T>(url: string, query?: Query): Promise<T>;

@@ -1,15 +1,19 @@
+import { BaseModel, ItemDiscount, Tax } from '../index';
+
+import { Order, OrderShipping } from '../order';
+import { Subscription } from '../subscription';
+import { Discount } from '../discount';
 import { Account } from '../account';
-import { Order } from '../order';
-import { BaseModel, Discount, Tax } from '../index';
 import { Product } from '../product';
 import { Billing } from '../billing';
 import { Coupon } from '../coupon';
-interface InvoiceItems extends BaseModel {
+
+export interface InvoiceItems {
+  id?: string;
   delivery?: string;
   discount_total?: number;
   discount_each?: number;
-  discounts?: Discount[];
-  id?: string;
+  discounts?: ItemDiscount[];
   product_id?: string;
   product?: Product;
   price?: number;
@@ -21,13 +25,13 @@ interface InvoiceItems extends BaseModel {
   tax_each?: number;
 }
 
-interface InvoiceSnake extends BaseModel {
-  account_id?: string;
+export interface InvoiceSnake extends BaseModel {
   account?: Account;
+  account_id?: string;
   billing?: Billing;
   coupon?: Coupon;
-  coupon_code?: string;
   coupon_id?: string;
+  coupon_code?: string;
   currency?: string;
   currency_rate?: string;
   date_due?: string;
@@ -38,15 +42,16 @@ interface InvoiceSnake extends BaseModel {
   discount_total?: number;
   discounts?: Discount[];
   grand_total?: number;
-  shipping?: object; // TODO: Add shipping
+  shipping?: OrderShipping;
+  subscription?: Subscription;
   subscription_id?: string;
   item_discount?: number;
   item_tax?: number;
   items?: InvoiceItems[];
   number?: string;
   notes?: string;
-  order_id?: string;
   order?: Order;
+  order_id?: string;
   paid?: boolean;
   payment_total?: number;
   status?: 'pending' | 'void' | 'unpaid' | 'paid';
@@ -56,4 +61,5 @@ interface InvoiceSnake extends BaseModel {
   taxes?: Tax[];
   taxes_fixed?: boolean;
   unpaid?: boolean;
+  void?: boolean;
 }

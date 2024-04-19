@@ -30,6 +30,7 @@ export function describePayment(description, callback) {
   const request = jest.fn();
   const options = {};
 
+  // eslint-disable-next-line jest/valid-title
   describe(description, () => {
     beforeEach(() => {
       mockWindow();

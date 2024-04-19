@@ -1,17 +1,27 @@
-import { BaseModel, Discount, Tax } from '../index';
+import { BaseModel, ItemDiscount, ResultsResponse, Tax } from '../index';
+
+import { Cart, CartItemPurchaseOption } from '../cart';
 import { Product, Variant } from '../product';
-import { Subscription } from '../subscription';
-import { Account } from '../account';
+import { Account, Address } from '../account';
+import { Giftcard } from '../giftcard';
 import { Payment } from '../payment';
-import { Cart } from '../cart';
-import { Order, OrderGiftCard, OrderOption, OrderShipping } from '.';
 import { Billing } from '../billing';
 import { Coupon } from '../coupon';
+import { Discount } from '../discount';
 import { Promotion } from '../promotion';
-import { PurhcaseLink } from '../purchase_link';
+import { Subscription } from '../subscription';
+import { PurchaseLink } from '../purchase_link';
 import { ShipmentRating } from '../shipment_rating';
 
-interface OrderOptionSnake {
+import {
+  Order,
+  OrderItem,
+  OrderGiftCard,
+  OrderOption,
+  OrderShipping,
+} from './index';
+
+export interface OrderOptionSnake {
   id?: string;
   name?: string;
   price?: number;
@@ -21,13 +31,13 @@ interface OrderOptionSnake {
   value_id: string;
 }
 
-interface OrderItemSnake extends BaseModel {
+export interface OrderItemSnake extends BaseModel {
   bundle_items?: object[];
   delivery?: 'shipment' | 'subscription' | 'giftcard' | null;
   description?: string;
   discount_each?: number;
   discount_total?: number;
-  discounts?: Discount[];
+  discounts?: ItemDiscount[];
   metadata?: object;
   options?: OrderOption[];
   orig_price?: number;
@@ -37,10 +47,14 @@ interface OrderItemSnake extends BaseModel {
   product_name?: string;
   product?: Product;
   quantity?: number;
+  purchase_option?: CartItemPurchaseOption;
   shipment_location?: string;
   shipment_weight?: number;
+  /** @deprecated use `purchase_option` instead */
   subscription_interval?: string;
+  /** @deprecated use `purchase_option` instead */
   subscription_interval_count?: number;
+  /** @deprecated use `purchase_option` instead */
   subscription_trial_days?: number;
   subscription_paid?: boolean;
   tax_each?: number;
@@ -51,7 +65,7 @@ interface OrderItemSnake extends BaseModel {
   variant?: Variant;
 }
 
-interface OrderShippingSnake {
+export interface OrderShippingSnake {
   name?: string;
   first_name?: string;
   last_name?: string;
@@ -67,24 +81,24 @@ interface OrderShippingSnake {
   price?: number;
   default?: boolean;
   account_address_id?: string;
-  account_address?: any;
+  account_address?: Address;
   pickup?: boolean;
 }
 
-interface OrderGiftCardSnake {
+export interface OrderGiftCardSnake {
   id?: string;
   amount?: number;
   code?: string;
   code_formatted?: string;
   last4?: string;
-  giftcard?: any; // TODO: complete this
+  giftcard?: Giftcard;
 }
 
-interface OrderSnake extends BaseModel {
+export interface OrderSnake extends BaseModel {
   account?: Account;
+  account_id?: string;
   account_credit_amount?: number;
   account_credit_applied?: boolean;
-  account_id?: string;
   account_info_saved?: boolean;
   account_logged_in?: boolean;
   active?: boolean;
@@ -98,8 +112,8 @@ interface OrderSnake extends BaseModel {
   closed?: boolean;
   comments?: string;
   coupon?: Coupon;
-  coupon_code?: string;
   coupon_id?: string;
+  coupon_code?: string;
   credit_total?: number;
   credits?: object[];
   currency?: string;
@@ -144,7 +158,7 @@ interface OrderSnake extends BaseModel {
   item_shipment_weight?: number;
   item_tax?: number;
   item_tax_included?: boolean;
-  items?: OrderItemSnake[];
+  items?: OrderItem[];
   metadata?: object;
   next?: Order;
   next_id?: string;
@@ -158,14 +172,14 @@ interface OrderSnake extends BaseModel {
   payment_retry_count?: number;
   payment_retry_resolve?: string;
   payment_total?: string;
-  payments?: Payment[];
+  payments?: ResultsResponse<Payment>;
   pending_invoices?: object[];
   prev?: Order;
   prev_id?: string;
   promotion_ids?: string[];
-  promotions?: Promotion[];
+  promotions?: ResultsResponse<Promotion>;
   purchase_link_ids?: string[];
-  purchase_links?: PurhcaseLink[];
+  purchase_links?: ResultsResponse<PurchaseLink>;
   purchase_links_errors?: object[];
   refund_marked?: boolean;
   refund_total?: number;
@@ -198,8 +212,8 @@ interface OrderSnake extends BaseModel {
     | 'canceled';
   sub_total?: number;
   subscription?: Subscription;
-  subscription_delivery?: boolean;
   subscription_id?: string;
+  subscription_delivery?: boolean;
   tax_included_total?: number;
   tax_total?: number;
   taxes?: Tax[];

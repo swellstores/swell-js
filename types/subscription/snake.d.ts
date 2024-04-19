@@ -1,27 +1,32 @@
-import { Account } from '../account';
+import { BaseModel, ItemDiscount, ResultsResponse, Tax } from '../index';
+
 import {
-  BaseModel,
-  Discount,
-  Payment,
   SubscriptionBillingSchedule,
-  Tax,
-} from '../index';
+  SubscriptionOrderSchedule,
+} from '../subscription';
+
+import { Account } from '../account';
+import { CartItemOptions, CartItemPurchaseOption } from '../cart';
 import { Product, Variant } from '../product';
+import { Discount } from '../discount';
+import { Payment } from '../payment';
 import { Invoice } from '../invoice';
 import { Billing } from '../billing';
 import { Coupon } from '../coupon';
 import { Refund } from '../refund';
+import { Order } from '../order';
 
-interface SubscriptionItems extends BaseModel {
-  date_created?: string;
+export interface SubscriptionItem {
+  id: string;
   description?: string;
   discount_total?: number;
   discount_each?: number;
-  id?: string;
+  discounts?: ItemDiscount[];
   proration?: boolean;
   price?: number;
   price_total?: number;
   quantity?: number;
+  purchase_option?: CartItemPurchaseOption;
   recurring_price?: number;
   recurring_price_total?: number;
   recurring_discount_total?: number;
@@ -32,25 +37,29 @@ interface SubscriptionItems extends BaseModel {
   tax_each?: number;
 }
 
-interface SubscriptionBillingScheduleSnake {
+export interface SubscriptionOrderScheduleSnake {
   interval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   interval_count?: number;
-  trial_days?: number;
   limit?: number;
   limit_current?: number;
   date_limit_end?: string;
 }
 
-interface SubscriptionSnake extends BaseModel {
-  account_id?: string;
+export interface SubscriptionBillingScheduleSnake
+  extends SubscriptionOrderScheduleSnake {
+  trial_days?: number;
+}
+
+export interface SubscriptionSnake extends BaseModel {
   account?: Account;
+  account_id?: string;
   active?: boolean;
   billing?: Billing;
   billing_schedule?: SubscriptionBillingSchedule;
   bundle_item_id?: string;
   coupon?: Coupon;
-  coupon_code?: string;
   coupon_id?: string;
+  coupon_code?: string;
   cancel_at_end?: boolean;
   cancel_reason?: string;
   canceled?: boolean;
@@ -70,45 +79,44 @@ interface SubscriptionSnake extends BaseModel {
   date_resumed?: string;
   date_trial_end?: string;
   date_trial_start?: string;
-  date_updated?: string;
   discount_total?: number;
   discounts?: Discount[];
   draft?: boolean;
   grand_total?: number;
   interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
   interval_count?: number;
-  invoices?: Invoice[];
+  invoices?: ResultsResponse<Invoice>;
   invoice_total?: number;
   item_discount?: number;
   item_tax?: number;
   item_total?: number;
-  items?: SubscriptionItems[];
+  items?: SubscriptionItem[];
   number?: string;
-  product_id?: string;
   notes?: string;
-  options?: object[];
+  options?: CartItemOptions[];
   order_id?: string;
   order_item_id?: string;
-  order_schedule?: string;
-  orders?: object[];
+  order_schedule?: SubscriptionOrderSchedule;
+  orders?: ResultsResponse<Order>;
   ordering?: boolean;
   paid?: boolean;
-  payments?: Payment[];
+  payments?: ResultsResponse<Payment>;
   payment_balance?: number;
   payment_total?: number;
-  pending_invoices?: Invoice[];
+  pending_invoices?: ResultsResponse<Invoice>;
   plan_id?: string;
   plan_name?: string;
   price?: number;
   price_total?: number;
   product?: Product;
+  product_id?: string;
+  product_name?: string;
   product_discount_each?: number;
   product_discount_total?: number;
-  product_discounts?: number;
+  product_discounts?: ItemDiscount[];
   product_tax_each?: number;
   product_tax_total?: number;
-  product_taxes?: number;
-  product_name?: string;
+  product_taxes?: Tax[];
   prorated?: boolean;
   quantity?: number;
   recurring_discount_total?: number;
@@ -118,7 +126,7 @@ interface SubscriptionSnake extends BaseModel {
   recurring_tax_included_total?: number;
   recurring_tax_total?: number;
   recurring_total?: number;
-  refunds?: Refund;
+  refunds?: ResultsResponse<Refund>;
   refund_total?: number;
   status?:
     | 'pending'

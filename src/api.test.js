@@ -86,7 +86,7 @@ describe('api', () => {
     });
 
     it('should trim url', async () => {
-      const result = await api.request('get', '///test///');
+      await api.request('get', '///test///');
 
       expect(fetch.mock.calls.length).toEqual(1);
       expect(fetch.mock.calls[0][0]).toEqual(
@@ -181,26 +181,22 @@ describe('api', () => {
 
     it('should throw on response error', async () => {
       // Error as string
-      try {
+      await expect(async () => {
         fetch.mockResponseOnce(
           JSON.stringify({ error: 'something went wrong' }),
         );
         await api.request('get', '/test');
         throw new Error('failed');
-      } catch (err) {
-        expect(err.message).toEqual('something went wrong');
-      }
+      }).rejects.toThrow('something went wrong');
 
       // Error as object
-      try {
+      await expect(async () => {
         fetch.mockResponseOnce(
           JSON.stringify({ error: { message: 'something went wrong' } }),
         );
         await api.request('get', '/test');
         throw new Error('failed');
-      } catch (err) {
-        expect(err.message).toEqual('something went wrong');
-      }
+      }).rejects.toThrow('something went wrong');
     });
   });
 
@@ -289,45 +285,43 @@ describe('api', () => {
   });
 
   // Test standard models
-  ['products', 'categories'].forEach((model) => {
-    describe(model, () => {
-      describe('get', () => {
-        it(`should make request to GET /${model}`, async () => {
-          await api[model].get();
+  describe.each(['products', 'categories'])('%s', (model) => {
+    describe('get', () => {
+      it(`should make request to GET /${model}`, async () => {
+        await api[model].get();
 
-          expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(
-            `https://test.swell.store/api/${model}`,
-          );
-          expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
-        });
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][0]).toEqual(
+          `https://test.swell.store/api/${model}`,
+        );
+        expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'get');
+      });
 
-        it(`should make request to GET /${model} with query`, async () => {
-          await api[model].get({ limit: 10, page: 1 });
+      it(`should make request to GET /${model} with query`, async () => {
+        await api[model].get({ limit: 10, page: 1 });
 
-          expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(
-            `https://test.swell.store/api/${model}?limit=10&page=1`,
-          );
-        });
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][0]).toEqual(
+          `https://test.swell.store/api/${model}?limit=10&page=1`,
+        );
+      });
 
-        it(`should make request to GET /${model}/id`, async () => {
-          await api[model].get('12345');
+      it(`should make request to GET /${model}/id`, async () => {
+        await api[model].get('12345');
 
-          expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(
-            `https://test.swell.store/api/${model}/12345`,
-          );
-        });
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][0]).toEqual(
+          `https://test.swell.store/api/${model}/12345`,
+        );
+      });
 
-        it(`should make request to GET /${model}/id?query`, async () => {
-          await api[model].get('12345', { query: '123' });
+      it(`should make request to GET /${model}/id?query`, async () => {
+        await api[model].get('12345', { query: '123' });
 
-          expect(fetch.mock.calls.length).toEqual(1);
-          expect(fetch.mock.calls[0][0]).toEqual(
-            `https://test.swell.store/api/${model}/12345?query=123`,
-          );
-        });
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][0]).toEqual(
+          `https://test.swell.store/api/${model}/12345?query=123`,
+        );
       });
     });
   });
@@ -348,7 +342,7 @@ describe('api', () => {
       api.init('test', 'pk_test', { useCamelCase: true });
 
       const data = { query_test: true };
-      const response = await api.account.get(data);
+      await api.account.get(data);
       expect(data).toEqual({ query_test: true });
     });
   });

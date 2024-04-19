@@ -3,6 +3,7 @@
   "parser": "@babel/eslint-parser",
   "extends": [
     "eslint:recommended",
+    "plugin:import/recommended",
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
@@ -13,6 +14,12 @@
   "settings": {
     "react": {
       "version": "detect"
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {}
     }
   },
   "env": {
@@ -23,6 +30,11 @@
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   },
   "overrides": [
+    {
+      "files": ["*.d.ts"],
+      "parser": "@typescript-eslint/parser",
+      "extends": ["plugin:@typescript-eslint/recommended"]
+    },
     {
       "files": [
         "*.test.js",

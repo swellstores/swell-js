@@ -1,10 +1,15 @@
-import { SnakeToCamelCase } from '..';
-import { SubscriptionBillingScheduleSnake, SubscriptionSnake } from './snake';
+import { ConvertSnakeToCamelCase } from '..';
 
-export type SubscriptionCamel = {
-  [K in keyof SubscriptionSnake as SnakeToCamelCase<K>]: SubscriptionSnake[K];
-};
+import {
+  SubscriptionBillingScheduleSnake,
+  SubscriptionOrderScheduleSnake,
+  SubscriptionSnake,
+} from './snake';
 
-export type SubscriptionBillingScheduleCamel = {
-  [K in keyof SubscriptionBillingScheduleSnake as SnakeToCamelCase<K>]: SubscriptionBillingScheduleSnake[K];
-};
+export type SubscriptionOrderScheduleCamel =
+  ConvertSnakeToCamelCase<SubscriptionOrderScheduleSnake>;
+
+export type SubscriptionBillingScheduleCamel =
+  ConvertSnakeToCamelCase<SubscriptionBillingScheduleSnake>;
+
+export type SubscriptionCamel = ConvertSnakeToCamelCase<SubscriptionSnake>;

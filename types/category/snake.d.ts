@@ -1,9 +1,12 @@
-import { BaseModel } from '..';
+import { BaseModel, ResultsResponse } from '..';
+
 import { Image, Product } from '../product';
 
-interface CategorySnake extends BaseModel {
+import { Category } from './index';
+
+export interface CategorySnake extends BaseModel {
   active?: boolean;
-  children?: CategorySnake[];
+  children?: ResultsResponse<Category>;
   demo?: boolean;
   description: string;
   image?: Image;
@@ -13,12 +16,12 @@ interface CategorySnake extends BaseModel {
   meta_title?: string;
   name: string;
   parent_id?: string;
-  parent?: CategorySnake;
-  products?: Product[];
-  products_indexed?: Product[];
+  parent?: Category;
+  products?: ResultsResponse<Product>;
+  products_indexed?: ResultsResponse<Product>;
   slug: string;
   sort?: number;
   sorting?: string;
-  top?: CategorySnake;
+  top?: Category;
   top_id?: string;
 }
