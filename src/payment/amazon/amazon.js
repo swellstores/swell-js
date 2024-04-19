@@ -67,7 +67,7 @@ export default class AmazonDirectPayment extends Payment {
     this.element = {
       ledgerCurrency: cart.currency,
       checkoutLanguage: locale,
-      productType: Boolean(requireShipping) ? 'PayAndShip' : 'PayOnly',
+      productType: requireShipping ? 'PayAndShip' : 'PayOnly',
       buttonColor: color,
       placement,
       merchantId: this.merchantId,

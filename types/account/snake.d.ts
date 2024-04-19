@@ -1,18 +1,21 @@
-import { BaseModel } from '..';
+import { BaseModel, ResultsResponse } from '..';
+
 import { Subscription } from '../subscription';
 import { Card } from '../card';
 import { Order } from '../order';
 import { Billing } from '../billing';
 
-interface PasswordTokenInputSnake {
+import { Address } from './index';
+
+export interface PasswordTokenInputSnake {
   password_token?: string;
 }
 
-interface AccountSnake extends BaseModel {
-  addresses?: AddressSnake[];
+export interface AccountSnake extends BaseModel {
+  addresses?: ResultsResponse<Address>;
   balance?: number;
   billing?: Billing;
-  cards?: Card[];
+  cards?: ResultsResponse<Card>;
   date_first_order?: string;
   date_last_order?: string;
   email?: string;
@@ -22,19 +25,19 @@ interface AccountSnake extends BaseModel {
   last_name?: string;
   metadata?: object;
   name?: string;
-  orders?: Order[];
+  orders?: ResultsResponse<Order>;
   order_count?: number;
   order_value?: number;
   password?: string;
   password_reset_url?: string;
   phone?: string;
-  shipping?: AddressSnake;
-  subscriptions?: Subscription[];
+  shipping?: Address;
+  subscriptions?: ResultsResponse<Subscription>;
   type?: string;
   vat_number?: string;
 }
 
-interface AddressSnake extends BaseModel {
+export interface AddressSnake extends BaseModel {
   account_address_id?: string;
   active?: boolean;
   address1: string;

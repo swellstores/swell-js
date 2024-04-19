@@ -77,7 +77,7 @@ function methods(request) {
     },
 
     listOrders(query) {
-      return request('get', `/account/orders`, query);
+      return request('get', '/account/orders', query);
     },
 
     getOrder(id) {
@@ -85,14 +85,26 @@ function methods(request) {
     },
 
     // Deprecated methods
+
+    /**
+     * @deprecated use `listAddresses` instead
+     */
     getAddresses(query) {
       return request('get', '/account/addresses', query);
     },
+
+    /**
+     * @deprecated use `listCards` instead
+     */
     getCards(query) {
       return request('get', '/account/cards', query);
     },
+
+    /**
+     * @deprecated use `listOrders` instead
+     */
     getOrders(query) {
-      return request('get', `/account/orders`, query);
+      return request('get', '/account/orders', query);
     },
   };
 }

@@ -390,7 +390,7 @@ describe('products', () => {
             type: 'subscription',
             plan: 'xxx',
           });
-        }).toThrowError(`Subscription purchase plan 'xxx' not found`);
+        }).toThrow(`Subscription purchase plan 'xxx' not found`);
       });
 
       it('should throw an error if the purchase option is not found', () => {
@@ -398,7 +398,7 @@ describe('products', () => {
           methods.variation(mockProductWithPurchaseOptions, [], {
             type: 'what',
           });
-        }).toThrowError(`Product purchase option 'what' not found`);
+        }).toThrow(`Product purchase option 'what' not found`);
       });
 
       it('should return variant + option price with addon option', () => {

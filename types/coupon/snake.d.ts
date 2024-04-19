@@ -1,14 +1,12 @@
 import { BaseModel } from '../index';
-import { Order } from '../order';
-import { Subscription } from '../subscription';
-import { CouponCamel } from './camel';
 
-interface CouponSnake extends BaseModel {
-  parent_id?: string;
-  parent?: CouponSnake;
-  account_id?: string;
-  order_id?: string;
-  order?: Order;
-  subscription_id?: string;
-  subscription?: Subscription;
+import { Discount } from '../discount';
+
+export interface CouponSnake extends BaseModel {
+  name?: string;
+  description?: string;
+  active?: boolean;
+  date_valid?: string;
+  date_expired?: string;
+  discounts?: Discount[];
 }

@@ -1,7 +1,9 @@
+import { ShipmentService } from './index';
+
 export interface ShipmentRatingSnake {
   date_created?: string;
   fingerprint?: string;
-  services?: ShipmentServiceSnake[];
+  services?: ShipmentService[];
   md5?: string;
   errors?: {
     code?: string;

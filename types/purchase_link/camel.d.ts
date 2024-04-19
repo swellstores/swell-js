@@ -1,10 +1,4 @@
-import { SnakeToCamelCase } from '..';
-import { PurchaseLinkDiscountSnake, PurchaseLinkSnake } from './snake';
+import { ConvertSnakeToCamelCase } from '..';
+import { PurchaseLinkSnake } from './snake';
 
-export type PurchaseLinkDiscountCamel = {
-  [K in keyof PurchaseLinkDiscountSnake as SnakeToCamelCase<K>]: PurchaseLinkDiscountSnake[K];
-};
-
-export type PurchaseLinkCamel = {
-  [K in keyof PurchaseLinkSnake as SnakeToCamelCase<K>]: PurchaseLinkSnake[K];
-};
+export type PurchaseLinkCamel = ConvertSnakeToCamelCase<PurchaseLinkSnake>;

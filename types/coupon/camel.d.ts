@@ -1,6 +1,4 @@
-import { SnakeToCamelCase } from '..';
+import { ConvertSnakeToCamelCase } from '..';
 import { CouponSnake } from './snake';
 
-export type CouponCamel = {
-  [K in keyof CouponSnake as SnakeToCamelCase<K>]: CouponSnake[K];
-};
+export type CouponCamel = ConvertSnakeToCamelCase<CouponSnake>;

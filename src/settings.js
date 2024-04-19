@@ -220,7 +220,7 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
   let returnLocaleConfig;
   const localeKeys = Object.keys(values[key]);
   for (let localeKey of localeKeys) {
-    const shortKey = localeKey.replace(/\-.+$/, '');
+    const shortKey = localeKey.replace(/-.+$/, '');
     const transformedLocale = opt.useCamelCase ? camelCase(locale) : locale;
 
     if (
@@ -237,7 +237,7 @@ function decodeLocaleValue(locale, values, key, configs, opt) {
   if (!returnLocaleKey && isObject(configs)) {
     const localeKeys = Object.keys(configs);
     for (let localeKey of localeKeys) {
-      const shortKey = localeKey.replace(/\-.+$/, '');
+      const shortKey = localeKey.replace(/-.+$/, '');
       if (localeKey === locale || shortKey === locale) {
         returnLocaleKey = localeKey;
         returnLocaleConfig = configs[localeKey];

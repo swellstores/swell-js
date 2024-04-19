@@ -59,7 +59,7 @@ const cardApi = {
       return value;
     }
 
-    const parts = new String(value).split(/[\s\/\-]+/, 2);
+    const parts = new String(value).split(/[\s/-]+/, 2);
     const month = parts[0];
     let year = parts[1];
 

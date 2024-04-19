@@ -1,4 +1,5 @@
-import { SnakeToCamelCase } from '..';
+import { ConvertSnakeToCamelCase } from '..';
+
 import {
   PaymentSnake,
   InputPaymentElementAppleSnake,
@@ -10,34 +11,25 @@ import {
   InputPaymentRedirectSnake,
 } from './snake';
 
-export type PaymentCamel = {
-  [K in keyof PaymentSnake as SnakeToCamelCase<K>]: PaymentSnake[K];
-};
+export type PaymentCamel = ConvertSnakeToCamelCase<PaymentSnake>;
 
-export type InputPaymentElementBaseCamel = {
-  [K in keyof InputPaymentElementBaseSnake as SnakeToCamelCase<K>]: InputPaymentElementBaseSnake[K];
-};
+export type InputPaymentElementBaseCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementBaseSnake>;
 
-export type InputPaymentElementCardCamel = {
-  [K in keyof InputPaymentElementCardSnake as SnakeToCamelCase<K>]: InputPaymentElementCardSnake[K];
-};
+export type InputPaymentElementCardCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementCardSnake>;
 
-export type InputPaymentElementIdealCamel = {
-  [K in keyof InputPaymentElementIdealSnake as SnakeToCamelCase<K>]: InputPaymentElementIdealSnake[K];
-};
+export type InputPaymentElementIdealCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementIdealSnake>;
 
-export type InputPaymentElementPaypalCamel = {
-  [K in keyof InputPaymentElementPaypalSnake as SnakeToCamelCase<K>]: InputPaymentElementPaypalSnake[K];
-};
+export type InputPaymentElementPaypalCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementPaypalSnake>;
 
-export type InputPaymentElementAppleCamel = {
-  [K in keyof InputPaymentElementAppleSnake as SnakeToCamelCase<K>]: InputPaymentElementAppleSnake[K];
-};
+export type InputPaymentElementAppleCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementAppleSnake>;
 
-export type InputPaymentElementGoogleCamel = {
-  [K in keyof InputPaymentElementGoogleSnake as SnakeToCamelCase<K>]: InputPaymentElementGoogleSnake[K];
-};
+export type InputPaymentElementGoogleCamel =
+  ConvertSnakeToCamelCase<InputPaymentElementGoogleSnake>;
 
-export type InputPaymentRedirectCamel = {
-  [K in keyof InputPaymentRedirectSnake as SnakeToCamelCase<K>]: InputPaymentRedirectSnake[K];
-};
+export type InputPaymentRedirectCamel =
+  ConvertSnakeToCamelCase<InputPaymentRedirectSnake>;

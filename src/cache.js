@@ -48,7 +48,7 @@ const cacheApi = {
   set(details) {
     this.debug('cache.set', ...arguments);
     let { model, id, path, value } = details;
-    let { data = {}, record, presets } = this.values(details);
+    let { data = {}, record } = this.values(details);
 
     if (id === null) {
       return;

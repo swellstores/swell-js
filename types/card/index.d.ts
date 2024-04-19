@@ -1,8 +1,9 @@
 import { CardSnake, InputCreateTokenSnake, TokenResponseSnake } from './snake';
 import { CardCamel, InputCreateTokenCamel, TokenResponseCamel } from './camel';
 
-interface InputCreateToken
+export interface InputCreateToken
   extends InputCreateTokenSnake,
     InputCreateTokenCamel {}
-interface TokenResponse extends TokenResponseSnake, TokenResponseCamel {}
-interface Card extends CardCamel, CardSnake {}
+
+export interface TokenResponse extends TokenResponseSnake, TokenResponseCamel {}
+export interface Card extends CardCamel, CardSnake {}

@@ -1,6 +1,15 @@
-import { SnakeToCamelCase } from '..';
-import { DiscountSnake } from './snake';
+import { ConvertSnakeToCamelCase } from '..';
 
-export type DiscountCamel = {
-  [K in keyof DiscountSnake as SnakeToCamelCase<K>]: DiscountSnake[K];
-};
+import {
+  DiscountRuleBuyGetProductSnake,
+  DiscountRuleBuyGetCategorySnake,
+  DiscountRuleSnake,
+  DiscountSnake,
+} from './snake';
+
+export type DiscountRuleBuyGetItemCamel =
+  | ConvertSnakeToCamelCase<DiscountRuleBuyGetProductSnake>
+  | ConvertSnakeToCamelCase<DiscountRuleBuyGetCategorySnake>;
+
+export type DiscountRuleCamel = ConvertSnakeToCamelCase<DiscountRuleSnake>;
+export type DiscountCamel = ConvertSnakeToCamelCase<DiscountSnake>;

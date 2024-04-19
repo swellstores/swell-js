@@ -1,22 +1,28 @@
-import {
-  BaseModel,
-  CartGiftCardItem,
-  CartItemOption,
-  CartShipping,
-  Discount,
-  Tax,
-} from '../index';
+import { BaseModel, ResultsResponse, Tax } from '../index';
+
 import { Product, Variant } from '../product';
+import { Account, Address } from '../account';
 import { Subscription } from '../subscription';
-import { Account } from '../account';
+import { Giftcard } from '../giftcard';
 import { Order } from '../order';
 import { Coupon } from '../coupon';
 import { Billing } from '../billing';
+import { Discount } from '../discount';
 import { Promotion } from '../promotion';
-import { PurhcaseLink } from '../purchase_link';
+import { PurchaseLink } from '../purchase_link';
 import { ShipmentRating } from '../shipment_rating';
 
-interface CartItemOptionsSnake {
+import {
+  CartItem,
+  CartItemOptions,
+  CartItemPurchaseOption,
+  CartItemBillingSchedule,
+  CartItemOrderSchedule,
+  CartGiftCardItem,
+  CartShipping,
+} from './index';
+
+export interface CartItemOptionsSnake {
   id?: string;
   name?: string;
   price?: number;
@@ -25,16 +31,41 @@ interface CartItemOptionsSnake {
   variant?: boolean;
 }
 
-interface CartGiftCardItemSnake {
+export interface CartGiftCardItemSnake {
   id?: string;
   amount?: number;
   code?: string;
   code_formatted?: string;
-  giftcard?: string;
   last4?: string;
+  giftcard?: Giftcard;
 }
 
-interface CartItemSnake extends BaseModel {
+export interface CartItemOrderScheduleSnake {
+  interval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval_count?: number;
+  limit?: number;
+}
+
+export interface CartItemBillingScheduleSnake
+  extends CartItemOrderScheduleSnake {
+  trial_days?: number;
+}
+
+export interface CartItemPurchaseOptionSnake {
+  type?: 'standard' | 'subscription' | 'trial';
+  name?: string;
+  price?: number;
+  auth_amount?: number;
+  trial_days?: number;
+  plan_id?: string;
+  plan_name?: string;
+  plan_description?: string;
+  billing_schedule?: CartItemBillingSchedule;
+  order_schedule?: CartItemOrderSchedule;
+}
+
+export interface CartItemSnake {
+  id: string;
   bundle_items?: object[];
   delivery?: 'shipment' | 'subscription' | 'giftcard' | null;
   description?: string;
@@ -42,7 +73,7 @@ interface CartItemSnake extends BaseModel {
   discount_total?: number;
   discounts?: Discount[];
   metadata?: object;
-  options?: CartItemOption[];
+  options?: CartItemOptions[];
   orig_price?: number;
   price?: number;
   price_total?: number;
@@ -50,10 +81,14 @@ interface CartItemSnake extends BaseModel {
   product_name?: string;
   product?: Product;
   quantity?: number;
+  purchase_option?: CartItemPurchaseOption;
   shipment_location?: string;
   shipment_weight?: number;
+  /** @deprecated use `purchase_option` instead */
   subscription_interval?: string;
+  /** @deprecated use `purchase_option` instead */
   subscription_interval_count?: number;
+  /** @deprecated use `purchase_option` instead */
   subscription_trial_days?: number;
   subscription_paid?: boolean;
   tax_each?: number;
@@ -64,7 +99,7 @@ interface CartItemSnake extends BaseModel {
   variant?: Variant;
 }
 
-interface CartShippingSnake {
+export interface CartShippingSnake {
   name?: string;
   first_name?: string;
   last_name?: string;
@@ -80,11 +115,11 @@ interface CartShippingSnake {
   price?: number;
   default?: boolean;
   account_address_id?: string;
-  account_address?: any;
+  account_address?: Address;
   pickup?: boolean;
 }
 
-interface CartSnake extends BaseModel {
+export interface CartSnake extends BaseModel {
   abandoned?: boolean;
   abandoned_notifications?: number;
   account?: Account;
@@ -124,17 +159,17 @@ interface CartSnake extends BaseModel {
   item_shipment_weight?: number;
   item_tax?: number;
   item_tax_included?: boolean;
-  items?: CartItemSnake[];
+  items?: CartItem[];
   metadata?: object;
   notes?: string;
   number?: string;
   order?: Order;
   order_id?: string;
   orig_price?: number;
-  promotion_ids?: any[];
-  promotions?: Promotion[];
+  promotion_ids?: string[];
+  promotions?: ResultsResponse<Promotion>;
   purchase_link_ids?: string[];
-  purchase_links?: PurhcaseLink[];
+  purchase_links?: ResultsResponse<PurchaseLink>;
   purchase_links_errors?: object[];
   recovered?: boolean;
   schedule?: object;

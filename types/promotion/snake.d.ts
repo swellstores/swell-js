@@ -1,6 +1,21 @@
-import { BaseModel, Order, Subscription } from '..';
+import { BaseModel } from '..';
 
-interface PromotionSnake extends BaseModel {
+import { Product } from '../product';
+import { Discount } from '../discount';
+import { Category } from '../category';
+
+import { PromotionExclusion } from './index';
+
+export interface PromotionExclusionSnake {
+  id: string;
+  type: 'product' | 'category';
+  product?: Product;
+  product_id?: string;
+  category?: Category;
+  category_id?: string;
+}
+
+export interface PromotionSnake extends BaseModel {
   name?: string;
   active?: boolean;
   currency?: string;
@@ -8,13 +23,10 @@ interface PromotionSnake extends BaseModel {
   date_start?: string;
   description?: string;
   discount_group?: string;
-  discounts?: any[];
-  exclusions?: any[];
-  limit_account_groups?: any[];
+  discounts?: Discount[];
+  exclusions?: PromotionExclusion[];
+  limit_account_groups?: string[];
   limit_account_uses?: number;
   limit_uses?: number;
-  orders?: Order[];
-  subscriptions?: Subscription[];
   use_count?: number;
-  uses?: any[];
 }
