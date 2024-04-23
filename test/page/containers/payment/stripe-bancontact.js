@@ -1,10 +1,11 @@
-import React from 'react';
+import * as React from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Button } from '@material-ui/core';
 import { get, isEqual } from 'lodash-es';
-import qs from 'qs';
+import * as qs from 'qs';
+
 import { removeUrlParams } from '../../utils';
 import Info from '../../components/info';
 

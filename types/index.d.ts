@@ -128,6 +128,8 @@ export interface ItemDiscount {
   amount?: number;
 }
 
+export const version: string;
+
 export function init(
   storeId: string,
   publicKey: string,
@@ -378,8 +380,8 @@ export namespace invoices {
 
 export namespace session {
   export function get(): Promise<Record<string, unknown>>;
-  export function getCookie(): string;
-  export function setCookie(): string;
+  export function getCookie(): string | undefined;
+  export function setCookie(value: string): void;
 }
 
 export namespace functions {
@@ -413,16 +415,69 @@ export namespace functions {
   ): Promise<object>;
 }
 
+import _get from 'lodash-es/get';
+import _set from 'lodash-es/set';
+import _uniq from 'lodash-es/uniq';
+import _find from 'lodash-es/find';
+import _round from 'lodash-es/round';
+import _pick from 'lodash-es/pick';
+import _findIndex from 'lodash-es/findIndex';
+import _cloneDeep from 'lodash-es/cloneDeep';
+import _toNumber from 'lodash-es/toNumber';
+import _toLower from 'lodash-es/toLower';
+import _isEqual from 'lodash-es/isEqual';
+import _isEmpty from 'lodash-es/isEmpty';
+import deepmerge from 'deepmerge';
+
+export namespace utils {
+  export const get = _get;
+  export const set = _set;
+  export const uniq = _uniq;
+  export const find = _find;
+  export const round = _round;
+  export const pick = _pick;
+  export const findIndex = _findIndex;
+  export const cloneDeep = _cloneDeep;
+  export const toNumber = _toNumber;
+  export const toLower = _toLower;
+  export const isEqual = _isEqual;
+  export const isEmpty = _isEmpty;
+
+  export function map<T, R>(arr: T[], mapper: (item: T) => R): R[];
+
+  export function reduce<T, R>(
+    arr: T[],
+    reducer: (acc: R, item: T, index: number) => R,
+    init: R,
+  ): R;
+
+  export const merge = deepmerge;
+  export function toSnake<T, R>(obj: T): R;
+  export function toCamel<T, R>(obj: T): R;
+  export function snakeCase(str: string): string;
+  export function camelCase(str: string): string;
+  export function trimStart(str: string): string;
+  export function trimBoth(str: string): string;
+  export function trimEnd(str: string): string;
+  export function stringifyQuery(query: object): string;
+  export function base64Encode(input: string): string;
+}
+
 // Backward compatible functions
 
-export function auth(
-  storeId: string,
-  publicKey: string,
-  options?: InitOptions,
-): void;
+export const auth = init;
+
+export function request<T>(
+  method: string,
+  url: string,
+  id?: string,
+  data?: unknown,
+  options?: unknown,
+): Promise<T>;
 
 export function get<T>(url: string, query?: Query): Promise<T>;
+export function put<T>(url: string, data?: unknown): Promise<T>;
+export function post<T>(url: string, data?: unknown): Promise<T>;
 
-export function put<T>(url: string, query?: Query): Promise<T>;
-
-export function post<T>(url: string, query?: Query): Promise<T>;
+function _delete<T>(url: string, data?: unknown): Promise<T>;
+export { _delete as delete };

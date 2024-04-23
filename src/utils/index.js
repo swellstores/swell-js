@@ -20,32 +20,41 @@ const LOADING_SCRIPTS = {};
 
 let options = {};
 
-function merge(x, y, _opt = {}) {
+function arrayMerge(target, source, options) {
+  const destination = target.slice();
+  source.forEach((item, index) => {
+    if (typeof destination[index] === 'undefined') {
+      destination[index] = options.cloneUnlessOtherwiseSpecified(item, options);
+    } else if (options.isMergeableObject(item)) {
+      destination[index] = merge(target[index], item, options);
+    } else if (target.indexOf(item) === -1) {
+      destination.push(item);
+    }
+  });
+  return destination;
+}
+
+/**
+ * @template T
+ * @param {Partial<T>} x
+ * @param {Partial<T>} y
+ * @param {deepmerge.Options} [opt]
+ * @returns {T}
+ */
+function merge(x, y, opt) {
   if (!y || typeof y !== 'object') {
     return x;
   }
+
   if (!x || typeof x !== 'object') {
     return x;
   }
-  function arrayMerge(target, source, options) {
-    const destination = target.slice();
-    source.forEach((item, index) => {
-      if (typeof destination[index] === 'undefined') {
-        destination[index] = options.cloneUnlessOtherwiseSpecified(
-          item,
-          options,
-        );
-      } else if (options.isMergeableObject(item)) {
-        destination[index] = merge(target[index], item, options);
-      } else if (target.indexOf(item) === -1) {
-        destination.push(item);
-      }
-    });
-    return destination;
+
+  if (!opt) {
+    opt = { arrayMerge };
   }
-  return deepmerge(x, y, {
-    arrayMerge,
-  });
+
+  return deepmerge(x, y, opt);
 }
 
 function setOptions(optns) {

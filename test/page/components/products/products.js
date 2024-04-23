@@ -1,7 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import * as React from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { compose } from 'recompose';
 import { isEmpty, map, find, findIndex, reduce, size } from 'lodash-es';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -14,7 +13,7 @@ import {
   Select,
   IconButton,
 } from '@material-ui/core';
-import { Pagination } from '@material-ui/lab';
+import Pagination from '@material-ui/lab/Pagination';
 import { AddCircle } from '@material-ui/icons';
 
 const styles = {

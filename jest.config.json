@@ -5,5 +5,8 @@
   "testEnvironment": "node",
   "moduleNameMapper": {
     "^lodash-es/(.*)$": "<rootDir>/node_modules/lodash/$1"
+  },
+  "transform": {
+    "^.+\\.m?js$": "babel-jest"
   }
 }

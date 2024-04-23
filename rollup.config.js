@@ -2,7 +2,6 @@ import replacePlugin from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
-import esbuild from 'rollup-plugin-esbuild';
 import filesize from 'rollup-plugin-filesize';
 
 import pkg from './package.json' assert { type: 'json' };
@@ -52,15 +51,7 @@ export default [
         format: 'es',
       },
     ],
-    plugins: [
-      replace,
-      nodePolyfills(),
-      resolve({
-        moduleDirectories: ['node_modules'],
-      }),
-      commonjs({ include: 'node_modules/**' }),
-      filesize(),
-    ],
+    plugins: [replace, resolve(), commonjs(), filesize()],
   },
   {
     input: './src/index.js',
@@ -70,21 +61,16 @@ export default [
         sourcemap: true,
         exports: 'default',
         file: pkg.main,
+        generatedCode: {
+          preset: 'es2015',
+          constBindings: true,
+          objectShorthand: true,
+        },
         format: 'cjs',
       },
     ],
     external,
-    plugins: [
-      replace,
-      nodePolyfills(),
-      resolve({
-        moduleDirectories: ['node_modules'],
-      }),
-      commonjs({
-        include: ['node_modules/**'],
-      }),
-      filesize(),
-    ],
+    plugins: [replace, resolve(), commonjs(), filesize()],
   },
   {
     input: './src/index.js',
@@ -99,14 +85,9 @@ export default [
     ],
     plugins: [
       replace,
-      nodePolyfills(),
-      resolve({
-        moduleDirectories: ['node_modules'],
-      }),
-      commonjs({
-        include: ['node_modules/**'],
-      }),
-      esbuild(),
+      nodePolyfills({ exclude: ['node_modules/object-inspect/**'] }),
+      resolve(),
+      commonjs(),
       filesize(),
     ],
   },
