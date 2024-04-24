@@ -32,7 +32,7 @@ export interface AttributeSnake extends BaseModel {
     | 'tags'
     | 'text'
     | 'textarea';
-  values?: string[];
+  value?: unknown;
   variant?: boolean;
   visible?: boolean;
 }

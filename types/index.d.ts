@@ -195,10 +195,14 @@ export namespace cart {
   export function getSettings(): Promise<Settings>;
   export function getShippingRates(): Promise<ShipmentRating>;
 
-  export function addItem(input: CartItem): Promise<Cart>;
-  export function setItems(input: CartItem[]): Promise<Cart>;
-  export function updateItem(id: string, input: CartItem): Promise<Cart>;
+  export function addItem(input: Partial<CartItem>): Promise<Cart>;
+  export function setItems(input: Partial<CartItem>[]): Promise<Cart>;
   export function removeItem(id: string): Promise<Cart>;
+
+  export function updateItem(
+    id: string,
+    input: Partial<CartItem>,
+  ): Promise<Cart>;
 
   export function applyCoupon(code: string): Promise<Cart>;
   export function removeCoupon(): Promise<Cart>;
@@ -430,18 +434,21 @@ import _isEmpty from 'lodash-es/isEmpty';
 import deepmerge from 'deepmerge';
 
 export namespace utils {
-  export const get = _get;
-  export const set = _set;
-  export const uniq = _uniq;
-  export const find = _find;
-  export const round = _round;
-  export const pick = _pick;
-  export const findIndex = _findIndex;
-  export const cloneDeep = _cloneDeep;
-  export const toNumber = _toNumber;
-  export const toLower = _toLower;
-  export const isEqual = _isEqual;
-  export const isEmpty = _isEmpty;
+  export {
+    _get as get,
+    _set as set,
+    _uniq as uniq,
+    _find as find,
+    _round as round,
+    _pick as pick,
+    _findIndex as findIndex,
+    _cloneDeep as cloneDeep,
+    _toNumber as toNumber,
+    _toLower as toLower,
+    _isEqual as isEqual,
+    _isEmpty as isEmpty,
+    deepmerge as merge,
+  };
 
   export function map<T, R>(arr: T[], mapper: (item: T) => R): R[];
 
@@ -451,7 +458,6 @@ export namespace utils {
     init: R,
   ): R;
 
-  export const merge = deepmerge;
   export function toSnake<T, R>(obj: T): R;
   export function toCamel<T, R>(obj: T): R;
   export function snakeCase(str: string): string;
@@ -465,7 +471,7 @@ export namespace utils {
 
 // Backward compatible functions
 
-export const auth = init;
+export { init as auth };
 
 export function request<T>(
   method: string,
@@ -479,5 +485,5 @@ export function get<T>(url: string, query?: Query): Promise<T>;
 export function put<T>(url: string, data?: unknown): Promise<T>;
 export function post<T>(url: string, data?: unknown): Promise<T>;
 
-function _delete<T>(url: string, data?: unknown): Promise<T>;
+declare function _delete<T>(url: string, data?: unknown): Promise<T>;
 export { _delete as delete };
