@@ -128,6 +128,8 @@ export interface ItemDiscount {
   amount?: number;
 }
 
+export const version: string;
+
 export function init(
   storeId: string,
   publicKey: string,
@@ -193,10 +195,14 @@ export namespace cart {
   export function getSettings(): Promise<Settings>;
   export function getShippingRates(): Promise<ShipmentRating>;
 
-  export function addItem(input: CartItem): Promise<Cart>;
-  export function setItems(input: CartItem[]): Promise<Cart>;
-  export function updateItem(id: string, input: CartItem): Promise<Cart>;
+  export function addItem(input: Partial<CartItem>): Promise<Cart>;
+  export function setItems(input: Partial<CartItem>[]): Promise<Cart>;
   export function removeItem(id: string): Promise<Cart>;
+
+  export function updateItem(
+    id: string,
+    input: Partial<CartItem>,
+  ): Promise<Cart>;
 
   export function applyCoupon(code: string): Promise<Cart>;
   export function removeCoupon(): Promise<Cart>;
@@ -378,8 +384,8 @@ export namespace invoices {
 
 export namespace session {
   export function get(): Promise<Record<string, unknown>>;
-  export function getCookie(): string;
-  export function setCookie(): string;
+  export function getCookie(): string | undefined;
+  export function setCookie(value: string): void;
 }
 
 export namespace functions {
@@ -413,16 +419,71 @@ export namespace functions {
   ): Promise<object>;
 }
 
+import _get from 'lodash-es/get';
+import _set from 'lodash-es/set';
+import _uniq from 'lodash-es/uniq';
+import _find from 'lodash-es/find';
+import _round from 'lodash-es/round';
+import _pick from 'lodash-es/pick';
+import _findIndex from 'lodash-es/findIndex';
+import _cloneDeep from 'lodash-es/cloneDeep';
+import _toNumber from 'lodash-es/toNumber';
+import _toLower from 'lodash-es/toLower';
+import _isEqual from 'lodash-es/isEqual';
+import _isEmpty from 'lodash-es/isEmpty';
+import deepmerge from 'deepmerge';
+
+export namespace utils {
+  export {
+    _get as get,
+    _set as set,
+    _uniq as uniq,
+    _find as find,
+    _round as round,
+    _pick as pick,
+    _findIndex as findIndex,
+    _cloneDeep as cloneDeep,
+    _toNumber as toNumber,
+    _toLower as toLower,
+    _isEqual as isEqual,
+    _isEmpty as isEmpty,
+    deepmerge as merge,
+  };
+
+  export function map<T, R>(arr: T[], mapper: (item: T) => R): R[];
+
+  export function reduce<T, R>(
+    arr: T[],
+    reducer: (acc: R, item: T, index: number) => R,
+    init: R,
+  ): R;
+
+  export function toSnake<T, R>(obj: T): R;
+  export function toCamel<T, R>(obj: T): R;
+  export function snakeCase(str: string): string;
+  export function camelCase(str: string): string;
+  export function trimStart(str: string): string;
+  export function trimBoth(str: string): string;
+  export function trimEnd(str: string): string;
+  export function stringifyQuery(query: object): string;
+  export function base64Encode(input: string): string;
+}
+
 // Backward compatible functions
 
-export function auth(
-  storeId: string,
-  publicKey: string,
-  options?: InitOptions,
-): void;
+export { init as auth };
+
+export function request<T>(
+  method: string,
+  url: string,
+  id?: string,
+  data?: unknown,
+  options?: unknown,
+): Promise<T>;
 
 export function get<T>(url: string, query?: Query): Promise<T>;
+export function put<T>(url: string, data?: unknown): Promise<T>;
+export function post<T>(url: string, data?: unknown): Promise<T>;
 
-export function put<T>(url: string, query?: Query): Promise<T>;
-
-export function post<T>(url: string, query?: Query): Promise<T>;
+declare function _delete<T>(url: string, data?: unknown): Promise<T>;
+export { _delete as delete };

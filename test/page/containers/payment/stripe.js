@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import * as React from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { compose } from 'recompose';
 import { withStyles } from '@material-ui/core/styles';
 import {
   Card,
@@ -184,11 +184,11 @@ class Stripe extends React.Component {
             {type === 'card' ? (
               <div id="card-element" className={classes.cardInput} />
             ) : (
-              <Fragment>
+              <React.Fragment>
                 <div id="cardNumber-element" className={classes.cardInput} />
                 <div id="cardExpiry-element" className={classes.cardInput} />
                 <div id="cardCvc-element" className={classes.cardInput} />
-              </Fragment>
+              </React.Fragment>
             )}
 
             <div className={classes.submitContainer}>
