@@ -274,6 +274,7 @@ export namespace payment {
     card?: InputPaymentRedirect;
     paysafecard?: InputPaymentRedirect;
     klarna?: InputPaymentRedirect;
+    bancontact?: InputPaymentRedirect;
   }): Promise<void>;
 
   export function authenticate(id: string): Promise<object>;

@@ -1,4 +1,4 @@
-import { get, reduce, toLower, isEmpty } from './index';
+import { get, isEmpty } from './index';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -74,44 +74,6 @@ function getBillingDetails(cart) {
   }
 
   return details;
-}
-
-/**
- * @param {CreateSourceData} source
- * @param {object} data
- */
-function setBancontactOwner(source, data) {
-  const fillValues = (fieldsMap, data) =>
-    reduce(
-      fieldsMap,
-      (acc, srcKey, destKey) => {
-        const value = data[srcKey];
-        if (value) {
-          acc[destKey] = value;
-        }
-        return acc;
-      },
-      {},
-    );
-  const { account = {}, billing, shipping } = data;
-  const billingData = {
-    ...account.shipping,
-    ...account.billing,
-    ...shipping,
-    ...billing,
-  };
-  const billingAddress = fillValues(addressFieldsMap, billingData);
-
-  source.owner = {
-    email: account.email,
-    name: billingData.name || account.name,
-    ...(billingData.phone
-      ? { phone: billingData.phone }
-      : account.phone
-        ? { phone: account.phone }
-        : undefined),
-    ...(!isEmpty(billingAddress) ? { address: billingAddress } : undefined),
-  };
 }
 
 /**
@@ -218,23 +180,21 @@ function getKlarnaConfirmationDetails(cart) {
 }
 
 /**
- * @param {Stripe} stripe
  * @param {object} cart
+ * @returns {import('@stripe/stripe-js').ConfirmBancontactPaymentData}
  */
-async function createBancontactSource(stripe, cart) {
-  /** @type {CreateSourceData} */
-  const sourceObject = {
-    type: 'bancontact',
-    amount: Math.round(get(cart, 'grand_total', 0) * 100),
-    currency: toLower(get(cart, 'currency', 'eur')),
-    redirect: {
-      return_url: window.location.href,
+function getBancontactConfirmationDetails(cart) {
+  const billingDetails = getBillingDetails(cart);
+  const returnUrl = `${
+    window.location.origin + window.location.pathname
+  }?gateway=stripe`;
+
+  return {
+    payment_method: {
+      billing_details: billingDetails,
     },
+    return_url: returnUrl,
   };
-
-  setBancontactOwner(sourceObject, cart);
-
-  return stripe.createSource(sourceObject);
 }
 
 /**
@@ -341,7 +301,7 @@ export {
   createIDealPaymentMethod,
   getKlarnaIntentDetails,
   getKlarnaConfirmationDetails,
-  createBancontactSource,
+  getBancontactConfirmationDetails,
   getPaymentRequestData,
   stripeAmountByCurrency,
   isStripeChargeableAmount,
