@@ -3,6 +3,7 @@ import {
   createIDealPaymentMethod,
   getKlarnaIntentDetails,
   getKlarnaConfirmationDetails,
+  getBancontactConfirmationDetails,
   getPaymentRequestData,
 } from './stripe';
 
@@ -272,6 +273,57 @@ describe('utils/stripe', () => {
         },
       };
       const result = getKlarnaConfirmationDetails(cart);
+
+      expect(result).toEqual({
+        payment_method: {
+          billing_details: {
+            address: {
+              city: 'Beverly Hills',
+              country: 'US',
+              line1: 'Lombard St 10',
+              line2: 'Apt 214',
+              postal_code: '90210',
+              state: 'CA',
+            },
+            email: 'test@swell.is',
+            name: 'Test Person-us',
+            phone: '3106683312',
+          },
+        },
+        return_url: 'http://test.swell.test/checkout?gateway=stripe',
+      });
+    });
+  });
+
+  describe('#getBancontactConfirmationDetails', () => {
+    beforeEach(() => {
+      global.window = {
+        location: {
+          origin: 'http://test.swell.test',
+          pathname: '/checkout',
+        },
+      };
+    });
+
+    afterEach(() => {
+      global.window = undefined;
+    });
+
+    it('should return confirmation details', () => {
+      const cart = {
+        account: { email: 'test@swell.is' },
+        billing: {
+          name: 'Test Person-us',
+          phone: '3106683312',
+          city: 'Beverly Hills',
+          country: 'US',
+          address1: 'Lombard St 10',
+          address2: 'Apt 214',
+          zip: '90210',
+          state: 'CA',
+        },
+      };
+      const result = getBancontactConfirmationDetails(cart);
 
       expect(result).toEqual({
         payment_method: {

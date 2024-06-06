@@ -180,6 +180,8 @@ function getKlarnaConfirmationDetails(cart) {
 }
 
 /**
+ * Returns Bancontact Setup Intent confirmation details.
+ *
  * @param {object} cart
  * @returns {import('@stripe/stripe-js').ConfirmBancontactPaymentData}
  */
