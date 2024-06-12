@@ -28,7 +28,6 @@ import {
 import { Settings } from './settings';
 import { Subscription } from './subscription';
 import { Invoice } from './invoice';
-import { ShipmentRating } from './shipment_rating';
 
 export * from './account';
 export * from './attribute';
@@ -128,6 +127,19 @@ export interface ItemDiscount {
   amount?: number;
 }
 
+export interface SwellError {
+  code: string;
+  message: string;
+}
+
+export interface ServerError {
+  error: SwellError;
+}
+
+export interface ErrorResponse {
+  errors: Record<string, SwellError | undefined>;
+}
+
 export const version: string;
 
 export function init(
@@ -137,7 +149,7 @@ export function init(
 ): void;
 
 export namespace account {
-  export function create(input: Account): Promise<Account>;
+  export function create(input: Account): Promise<Account | ErrorResponse>;
 
   export function login(
     user: string,
@@ -145,8 +157,8 @@ export namespace account {
   ): Promise<Account | null>;
 
   export function logout(): Promise<unknown>;
-  export function recover(input: object): Promise<Account>;
-  export function update(input: Account): Promise<Account>;
+  export function recover(input: object): Promise<Account | ErrorResponse>;
+  export function update(input: Account): Promise<Account | ErrorResponse>;
   export function get(query?: object): Promise<Account | null>;
 
   export function listAddresses(
@@ -158,16 +170,28 @@ export namespace account {
     input?: object,
   ): Promise<ResultsResponse<Address>>;
 
-  export function createAddress(input: Address): Promise<Address>;
-  export function updateAddress(id: string, input: Address): Promise<Address>;
-  export function deleteAddress(id: string): Promise<Address>;
+  export function createAddress(
+    input: Address,
+  ): Promise<Address | ErrorResponse>;
+
+  export function updateAddress(
+    id: string,
+    input: Address,
+  ): Promise<Address | ErrorResponse>;
+
+  export function deleteAddress(id: string): Promise<Address | null>;
 
   export function listCards(query?: object): Promise<ResultsResponse<Card>>;
   /** @deprecated use `listCards` instead */
   export function getCards(query?: object): Promise<ResultsResponse<Card>>;
-  export function createCard(input: Card): Promise<Card>;
-  export function updateCard(id: string, input: Card): Promise<Card>;
-  export function deleteCard(id: string): Promise<Card>;
+  export function createCard(input: Card): Promise<Card | ErrorResponse>;
+
+  export function updateCard(
+    id: string,
+    input: Card,
+  ): Promise<Card | ErrorResponse>;
+
+  export function deleteCard(id: string): Promise<Card | null>;
 
   export function listOrders(query?: object): Promise<ResultsResponse<Order>>;
   /** @deprecated use `listOrders` instead */
@@ -189,20 +213,26 @@ export namespace card {
 
 export namespace cart {
   export function get(): Promise<Cart | null>;
-  export function update(input: object): Promise<Cart>;
+  export function update(input: object): Promise<Cart | null>;
   export function recover(input: string): Promise<Cart>;
 
   export function getSettings(): Promise<Settings>;
-  export function getShippingRates(): Promise<ShipmentRating>;
+  export function getShippingRates(): Promise<Cart>;
 
-  export function addItem(input: Partial<CartItem>): Promise<Cart>;
-  export function setItems(input: Partial<CartItem>[]): Promise<Cart>;
-  export function removeItem(id: string): Promise<Cart>;
+  export function addItem(
+    input: Partial<CartItem>,
+  ): Promise<Cart | ErrorResponse>;
+
+  export function setItems(
+    input: Partial<CartItem>[],
+  ): Promise<Cart | ErrorResponse>;
+
+  export function removeItem(id: string): Promise<Cart | ErrorResponse>;
 
   export function updateItem(
     id: string,
     input: Partial<CartItem>,
-  ): Promise<Cart>;
+  ): Promise<Cart | ErrorResponse>;
 
   export function applyCoupon(code: string): Promise<Cart>;
   export function removeCoupon(): Promise<Cart>;
@@ -211,7 +241,7 @@ export namespace cart {
   export function removeGiftcard(id: string): Promise<Cart>;
 
   export function submitOrder(): Promise<Order>;
-  export function getOrder(checkoutId?: string): Promise<Order | null>;
+  export function getOrder(checkoutId?: string): Promise<Order>;
 }
 
 export namespace categories {
@@ -276,7 +306,7 @@ export namespace payment {
     klarna?: InputPaymentRedirect;
   }): Promise<void>;
 
-  export function authenticate(id: string): Promise<object>;
+  export function authenticate(id: string): Promise<object | { error: Error }>;
   export function resetAsyncPayment(id: string): Promise<object>;
 
   export function createIntent(input: {
@@ -361,20 +391,36 @@ export namespace settings {
 }
 
 export namespace subscriptions {
-  export function create(input: object): Promise<Subscription>;
-  export function update(id: string, input: object): Promise<Subscription>;
+  export function create(input: object): Promise<Subscription | ErrorResponse>;
+
+  export function update(
+    id: string,
+    input: object,
+  ): Promise<Subscription | ErrorResponse>;
+
   export function list(query?: object): Promise<ResultsResponse<Subscription>>;
   export function get(id: string, query?: object): Promise<Subscription | null>;
 
-  export function addItem(id: string, input: object): Promise<Subscription>;
+  export function addItem(
+    id: string,
+    input: object,
+  ): Promise<Subscription | ErrorResponse>;
+
+  export function setItems(
+    id: string,
+    input: object[],
+  ): Promise<Subscription | ErrorResponse>;
 
   export function updateItem(
     id: string,
     itemId: string,
     input: object,
-  ): Promise<Subscription>;
+  ): Promise<Subscription | ErrorResponse>;
 
-  export function removeItem(id: string, itemId: string): Promise<unknown>;
+  export function removeItem(
+    id: string,
+    itemId: string,
+  ): Promise<Subscription | ErrorResponse>;
 }
 
 export namespace invoices {
