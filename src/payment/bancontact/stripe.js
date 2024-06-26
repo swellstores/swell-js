@@ -1,8 +1,9 @@
 import Payment from '../payment';
-import { createBancontactSource } from '../../utils/stripe';
+import { getBancontactConfirmationDetails } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
+  UnableAuthenticatePaymentMethodError,
 } from '../../utils/errors';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
@@ -46,24 +47,55 @@ export default class StripeBancontactPayment extends Payment {
   }
 
   async tokenize() {
+    const cart = await this.getCart();
+    const intent = await this.createIntent({
+      gateway: 'stripe',
+      action: 'setup',
+      account_id: cart.account_id,
+      intent: {
+        payment_method_types: ['bancontact'],
+        usage: 'off_session',
+      },
+    });
+
     await this.loadScripts(this.scripts);
 
-    const cart = await this.getCart();
-    const { source, error: sourceError } = await createBancontactSource(
-      this.stripe,
-      cart,
+    const { error } = await this.stripe.confirmBancontactSetup(
+      intent.client_secret,
+      getBancontactConfirmationDetails(cart),
     );
 
-    if (sourceError) {
-      throw new Error(sourceError.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async handleRedirect(queryParams) {
+    const { redirect_status, setup_intent_client_secret } = queryParams;
+
+    if (redirect_status !== 'succeeded') {
+      throw new UnableAuthenticatePaymentMethodError();
+    }
+
+    await this.loadScripts(this.scripts);
+
+    const { setupIntent, error } = await this.stripe.retrieveSetupIntent(
+      setup_intent_client_secret,
+    );
+
+    if (error) {
+      throw new Error(error.message);
     }
 
     await this.updateCart({
       billing: {
         method: 'bancontact',
+        bancontact: {
+          token: setupIntent.id,
+        },
       },
     });
 
-    window.location.replace(source.redirect.url);
+    this.onSuccess();
   }
 }
