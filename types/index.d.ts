@@ -102,6 +102,7 @@ export interface InitOptions {
 
 export interface ResultsResponse<T> {
   count: number;
+  limit: number;
   page: number;
   pages?: {
     [index: number]: {
