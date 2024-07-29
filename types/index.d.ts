@@ -102,6 +102,7 @@ export interface InitOptions {
 
 export interface ResultsResponse<T> {
   count: number;
+  limit: number;
   page: number;
   pages?: {
     [index: number]: {
@@ -112,7 +113,6 @@ export interface ResultsResponse<T> {
   page_count?: number;
   pageCount?: number;
   results: T[];
-  limit: number;
 }
 
 export interface Tax {
