@@ -113,6 +113,7 @@ export interface ResultsResponse<T> {
   page_count?: number;
   pageCount?: number;
   results: T[];
+  limit: number;
 }
 
 export interface Tax {
