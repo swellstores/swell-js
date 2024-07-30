@@ -175,8 +175,13 @@ async function request(
     method: reqMethod,
     headers: reqHeaders,
     body: reqBody,
-    credentials: 'include',
-    mode: 'cors',
+    // Credentials and mode are only available in the browser
+    ...(!utils.isServer()
+      ? {
+          credentials: 'include',
+          mode: 'cors',
+        }
+      : undefined),
   });
 
   const responseSession = response.headers.get('X-Session');
