@@ -7,7 +7,7 @@ function getCookie(name) {
     return undefined;
   }
 
-  const matches = document.cookie.match(
+  const matches = window.document.cookie?.match(
     new RegExp(
       '(?:^|; )' + name.replace(/([.$?*|{}()[]\\\/\+^])/g, '\\$1') + '=([^;]*)',
     ),

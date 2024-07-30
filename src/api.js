@@ -176,7 +176,7 @@ async function request(
     headers: reqHeaders,
     body: reqBody,
     // Credentials and mode are only available in the browser
-    ...(typeof window !== 'undefined' && window.document
+    ...(!utils.isServer()
       ? {
           credentials: 'include',
           mode: 'cors',

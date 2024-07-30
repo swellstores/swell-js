@@ -71,19 +71,47 @@ describe('api', () => {
       });
     });
 
-    it('should make a fetch request with credentials', async () => {
+    it('should make a fetch request without credentials', async () => {
       await api.request('get', '/test');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][1]).toHaveProperty('credentials', 'include');
+      expect(fetch.mock.calls[0][1]).not.toHaveProperty(
+        'credentials',
+        'include',
+      );
     });
 
-    it('should make a fetch request with cors', async () => {
+    it('should make a fetch request without cors', async () => {
       await api.request('get', '/test');
 
       expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch.mock.calls[0][1]).toHaveProperty('mode', 'cors');
+      expect(fetch.mock.calls[0][1]).not.toHaveProperty('mode', 'cors');
     });
+
+    describe('when making a request from the browser', () => {
+      beforeEach(() => {
+        // simulate browser
+        global.window = { document: {} };
+      });
+
+      afterEach(() => {
+        delete global.window;
+      });
+
+      it('should make a fetch request with credentials', async () => {
+        await api.request('get', '/test');
+
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][1]).toHaveProperty('credentials', 'include');
+      });
+
+      it('should make a fetch request with cors', async () => {
+        await api.request('get', '/test');
+
+        expect(fetch.mock.calls.length).toEqual(1);
+        expect(fetch.mock.calls[0][1]).toHaveProperty('mode', 'cors');
+      });
+    }); // describe: when making a request from the browser
 
     it('should trim url', async () => {
       await api.request('get', '///test///');
