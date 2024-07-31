@@ -2,7 +2,7 @@ import { get, find, round } from './utils';
 
 const FORMATTERS = {};
 
-function methods(request, opt) {
+function methods(api, opt) {
   return {
     code: null,
     state: null,
@@ -15,7 +15,7 @@ function methods(request, opt) {
     async select(currency) {
       this.set(currency);
 
-      return request('put', '/session', { currency });
+      return api.request('put', '/session', { currency });
     },
 
     selected() {

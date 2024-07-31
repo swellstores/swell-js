@@ -3,8 +3,8 @@ import { get, isEmpty } from '../../utils';
 import { LibraryNotLoadedError } from '../../utils/errors';
 
 export default class PaypalDirectPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.paypal);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.paypal);
   }
 
   get scripts() {

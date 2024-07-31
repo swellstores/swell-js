@@ -1,7 +1,7 @@
 import { cloneDeep } from './utils';
 import { cleanProductOptions } from './products';
 
-function methods(request, options) {
+function methods(api, options) {
   return {
     state: null,
     order: null,
@@ -12,7 +12,7 @@ function methods(request, options) {
 
     async requestStateChange(method, url, id, data) {
       return this.requestStateSync(async () => {
-        const result = await request(method, url, id, data);
+        const result = await api.request(method, url, id, data);
 
         if (result && result.errors) {
           return result;
@@ -169,18 +169,18 @@ function methods(request, options) {
     async getOrder(checkoutId = undefined) {
       let result;
       if (checkoutId) {
-        result = await request('get', '/cart/order', {
+        result = await api.request('get', '/cart/order', {
           checkout_id: checkoutId,
         });
       } else {
-        result = await request('get', '/cart/order');
+        result = await api.request('get', '/cart/order');
       }
       this.order = result;
       return result;
     },
 
     async getSettings() {
-      this.settings = await request('get', '/cart/settings');
+      this.settings = await api.request('get', '/cart/settings');
       return this.settings;
     },
   };

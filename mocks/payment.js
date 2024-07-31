@@ -67,7 +67,9 @@ const mockPayment = {
   }),
 
   resetAsyncPayment(id) {
-    return this.request('put', '/payments', id, { $reset_async_payment: true });
+    return this.api.request('put', '/payments', id, {
+      $reset_async_payment: true,
+    });
   },
 
   onSuccess: jest.fn(),

@@ -1,8 +1,8 @@
 import mockPayment from '../../mocks/payment';
 
 jest.mock('../../src/payment/payment.js', () => {
-  return function (request, options, params, method) {
-    this.request = request;
+  return function (api, options, params, method) {
+    this.api = api;
     this.options = options;
     this.params = params;
     this.method = method;
@@ -40,6 +40,6 @@ export function describePayment(description, callback) {
       clearGlobal();
     });
 
-    callback(request, options, mockPayment);
+    callback({ request }, options, mockPayment);
   });
 }

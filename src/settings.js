@@ -9,7 +9,7 @@ import {
   camelCase,
 } from './utils';
 
-function methods(request, opt) {
+function methods(api, opt) {
   return {
     state: null,
     menuState: null,
@@ -34,7 +34,7 @@ function methods(request, opt) {
       { id = undefined, def = undefined, refresh = false } = {},
     ) {
       if (!this[stateName] || refresh) {
-        this[stateName] = request('get', uri);
+        this[stateName] = api.request('get', uri);
       }
       if (this[stateName] && typeof this[stateName].then === 'function') {
         return this[stateName].then((state) => {
@@ -157,7 +157,7 @@ function methods(request, opt) {
     async load() {
       try {
         const { settings, menus, payments, subscriptions, session } =
-          await request('get', '/settings/all');
+          await api.request('get', '/settings/all');
 
         this.localizedState = {};
 

@@ -9,7 +9,7 @@ import {
 /** @typedef {import('@stripe/stripe-js').PaymentRequestPaymentMethodEvent} PaymentRequestPaymentMethodEvent */
 
 export default class StripeGooglePayment extends Payment {
-  constructor(request, options, params, methods) {
+  constructor(api, options, params, methods) {
     if (!methods.card) {
       throw new PaymentMethodDisabledError('Credit cards');
     }
@@ -19,7 +19,7 @@ export default class StripeGooglePayment extends Payment {
       publishable_key: methods.card.publishable_key,
     };
 
-    super(request, options, params, method);
+    super(api, options, params, method);
   }
 
   get scripts() {

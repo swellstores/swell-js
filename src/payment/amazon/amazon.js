@@ -7,8 +7,8 @@ import {
 } from '../../utils/errors';
 
 export default class AmazonDirectPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.amazon);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.amazon);
   }
 
   get scripts() {

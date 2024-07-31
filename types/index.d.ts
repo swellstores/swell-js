@@ -54,6 +54,12 @@ export * from './subscription';
 
 export as namespace swell;
 
+export function create(
+  store?: string,
+  key?: string,
+  options?: InitOptions,
+): swell;
+
 export type SnakeToCamelCase<S> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
   : S;

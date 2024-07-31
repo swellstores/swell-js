@@ -18,8 +18,8 @@ export default class Payment {
   _element = null;
   _elementContainer = null;
 
-  constructor(request, options, params, method) {
-    this.request = request;
+  constructor(api, options, params, method) {
+    this.api = api;
     this.options = options;
     this.params = params;
     this.method = method;
@@ -85,7 +85,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async getCart() {
-    const cart = await cartApi(this.request, this.options).get();
+    const cart = await cartApi(this.api, this.options).get();
 
     if (!cart) {
       throw new Error('Cart not found');
@@ -113,7 +113,7 @@ export default class Payment {
       }
     }
 
-    const updatedCart = await cartApi(this.request, this.options).update(
+    const updatedCart = await cartApi(this.api, this.options).update(
       updateData,
     );
 
@@ -126,7 +126,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async getSettings() {
-    return settingsApi(this.request, this.options).get();
+    return settingsApi(this.api, this.options).get();
   }
 
   /**
@@ -166,7 +166,9 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   resetAsyncPayment(id) {
-    return this.request('put', '/payments', id, { $reset_async_payment: true });
+    return this.api.request('put', '/payments', id, {
+      $reset_async_payment: true,
+    });
   }
 
   /**
