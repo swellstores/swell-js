@@ -1,6 +1,6 @@
 import { find } from './utils';
 
-function methods(request, opt) {
+function methods(api, opt) {
   return {
     code: null,
     state: null,
@@ -13,7 +13,7 @@ function methods(request, opt) {
       this.set(locale);
       opt.setCookie('swell-locale', locale);
       opt.api.settings.locale = locale;
-      return await request('put', '/session', { locale });
+      return await api.request('put', '/session', { locale });
     },
 
     selected() {

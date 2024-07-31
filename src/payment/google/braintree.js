@@ -18,12 +18,12 @@ const ALLOWED_CARD_NETWORKS = [
 ];
 
 export default class BraintreeGooglePayment extends Payment {
-  constructor(request, options, params, methods) {
+  constructor(api, options, params, methods) {
     if (!methods.card) {
       throw new PaymentMethodDisabledError('Credit cards');
     }
 
-    super(request, options, params, methods.google);
+    super(api, options, params, methods.google);
   }
 
   get scripts() {

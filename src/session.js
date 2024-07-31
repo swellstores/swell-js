@@ -1,10 +1,10 @@
-function methods(request, opt) {
+function methods(api, opt) {
   return {
     /**
      * Get the decoded session as an object of session values
      */
     get() {
-      return request('get', '/session');
+      return api.request('get', '/session');
     },
 
     /**

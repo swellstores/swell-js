@@ -12,12 +12,12 @@ const MERCHANT_CAPABILITIES = [
 ];
 
 export default class BraintreeApplePayment extends Payment {
-  constructor(request, options, params, methods) {
+  constructor(api, options, params, methods) {
     if (!methods.card) {
       throw new PaymentMethodDisabledError('Credit cards');
     }
 
-    super(request, options, params, methods.apple);
+    super(api, options, params, methods.apple);
   }
 
   get scripts() {

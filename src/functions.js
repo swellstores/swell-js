@@ -1,4 +1,4 @@
-function methods(request, _opt) {
+function methods(api, _opt) {
   return {
     /**
      * Make a request to an app function and greceiveet a response
@@ -10,7 +10,7 @@ function methods(request, _opt) {
      * @returns {any}
      */
     request(method, appId, functionName, data, options = undefined) {
-      return request(method, functionName, undefined, data, {
+      return api.request(method, functionName, undefined, data, {
         ...options,
         path: `/functions/${appId}`,
         useCamelCase: false, // avoid mutating data

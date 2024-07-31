@@ -4,8 +4,8 @@ import { createPaysafecardPaymentData } from '../../utils/paysafecard';
 import { UnableAuthenticatePaymentMethodError } from '../../utils/errors';
 
 export default class PaysafecardDirectPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.paysafecard);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.paysafecard);
   }
 
   async tokenize() {

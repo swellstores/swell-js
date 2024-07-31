@@ -2,8 +2,8 @@ import Payment from '../payment';
 import { UnableAuthenticatePaymentMethodError } from '../../utils/errors';
 
 export default class QuickpayCardPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.card);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.card);
   }
 
   get orderId() {

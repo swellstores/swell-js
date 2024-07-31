@@ -14,9 +14,9 @@ import attributesApi from './attributes';
 
 let OPTIONS;
 
-function methods(request, opt) {
+function methods(api, opt) {
   OPTIONS = opt;
-  const { get, list } = defaultMethods(request, '/products', ['list', 'get']);
+  const { get, list } = defaultMethods(api, '/products', ['list', 'get']);
   return {
     get: (id, ...args) => {
       return cache.getFetch('products', id, () => get(id, ...args));
@@ -35,7 +35,7 @@ function methods(request, opt) {
     filters: getFilters,
 
     filterableAttributeFilters: (products, options) =>
-      getFilterableAttributeFilters(request, products, options),
+      getFilterableAttributeFilters(api, products, options),
   };
 }
 
@@ -239,9 +239,9 @@ function findPurchaseOption(product, purchaseOption) {
   };
 }
 
-async function getFilterableAttributeFilters(request, products, options) {
+async function getFilterableAttributeFilters(api, products, options) {
   const { results: filterableAttributes } = await attributesApi(
-    request,
+    api,
     OPTIONS,
   ).list({
     filterable: true,

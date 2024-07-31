@@ -12,8 +12,8 @@ import { LibraryNotLoadedError } from '../../utils/errors';
 /** @typedef {import('@stripe/stripe-js').StripeCardNumberElement} StripeCardNumberElement */
 
 export default class StripeCardPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.card);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.card);
   }
 
   get scripts() {

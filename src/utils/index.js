@@ -128,19 +128,19 @@ function isFunction(func) {
   return typeof func === 'function';
 }
 
-function defaultMethods(request, uri, methods) {
+function defaultMethods(api, uri, methods) {
   return {
     list:
       methods.indexOf('list') >= 0
         ? function (query) {
-            return request('get', uri, undefined, query);
+            return api.request('get', uri, undefined, query);
           }
         : undefined,
 
     get:
       methods.indexOf('get') >= 0
         ? function (id, query) {
-            return request('get', uri, id, query);
+            return api.request('get', uri, id, query);
           }
         : undefined,
   };

@@ -53,7 +53,7 @@ describePayment('payment/card/stripe', (_request, options, _paymentMock) => {
         };
       };
 
-      const payment = new PaymentController(request, options);
+      const payment = new PaymentController({ request }, options);
 
       const paymentId = 'test_payment_id';
 
