@@ -17,7 +17,14 @@ import currency from './currency';
 import functions from './functions';
 import * as utils from './utils';
 
-function swell(initStore = undefined, initKey, initOpt = {}) {
+/**
+ * Swell API client
+ * @param {string} initStore - Store name
+ * @param {string} initKey - API key
+ * @param {InitOptions} initOptions - Options
+ * @returns {swell} API client
+ */
+function swell(initStore = undefined, initKey, initOptions = {}) {
   const options = {
     store: null,
     key: null,
@@ -224,7 +231,7 @@ function swell(initStore = undefined, initKey, initOpt = {}) {
   }
 
   if (initStore) {
-    api.init(initStore, initKey, initOpt);
+    api.init(initStore, initKey, initOptions);
   }
 
   return api;
