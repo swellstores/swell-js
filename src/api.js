@@ -22,7 +22,7 @@ import * as utils from './utils';
  * @param {string} initStore - Store name
  * @param {string} initKey - API key
  * @param {InitOptions} initOptions - Options
- * @returns {swell} API client
+ * @returns {SwellClient} API client
  */
 function swell(initStore = undefined, initKey, initOptions = {}) {
   const options = {
