@@ -76,7 +76,7 @@
     "redux": "4.0.5",
     "redux-thunk": "2.3.0",
     "rimraf": "^5.0.5",
-    "rollup": "3.29.4",
+    "rollup": "3.29.5",
     "rollup-plugin-filesize": "10.0.0",
     "rollup-plugin-polyfill-node": "0.13.0",
     "style-loader": "^3.3.4",
