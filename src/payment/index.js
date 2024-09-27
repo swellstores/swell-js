@@ -28,14 +28,14 @@ import {
 } from '../utils';
 
 export default class PaymentController {
-  constructor(request, options) {
-    this.request = request;
+  constructor(api, options) {
+    this.api = api;
     this.options = options;
-    this.payment = new Payment(this.request, this.options);
+    this.payment = new Payment(this.api, this.options);
   }
 
   get(id) {
-    return this.request('get', '/payments', id);
+    return this.api.request('get', '/payments', id);
   }
 
   async methods() {
@@ -43,7 +43,7 @@ export default class PaymentController {
       return this.methodSettings;
     }
 
-    this.methodSettings = await this.request('get', '/payment/methods');
+    this.methodSettings = await this.api.request('get', '/payment/methods');
 
     return this.methodSettings;
   }
@@ -126,7 +126,7 @@ export default class PaymentController {
       }
 
       const paymentInstance = new PaymentClass(
-        this.request,
+        this.api,
         this.options,
         null,
         paymentMethods,
@@ -165,10 +165,7 @@ export default class PaymentController {
   }
 
   async _getPaymentMethods() {
-    const paymentMethods = await settingsApi(
-      this.request,
-      this.options,
-    ).payments();
+    const paymentMethods = await settingsApi(this.api, this.options).payments();
 
     if (paymentMethods.error) {
       throw new Error(paymentMethods.error);
@@ -226,7 +223,7 @@ export default class PaymentController {
 
       try {
         const paymentInstance = new PaymentClass(
-          this.request,
+          this.api,
           this.options,
           methodParams,
           paymentMethods,

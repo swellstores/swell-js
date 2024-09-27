@@ -3,8 +3,8 @@ import { getKlarnaSessionData } from '../../utils/klarna';
 import { UnableAuthenticatePaymentMethodError } from '../../utils/errors';
 
 export default class KlarnaDirectPayment extends Payment {
-  constructor(request, options, params, methods) {
-    super(request, options, params, methods.klarna);
+  constructor(api, options, params, methods) {
+    super(api, options, params, methods.klarna);
   }
 
   async tokenize() {

@@ -2,11 +2,8 @@ import { cleanProductOptions } from './products';
 import { defaultMethods } from './utils';
 import cache from './cache';
 
-function methods(request) {
-  const { get, list } = defaultMethods(request, '/subscriptions', [
-    'list',
-    'get',
-  ]);
+function methods(api) {
+  const { get, list } = defaultMethods(api, '/subscriptions', ['list', 'get']);
   return {
     get: (id, ...args) => {
       return cache.getFetch('subscriptions', id, () => get(id, ...args));
@@ -30,15 +27,19 @@ function methods(request) {
     },
 
     create(data) {
-      return request('post', '/subscriptions', this.getCleanData(data));
+      return api.request('post', '/subscriptions', this.getCleanData(data));
     },
 
     update(id, data) {
-      return request('put', `/subscriptions/${id}`, this.getCleanData(data));
+      return api.request(
+        'put',
+        `/subscriptions/${id}`,
+        this.getCleanData(data),
+      );
     },
 
     addItem(id, item) {
-      return request(
+      return api.request(
         'post',
         `/subscriptions/${id}/items`,
         this.getCleanData(item),
@@ -49,11 +50,11 @@ function methods(request) {
       if (items && items.map) {
         items = items.map(this.getCleanData);
       }
-      return request('put', `/subscriptions/${id}/items`, items);
+      return api.request('put', `/subscriptions/${id}/items`, items);
     },
 
     updateItem(id, itemId, item) {
-      return request(
+      return api.request(
         'put',
         `/subscriptions/${id}/items/${itemId}`,
         this.getCleanData(item),
@@ -61,7 +62,7 @@ function methods(request) {
     },
 
     removeItem(id, itemId) {
-      return request('delete', `/subscriptions/${id}/items/${itemId}`);
+      return api.request('delete', `/subscriptions/${id}/items/${itemId}`);
     },
   };
 }

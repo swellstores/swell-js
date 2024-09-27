@@ -1,9 +1,9 @@
-function methods(request) {
+function methods(api) {
   return {
     state: null,
 
     async requestStateChange(method, url, id, data) {
-      const result = await request(method, url, id, data);
+      const result = await api.request(method, url, id, data);
       if (result && result.errors) {
         return result;
       }
@@ -37,51 +37,51 @@ function methods(request) {
 
     logout() {
       this.state = null;
-      return request('post', '/account/logout');
+      return api.request('post', '/account/logout');
     },
 
     recover(data) {
-      return request('post', '/account/recover', data);
+      return api.request('post', '/account/recover', data);
     },
 
     listAddresses(query) {
-      return request('get', '/account/addresses', query);
+      return api.request('get', '/account/addresses', query);
     },
 
     createAddress(data) {
-      return request('post', '/account/addresses', data);
+      return api.request('post', '/account/addresses', data);
     },
 
     updateAddress(id, data) {
-      return request('put', `/account/addresses/${id}`, data);
+      return api.request('put', `/account/addresses/${id}`, data);
     },
 
     deleteAddress(id) {
-      return request('delete', `/account/addresses/${id}`);
+      return api.request('delete', `/account/addresses/${id}`);
     },
 
     listCards(query) {
-      return request('get', '/account/cards', query);
+      return api.request('get', '/account/cards', query);
     },
 
     createCard(data) {
-      return request('post', '/account/cards', data);
+      return api.request('post', '/account/cards', data);
     },
 
     updateCard(id, data) {
-      return request('put', `/account/cards/${id}`, data);
+      return api.request('put', `/account/cards/${id}`, data);
     },
 
     deleteCard(id) {
-      return request('delete', `/account/cards/${id}`);
+      return api.request('delete', `/account/cards/${id}`);
     },
 
     listOrders(query) {
-      return request('get', '/account/orders', query);
+      return api.request('get', '/account/orders', query);
     },
 
     getOrder(id) {
-      return request('get', `/account/orders/${id}`);
+      return api.request('get', `/account/orders/${id}`);
     },
 
     // Deprecated methods
@@ -90,21 +90,21 @@ function methods(request) {
      * @deprecated use `listAddresses` instead
      */
     getAddresses(query) {
-      return request('get', '/account/addresses', query);
+      return api.request('get', '/account/addresses', query);
     },
 
     /**
      * @deprecated use `listCards` instead
      */
     getCards(query) {
-      return request('get', '/account/cards', query);
+      return api.request('get', '/account/cards', query);
     },
 
     /**
      * @deprecated use `listOrders` instead
      */
     getOrders(query) {
-      return request('get', '/account/orders', query);
+      return api.request('get', '/account/orders', query);
     },
   };
 }

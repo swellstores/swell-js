@@ -53,6 +53,13 @@ export * from './shipment_rating';
 export * from './subscription';
 
 export as namespace swell;
+export type SwellClient = typeof import('.');
+
+export function create(
+  store?: string,
+  key?: string,
+  options?: InitOptions,
+): SwellClient;
 
 export type SnakeToCamelCase<S> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
@@ -479,7 +486,7 @@ import _toNumber from 'lodash-es/toNumber';
 import _toLower from 'lodash-es/toLower';
 import _isEqual from 'lodash-es/isEqual';
 import _isEmpty from 'lodash-es/isEmpty';
-import deepmerge from 'deepmerge';
+import * as deepmerge from 'deepmerge';
 
 export namespace utils {
   export {
