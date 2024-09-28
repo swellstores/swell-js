@@ -60,6 +60,8 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
       options.setCookie = opt.setCookie || setCookie;
       options.getCart = opt.getCart;
       options.updateCart = opt.updateCart;
+      options.headers = opt.headers || {};
+
       utils.setOptions(options);
     },
 
@@ -129,6 +131,10 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     const allOptions = {
       ...options,
       ...opt,
+      headers: {
+        ...options.headers,
+        ...(opt ? opt.headers : undefined),
+      },
     };
 
     const session = allOptions.session || allOptions.getCookie('swell-session');
@@ -164,6 +170,7 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     }
 
     const reqHeaders = {
+      ...(allOptions.headers || undefined),
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Basic ${utils.base64Encode(String(allOptions.key))}`,
