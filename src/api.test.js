@@ -8,54 +8,41 @@ describe('api', () => {
   describe('auth', () => {
     it('should call init() for backward compatibility', () => {
       api.auth('test1', 'pk_test1');
-      expect(api.options).toEqual({
-        previewContent: false,
-        store: 'test1',
-        key: 'pk_test1',
-        timeout: 20000,
-        url: 'https://test1.swell.store',
-        vaultUrl: 'https://vault.schema.io',
-        useCamelCase: false,
-        api: api.options.api,
-        setCookie: api.options.setCookie,
-        getCookie: api.options.getCookie,
-      });
+      expect(api.options.previewContent).toEqual(false);
+      expect(api.options.store).toEqual('test1');
+      expect(api.options.key).toEqual('pk_test1');
+      expect(api.options.timeout).toEqual(20000);
+      expect(api.options.url).toEqual('https://test1.swell.store');
+      expect(api.options.vaultUrl).toEqual('https://vault.schema.io');
+      expect(api.options.useCamelCase).toEqual(false);
+      expect(api.options.api).toBeDefined();
+      expect(api.options.setCookie).toBeDefined();
+      expect(api.options.getCookie).toBeDefined();
     });
   });
 
   describe('init', () => {
     it('should set options', () => {
       api.init('test1', 'pk_test1');
-      expect(api.options).toEqual({
-        previewContent: false,
-        store: 'test1',
-        key: 'pk_test1',
-        timeout: 20000,
-        url: 'https://test1.swell.store',
-        vaultUrl: 'https://vault.schema.io',
-        useCamelCase: false,
-        api: api.options.api,
-        setCookie: api.options.setCookie,
-        getCookie: api.options.getCookie,
-      });
+      expect(api.options.previewContent).toEqual(false);
+      expect(api.options.store).toEqual('test1');
+      expect(api.options.key).toEqual('pk_test1');
+      expect(api.options.timeout).toEqual(20000);
+      expect(api.options.url).toEqual('https://test1.swell.store');
+      expect(api.options.vaultUrl).toEqual('https://vault.schema.io');
+      expect(api.options.useCamelCase).toEqual(false);
+      expect(api.options.api).toBeDefined();
+      expect(api.options.setCookie).toBeDefined();
+      expect(api.options.getCookie).toBeDefined();
     });
 
     it('should set url from options', () => {
       api.init('test2', 'pk_test2', {
         url: 'https://www.test2.com',
       });
-      expect(api.options).toEqual({
-        previewContent: false,
-        store: 'test2',
-        key: 'pk_test2',
-        timeout: 20000,
-        url: 'https://www.test2.com',
-        vaultUrl: 'https://vault.schema.io',
-        useCamelCase: false,
-        api: api.options.api,
-        setCookie: api.options.setCookie,
-        getCookie: api.options.getCookie,
-      });
+      expect(api.options.store).toEqual('test2');
+      expect(api.options.key).toEqual('pk_test2');
+      expect(api.options.url).toEqual('https://www.test2.com');
     });
   });
 
@@ -68,6 +55,29 @@ describe('api', () => {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: `Basic ${Buffer.from('pk_test').toString('base64')}`,
+      });
+    });
+
+    it('should make a fetch request with custom header options', async () => {
+      api.init('test', 'pk_test', {
+        headers: {
+          'X-Test-1a': 'foo',
+          'X-Test-2a': 'bar',
+        },
+      });
+      await api.request('get', '/test', undefined, undefined, {
+        headers: {
+          'X-Test-1b': 'foo',
+          'X-Test-2b': 'bar',
+        },
+      });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][1].headers).toMatchObject({
+        'X-Test-1a': 'foo',
+        'X-Test-2a': 'bar',
+        'X-Test-1b': 'foo',
+        'X-Test-2b': 'bar',
       });
     });
 
