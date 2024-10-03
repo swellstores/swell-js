@@ -105,6 +105,7 @@ export interface InitOptions {
   vaultUrl?: string;
   setCookie?: (key: string, value: string) => void;
   getCookie?: (key: string) => string | undefined;
+  headers?: Record<string, string>;
 }
 
 export interface ResultsResponse<T> {
