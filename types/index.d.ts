@@ -543,3 +543,32 @@ export function post<T>(url: string, data?: unknown): Promise<T>;
 
 declare function _delete<T>(url: string, data?: unknown): Promise<T>;
 export { _delete as delete };
+
+declare const swell: {
+  version: string;
+  init: typeof init;
+  account: typeof account;
+  attributes: typeof attributes;
+  card: typeof card;
+  cart: typeof cart;
+  categories: typeof categories;
+  content: typeof content;
+  currency: typeof currency;
+  locale: typeof locale;
+  payment: typeof payment;
+  products: typeof products;
+  settings: typeof settings;
+  subscriptions: typeof subscriptions;
+  invoices: typeof invoices;
+  session: typeof session;
+  functions: typeof functions;
+  utils: typeof utils;
+  auth: typeof init;
+  request: typeof request;
+  get: typeof get;
+  put: typeof put;
+  post: typeof post;
+  delete: typeof _delete;
+};
+
+export default swell;
