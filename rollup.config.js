@@ -3,8 +3,13 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import filesize from 'rollup-plugin-filesize';
+import fs from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import pkg from './package.json' assert { type: 'json' };
+const pkgPath = join(dirname(fileURLToPath(import.meta.url)), 'package.json');
+
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
 const deps = Object.keys(pkg.dependencies);
 
