@@ -543,3 +543,4 @@ export function post<T>(url: string, data?: unknown): Promise<T>;
 
 declare function _delete<T>(url: string, data?: unknown): Promise<T>;
 export { _delete as delete };
+export default swell;
