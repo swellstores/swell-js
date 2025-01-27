@@ -185,7 +185,11 @@ function methods(api, opt) {
           value: session,
         });
       } catch (err) {
-        console.error(`Swell: unable to load settings (${err})`);
+        if (err instanceof Error) {
+          err.message = `Swell: unable to load settings (${err.message})`;
+        }
+
+        console.error(err);
       }
     },
   };
