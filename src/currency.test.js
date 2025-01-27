@@ -50,6 +50,8 @@ const mockSettingState = {
 
 describe('currency', () => {
   beforeEach(() => {
+    jest.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+
     api.init('test', 'pk_test');
     api.settings.state = JSON.parse(JSON.stringify(mockSettingState));
     api.currency.code = null;
