@@ -1,5 +1,5 @@
 import card from './card';
-import { getCookie, setCookie } from './cookie';
+import { getCookie, setCookie } from './utils/cookie';
 import cache from './cache';
 import cart from './cart';
 import account from './account';

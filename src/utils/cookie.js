@@ -1,6 +1,8 @@
-import { isServer } from './utils';
-
 const COOKIE_MAX_AGE = 604800; // 1 week
+
+function isServer() {
+  return !(typeof window !== 'undefined' && window?.document);
+}
 
 function getCookie(name) {
   if (isServer()) {
@@ -47,4 +49,4 @@ function setCookie(name, value, options = {}) {
   document.cookie = updatedCookie;
 }
 
-export { getCookie, setCookie };
+export { isServer, getCookie, setCookie };
