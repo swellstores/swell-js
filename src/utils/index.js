@@ -13,7 +13,8 @@ import isEqual from 'lodash-es/isEqual';
 import isEmpty from 'lodash-es/isEmpty';
 import deepmerge from 'deepmerge';
 import { camelize, decamelize, camelizeKeys, decamelizeKeys } from 'fast-case';
-import { isServer, getCookie, setCookie } from './cookie';
+import { isServer } from './general';
+import { getCookie, setCookie } from './cookie';
 
 /* global Buffer */
 
