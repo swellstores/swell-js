@@ -13,8 +13,6 @@ import isEqual from 'lodash-es/isEqual';
 import isEmpty from 'lodash-es/isEmpty';
 import deepmerge from 'deepmerge';
 import { camelize, decamelize, camelizeKeys, decamelizeKeys } from 'fast-case';
-import { isServer } from './general';
-import { getCookie, setCookie } from './cookie';
 
 /* global Buffer */
 
@@ -120,6 +118,10 @@ function map(arr, cb) {
 
 function reduce(arr, cb, init) {
   return arr instanceof Array ? arr.reduce(cb, init) : init;
+}
+
+function isServer() {
+  return !(typeof window !== 'undefined' && window?.document);
 }
 
 function isFunction(func) {
@@ -328,8 +330,6 @@ export {
   trimStart,
   trimEnd,
   stringifyQuery,
-  getCookie,
-  setCookie,
   isServer,
   isFunction,
   isObject,

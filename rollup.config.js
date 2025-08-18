@@ -33,7 +33,7 @@ export default [
       cart: './src/cart.js',
       categories: './src/categories.js',
       content: './src/content.js',
-      cookie: './src/utils/cookie.js',
+      cookie: './src/cookie.js',
       currency: './src/currency.js',
       locale: './src/locale.js',
       payment: './src/payment/index.js',

@@ -1,5 +1,5 @@
 import card from './card';
-import { getCookie, setCookie } from './utils/cookie';
+import { getCookie, setCookie } from './cookie';
 import cache from './cache';
 import cart from './cart';
 import account from './account';
@@ -119,6 +119,10 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     functions: functions(api, options),
 
     utils,
+
+    getCookie,
+
+    setCookie,
   });
 
   async function request(

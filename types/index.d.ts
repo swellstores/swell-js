@@ -523,13 +523,6 @@ export namespace utils {
   export function trimEnd(str: string): string;
   export function stringifyQuery(query: object): string;
   export function base64Encode(input: string): string;
-  export function isServer(): boolean;
-  export function getCookie(key: string): string | undefined;
-  export function setCookie(
-    key: string,
-    value: string,
-    options?: { [key: string]: string },
-  ): void;
 }
 
 // Backward compatible functions
@@ -550,4 +543,12 @@ export function post<T>(url: string, data?: unknown): Promise<T>;
 
 declare function _delete<T>(url: string, data?: unknown): Promise<T>;
 export { _delete as delete };
+
+export function getCookie(key: string): string | undefined;
+export function setCookie(
+  key: string,
+  value: string,
+  options?: { [key: string]: string },
+): void;
+
 export default swell;

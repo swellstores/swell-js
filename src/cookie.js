@@ -1,4 +1,4 @@
-import { isServer } from './general';
+import { isServer } from './utils';
 
 const COOKIE_MAX_AGE = 604800; // 1 week
 
