@@ -119,6 +119,10 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     functions: functions(api, options),
 
     utils,
+
+    getCookie,
+
+    setCookie,
   });
 
   async function request(
