@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": false,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": true,
+    "baseUrl": "./",
+    "lib": ["es2022", "dom"]
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
