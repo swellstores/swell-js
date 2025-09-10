@@ -490,7 +490,7 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     toLower: typeof import('lodash-es/toLower');
     isEqual: typeof import('lodash-es/isEqual');
     isEmpty: typeof import('lodash-es/isEmpty');
-    deepmerge: typeof import('deepmerge');
+    merge: typeof import('deepmerge');
 
     map<T, R>(arr: T[], mapper: (item: T) => R): R[];
 
@@ -550,7 +550,7 @@ export interface SwellClientDefault<C extends 'snake' | 'camel'>
   default: SwellClientDefault<'snake'>;
 }
 
-declare const SwellJS: SwellJS.SwellClientDefault<'snake'>;
+declare const swell: SwellJS.SwellClientDefault<'snake'>;
 
-export as namespace SwellJS;
-export = SwellJS;
+export as namespace swell;
+export = swell;
