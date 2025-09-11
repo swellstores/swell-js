@@ -550,7 +550,7 @@ export interface SwellClientDefault<C extends 'snake' | 'camel'>
   default: SwellClientDefault<'snake'>;
 }
 
-declare const swell: SwellJS.SwellClientDefault<'snake'>;
+declare const swell: SwellClientDefault<'snake'>;
 
 export as namespace swell;
 export = swell;
