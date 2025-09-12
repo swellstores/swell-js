@@ -97,6 +97,7 @@
     "prepare": "git config core.hooksPath .git-hooks || echo 'Not in a git repo'",
     "prepack": "npm run build",
     "lint": "eslint \"{src,types}/**/*.{js,jsx,json,ts}\"",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "lint:ts": "tsc -p ./tsconfig.json"
   }
 }

@@ -4,62 +4,66 @@
 // Credit Stackoverflow user ford04 for SnakeToCamelCase function
 // https://stackoverflow.com/questions/60269936/typescript-convert-generic-object-from-snake-to-camel-case
 
-import { Account, Address, PasswordTokenInput } from './account';
-import { Attribute } from './attribute';
-import { Card, InputCreateToken, TokenResponse } from './card';
-import { Cart, CartItem } from './cart';
-import { Content } from './content';
-import { EnabledCurrency, FormatInput, SelectCurrencyReturn } from './currency';
-import { Category } from './category';
-import { Locale } from './locale';
-import { Order } from './order';
-import { Product, FlexibleProductInput, PriceRange } from './product';
+import type {
+  AccountCase,
+  AddressCase,
+  PasswordTokenInputCase,
+} from './account';
+import type { AttributeCase } from './attribute';
+import type { CardCase, InputCreateTokenCase, TokenResponseCase } from './card';
+import type { CartCase, CartItemCase } from './cart';
+import type { CategoryCase } from './category';
+import type { ContentCase } from './content';
+import type {
+  SelectCurrencyReturnCase,
+  EnabledCurrencyCase,
+  FormatInputCase,
+} from './currency';
+import type { InvoiceCase } from './invoice';
+import type { Locale } from './locale';
+import type { OrderCase } from './order';
+import type {
+  ProductCase,
+  FlexibleProductInputCase,
+  PriceRange,
+} from './product';
 
-import {
-  InputPaymentElementCard,
-  InputPaymentElementIdeal,
-  InputPaymentElementPaypal,
-  InputPaymentElementGoogle,
-  InputPaymentElementApple,
-  Payment,
-  InputPaymentRedirect,
+import type {
+  InputPaymentElementCardCase,
+  InputPaymentElementIdealCase,
+  InputPaymentElementPaypalCase,
+  InputPaymentElementGoogleCase,
+  InputPaymentElementAppleCase,
+  InputPaymentRedirectCase,
+  PaymentCase,
 } from './payment';
 
-import { Settings } from './settings';
-import { Subscription } from './subscription';
-import { Invoice } from './invoice';
+import type { Settings } from './settings';
+import type { SubscriptionCase } from './subscription';
+import type { MakeCase } from './utils';
 
-export * from './account';
-export * from './attribute';
-export * from './billing';
-export * from './card';
-export * from './cart';
-export * from './category';
-export * from './content';
-export * from './coupon';
-export * from './currency';
-export * from './discount';
-export * from './giftcard';
-export * from './invoice';
-export * from './locale';
-export * from './order';
-export * from './payment';
-export * from './product';
-export * from './promotion';
-export * from './purchase_link';
-export * from './refund';
-export * from './settings';
-export * from './shipment_rating';
-export * from './subscription';
-
-export as namespace swell;
-export type SwellClient = typeof import('.');
-
-export function create(
-  store?: string,
-  key?: string,
-  options?: InitOptions,
-): SwellClient;
+export type * from './account';
+export type * from './attribute';
+export type * from './billing';
+export type * from './card';
+export type * from './cart';
+export type * from './category';
+export type * from './content';
+export type * from './coupon';
+export type * from './currency';
+export type * from './discount';
+export type * from './giftcard';
+export type * from './invoice';
+export type * from './locale';
+export type * from './order';
+export type * from './payment';
+export type * from './product';
+export type * from './promotion';
+export type * from './purchase_link';
+export type * from './refund';
+export type * from './settings';
+export type * from './shipment_rating';
+export type * from './subscription';
 
 export type SnakeToCamelCase<S> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
@@ -108,20 +112,33 @@ export interface InitOptions {
   headers?: Record<string, string>;
 }
 
+export interface InitOptionsCamel extends InitOptions {
+  useCamelCase: true;
+}
+
 export interface ResultsResponse<T> {
   count: number;
   limit: number;
   page: number;
-  pages?: {
-    [index: number]: {
+  pages?: Record<
+    number,
+    {
       start: number;
       end: number;
-    };
-  };
+    }
+  >;
   page_count?: number;
-  pageCount?: number;
   results: T[];
 }
+
+export type ResultsResponseCamel<T> = ConvertSnakeToCamelCase<
+  ResultsResponse<T>
+>;
+
+type ResultsResponseCase<T> = MakeCase<
+  ResultsResponse<T>,
+  ResultsResponseCamel<T>
+>;
 
 export interface Tax {
   id?: string;
@@ -149,406 +166,391 @@ export interface ErrorResponse {
   errors: Record<string, SwellError | undefined>;
 }
 
-export const version: string;
-
-export function init(
-  storeId: string,
-  publicKey: string,
-  options?: InitOptions,
-): void;
-
-export namespace account {
-  export function create(input: Account): Promise<Account | ErrorResponse>;
-
-  export function login(
-    user: string,
-    password: string | PasswordTokenInput,
-  ): Promise<Account | null>;
-
-  export function logout(): Promise<unknown>;
-  export function recover(input: object): Promise<Account | ErrorResponse>;
-  export function update(input: Account): Promise<Account | ErrorResponse>;
-  export function get(query?: object): Promise<Account | null>;
-
-  export function listAddresses(
-    input?: object,
-  ): Promise<ResultsResponse<Address>>;
-
-  /** @deprecated use `listAddresses` instead */
-  export function getAddresses(
-    input?: object,
-  ): Promise<ResultsResponse<Address>>;
-
-  export function createAddress(
-    input: Address,
-  ): Promise<Address | ErrorResponse>;
-
-  export function updateAddress(
-    id: string,
-    input: Address,
-  ): Promise<Address | ErrorResponse>;
-
-  export function deleteAddress(id: string): Promise<Address | null>;
-
-  export function listCards(query?: object): Promise<ResultsResponse<Card>>;
-  /** @deprecated use `listCards` instead */
-  export function getCards(query?: object): Promise<ResultsResponse<Card>>;
-  export function createCard(input: Card): Promise<Card | ErrorResponse>;
-
-  export function updateCard(
-    id: string,
-    input: Card,
-  ): Promise<Card | ErrorResponse>;
-
-  export function deleteCard(id: string): Promise<Card | null>;
-
-  export function listOrders(query?: object): Promise<ResultsResponse<Order>>;
-  /** @deprecated use `listOrders` instead */
-  export function getOrders(query?: object): Promise<ResultsResponse<Order>>;
-  export function getOrder(id: string): Promise<Order | null>;
-}
-
-export namespace attributes {
-  export function get(id: string, query?: object): Promise<Attribute | null>;
-  export function list(query?: object): Promise<ResultsResponse<Attribute>>;
-}
-
-export namespace card {
-  export function createToken(input: InputCreateToken): Promise<TokenResponse>;
-  export function validateCVC(code: string): boolean;
-  export function validateExpiry(month: string, year: string): boolean;
-  export function validateNumber(cardNumber: string): boolean;
-}
-
-export namespace cart {
-  export function get(): Promise<Cart | null>;
-  export function update(input: object): Promise<Cart | null>;
-  export function recover(input: string): Promise<Cart>;
-
-  export function getSettings(): Promise<Settings>;
-  export function getShippingRates(): Promise<Cart>;
-
-  export function addItem(
-    input: Partial<CartItem>,
-  ): Promise<Cart | ErrorResponse>;
-
-  export function setItems(
-    input: Partial<CartItem>[],
-  ): Promise<Cart | ErrorResponse>;
-
-  export function removeItem(id: string): Promise<Cart | ErrorResponse>;
-
-  export function updateItem(
-    id: string,
-    input: Partial<CartItem>,
-  ): Promise<Cart | ErrorResponse>;
-
-  export function applyCoupon(code: string): Promise<Cart>;
-  export function removeCoupon(): Promise<Cart>;
-
-  export function applyGiftcard(code: string): Promise<Cart>;
-  export function removeGiftcard(id: string): Promise<Cart>;
-
-  export function submitOrder(): Promise<Order>;
-  export function getOrder(checkoutId?: string): Promise<Order>;
-}
-
-export namespace categories {
-  export function get(id: string, query?: object): Promise<Category | null>;
-  export function list(query?: object): Promise<ResultsResponse<Category>>;
-}
-
-export namespace content {
-  export function get(
-    type: string,
-    id: string,
-    query?: Query,
-  ): Promise<Content | ResultsResponse<Content>>;
-
-  export function list(
-    type: string,
-    query?: Query,
-  ): Promise<ResultsResponse<Content>>;
-}
-
-export namespace currency {
-  export function format(amount: number, format: FormatInput): string;
-  export function set(code?: string): EnabledCurrency;
-  export function get(): EnabledCurrency;
-  export function list(): EnabledCurrency[] | Promise<EnabledCurrency[]>;
-  export function select(currency: string): Promise<SelectCurrencyReturn>;
-  export function selected(): string;
-}
-
-export namespace locale {
-  export function get(): Locale;
-  export function set(code: string): Locale;
-  export function list(): Locale[] | Promise<Locale[]>;
-  export function select(locale: string): Promise<{ locale: string }>;
-  export function selected(): string;
-}
-
-export namespace payment {
-  export function get(id: string): Promise<Payment>;
-  export function methods(): Promise<object>;
-
-  export function createElements(input: {
-    card?: InputPaymentElementCard;
-    ideal?: InputPaymentElementIdeal;
-    paypal?: InputPaymentElementPaypal;
-    google?: InputPaymentElementGoogle;
-    apple?: InputPaymentElementApple;
-  }): Promise<void>;
-
-  export function tokenize(input?: {
-    card?: object;
-    ideal?: object;
-    klarna?: object;
-    bancontact?: object;
-    paysafecard?: object;
-    amazon?: object;
-  }): Promise<void>;
-
-  export function handleRedirect(input?: {
-    card?: InputPaymentRedirect;
-    paysafecard?: InputPaymentRedirect;
-    klarna?: InputPaymentRedirect;
-    bancontact?: InputPaymentRedirect;
-  }): Promise<void>;
-
-  export function authenticate(id: string): Promise<object | { error: Error }>;
-  export function resetAsyncPayment(id: string): Promise<object>;
-
-  export function createIntent(input: {
-    gateway: string;
-    intent: object;
-  }): Promise<object>;
-
-  export function updateIntent(input: {
-    gateway: string;
-    intent: object;
-  }): Promise<object>;
-
-  export function authorizeGateway(input: {
-    gateway: string;
-    params?: object;
-  }): Promise<object>;
-}
-
 export interface ProductQuery extends Query {
   category?: string;
   categories?: string[];
   $filters?: unknown;
 }
 
-export namespace products {
-  export function categories(products: FlexibleProductInput): Category[];
+export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
+  version: string;
 
-  export function filters(
-    products: FlexibleProductInput,
-    options?: object,
-  ): object[];
+  init(storeId: string, publicKey: string, options?: InitOptions): void;
 
-  export function filterableAttributeFilters(
-    products: Product[],
-    options?: object,
-  ): Promise<object[]>;
+  account: {
+    create(input: AccountCase[C]): Promise<AccountCase[C] | ErrorResponse>;
 
-  export function get(id: string, query?: ProductQuery): Promise<Product>;
-  export function list(query?: ProductQuery): Promise<ResultsResponse<Product>>;
-  export function priceRange(product: FlexibleProductInput): PriceRange;
+    login(
+      user: string,
+      password: string | PasswordTokenInputCase[C],
+    ): Promise<AccountCase[C] | null>;
 
-  export function attributes(products: FlexibleProductInput): Attribute[];
+    logout(): Promise<unknown>;
+    recover(input: object): Promise<AccountCase[C] | ErrorResponse>;
+    update(input: AccountCase[C]): Promise<AccountCase[C] | ErrorResponse>;
+    get(query?: object): Promise<AccountCase[C] | null>;
 
-  export function variation(
-    product: Product,
-    options: object,
-    purchaseOption?: object,
-  ): Product;
-}
+    listAddresses(
+      input?: object,
+    ): Promise<ResultsResponseCase<AddressCase[C]>[C]>;
 
-export namespace settings {
-  export function get(
-    id?: string,
-    defaultValue?: string | number | Settings,
-  ): Settings | Promise<Settings>;
+    /** @deprecated use `listAddresses` instead */
+    getAddresses(
+      input?: object,
+    ): Promise<ResultsResponseCase<AddressCase[C]>[C]>;
 
-  export function refresh(): Promise<Settings>;
-  export function getCurrentLocale(): string;
-  export function getStoreLocale(): string;
-  export function getStoreLocales(): Locale[];
-  export function load(): Promise<void>;
+    createAddress(
+      input: AddressCase[C],
+    ): Promise<AddressCase[C] | ErrorResponse>;
 
-  export function menus(
-    id?: string,
-    defaultValue?: unknown,
-  ): Settings | Promise<Settings>;
+    updateAddress(
+      id: string,
+      input: AddressCase[C],
+    ): Promise<AddressCase[C] | ErrorResponse>;
 
-  export function payments(
-    id?: string,
-    defaultValue?: string | number | Settings,
-  ): Settings | Promise<Settings>;
+    deleteAddress(id: string): Promise<AddressCase[C] | null>;
 
-  export function subscriptions(
-    id?: string,
-    defaultValue?: string | number | Settings,
-  ): Settings | Promise<Settings>;
+    listCards(query?: object): Promise<ResultsResponseCase<CardCase[C]>[C]>;
+    /** @deprecated use `listCards` instead */
+    getCards(query?: object): Promise<ResultsResponseCase<CardCase[C]>[C]>;
+    createCard(input: CardCase[C]): Promise<CardCase[C] | ErrorResponse>;
 
-  export function session(
-    id?: string,
-    defaultValue?: string | number | Settings,
-  ): Settings | Promise<Settings>;
-}
+    updateCard(
+      id: string,
+      input: CardCase[C],
+    ): Promise<CardCase[C] | ErrorResponse>;
 
-export namespace subscriptions {
-  export function create(input: object): Promise<Subscription | ErrorResponse>;
+    deleteCard(id: string): Promise<CardCase[C] | null>;
 
-  export function update(
-    id: string,
-    input: object,
-  ): Promise<Subscription | ErrorResponse>;
+    listOrders(query?: object): Promise<ResultsResponseCase<OrderCase[C]>[C]>;
+    /** @deprecated use `listOrders` instead */
+    getOrders(query?: object): Promise<ResultsResponseCase<OrderCase[C]>[C]>;
+    getOrder(id: string): Promise<OrderCase[C] | null>;
+  };
 
-  export function list(query?: object): Promise<ResultsResponse<Subscription>>;
-  export function get(id: string, query?: object): Promise<Subscription | null>;
+  attributes: {
+    get(id: string, query?: object): Promise<AttributeCase[C] | null>;
+    list(query?: object): Promise<ResultsResponseCase<AttributeCase[C]>[C]>;
+  };
 
-  export function addItem(
-    id: string,
-    input: object,
-  ): Promise<Subscription | ErrorResponse>;
+  card: {
+    createToken(input: InputCreateTokenCase[C]): Promise<TokenResponseCase[C]>;
+    validateCVC(code: string): boolean;
+    validateExpiry(month: string, year: string): boolean;
+    validateNumber(cardNumber: string): boolean;
+  };
 
-  export function setItems(
-    id: string,
-    input: object[],
-  ): Promise<Subscription | ErrorResponse>;
+  cart: {
+    get(): Promise<CartCase[C] | null>;
+    update(input: object): Promise<CartCase[C] | null>;
+    recover(input: string): Promise<CartCase[C]>;
 
-  export function updateItem(
-    id: string,
-    itemId: string,
-    input: object,
-  ): Promise<Subscription | ErrorResponse>;
+    getSettings(): Promise<Settings>;
+    getShippingRates(): Promise<CartCase[C]>;
 
-  export function removeItem(
-    id: string,
-    itemId: string,
-  ): Promise<Subscription | ErrorResponse>;
-}
+    addItem(
+      input: Partial<CartItemCase[C]>,
+    ): Promise<CartCase[C] | ErrorResponse>;
 
-export namespace invoices {
-  export function get(id: string, query?: object): Promise<Invoice | null>;
-  export function list(query?: object): Promise<ResultsResponse<Invoice>>;
-}
+    setItems(
+      input: Partial<CartItemCase[C]>[],
+    ): Promise<CartCase[C] | ErrorResponse>;
 
-export namespace session {
-  export function get(): Promise<Record<string, unknown>>;
-  export function getCookie(): string | undefined;
-  export function setCookie(value: string): void;
-}
+    removeItem(id: string): Promise<CartCase[C] | ErrorResponse>;
 
-export namespace functions {
-  export function request<T>(
+    updateItem(
+      id: string,
+      input: Partial<CartItemCase[C]>,
+    ): Promise<CartCase[C] | ErrorResponse>;
+
+    applyCoupon(code: string): Promise<CartCase[C]>;
+    removeCoupon(): Promise<CartCase[C]>;
+
+    applyGiftcard(code: string): Promise<CartCase[C]>;
+    removeGiftcard(id: string): Promise<CartCase[C]>;
+
+    submitOrder(): Promise<OrderCase[C]>;
+    getOrder(checkoutId?: string): Promise<OrderCase[C]>;
+  };
+
+  categories: {
+    get(id: string, query?: object): Promise<CategoryCase[C] | null>;
+    list(query?: object): Promise<ResultsResponseCase<CategoryCase[C]>[C]>;
+  };
+
+  content: {
+    get(
+      type: string,
+      id: string,
+      query?: Query,
+    ): Promise<ContentCase[C] | ResultsResponseCase<ContentCase[C]>[C]>;
+
+    list(
+      type: string,
+      query?: Query,
+    ): Promise<ResultsResponseCase<ContentCase[C]>[C]>;
+  };
+
+  currency: {
+    format(amount: number, format: FormatInputCase[C]): string;
+    set(code?: string): EnabledCurrencyCase[C];
+    get(): EnabledCurrencyCase[C];
+    list(): EnabledCurrencyCase[C][] | Promise<EnabledCurrencyCase[C][]>;
+    select(currency: string): Promise<SelectCurrencyReturnCase[C]>;
+    selected(): string;
+  };
+
+  locale: {
+    get(): Locale;
+    set(code: string): Locale;
+    list(): Locale[] | Promise<Locale[]>;
+    select(locale: string): Promise<{ locale: string }>;
+    selected(): string;
+  };
+
+  payment: {
+    get(id: string): Promise<PaymentCase[C]>;
+    methods(): Promise<object>;
+
+    createElements(input: {
+      card?: InputPaymentElementCardCase[C];
+      ideal?: InputPaymentElementIdealCase[C];
+      paypal?: InputPaymentElementPaypalCase[C];
+      google?: InputPaymentElementGoogleCase[C];
+      apple?: InputPaymentElementAppleCase[C];
+    }): Promise<void>;
+
+    tokenize(input?: {
+      card?: object;
+      ideal?: object;
+      klarna?: object;
+      bancontact?: object;
+      paysafecard?: object;
+      amazon?: object;
+    }): Promise<void>;
+
+    handleRedirect(input?: {
+      card?: InputPaymentRedirectCase[C];
+      paysafecard?: InputPaymentRedirectCase[C];
+      klarna?: InputPaymentRedirectCase[C];
+      bancontact?: InputPaymentRedirectCase[C];
+    }): Promise<void>;
+
+    authenticate(id: string): Promise<object | { error: Error }>;
+    resetAsyncPayment(id: string): Promise<object>;
+
+    createIntent(input: { gateway: string; intent: object }): Promise<object>;
+
+    updateIntent(input: { gateway: string; intent: object }): Promise<object>;
+
+    authorizeGateway(input: {
+      gateway: string;
+      params?: object;
+    }): Promise<object>;
+  };
+
+  products: {
+    categories(products: FlexibleProductInputCase[C]): CategoryCase[C][];
+
+    filters(products: FlexibleProductInputCase[C], options?: object): object[];
+
+    filterableAttributeFilters(
+      products: ProductCase[C][],
+      options?: object,
+    ): Promise<object[]>;
+
+    get(id: string, query?: ProductQuery): Promise<ProductCase[C]>;
+    list(query?: ProductQuery): Promise<ResultsResponseCase<ProductCase[C]>[C]>;
+    priceRange(product: FlexibleProductInputCase[C]): PriceRange;
+
+    attributes(products: FlexibleProductInputCase[C]): AttributeCase[C][];
+
+    variation(
+      product: ProductCase[C],
+      options: object,
+      purchaseOption?: object,
+    ): ProductCase[C];
+  };
+
+  settings: {
+    get(
+      id?: string,
+      defaultValue?: string | number | Settings,
+    ): Settings | Promise<Settings>;
+
+    refresh(): Promise<Settings>;
+    getCurrentLocale(): string;
+    getStoreLocale(): string;
+    getStoreLocales(): Locale[];
+    load(): Promise<void>;
+
+    menus(id?: string, defaultValue?: unknown): Settings | Promise<Settings>;
+
+    payments(
+      id?: string,
+      defaultValue?: string | number | Settings,
+    ): Settings | Promise<Settings>;
+
+    subscriptions(
+      id?: string,
+      defaultValue?: string | number | Settings,
+    ): Settings | Promise<Settings>;
+
+    session(
+      id?: string,
+      defaultValue?: string | number | Settings,
+    ): Settings | Promise<Settings>;
+  };
+
+  subscriptions: {
+    create(input: object): Promise<SubscriptionCase[C] | ErrorResponse>;
+
+    update(
+      id: string,
+      input: object,
+    ): Promise<SubscriptionCase[C] | ErrorResponse>;
+
+    list(query?: object): Promise<ResultsResponseCase<SubscriptionCase[C]>[C]>;
+    get(id: string, query?: object): Promise<SubscriptionCase[C] | null>;
+
+    addItem(
+      id: string,
+      input: object,
+    ): Promise<SubscriptionCase[C] | ErrorResponse>;
+
+    setItems(
+      id: string,
+      input: object[],
+    ): Promise<SubscriptionCase[C] | ErrorResponse>;
+
+    updateItem(
+      id: string,
+      itemId: string,
+      input: object,
+    ): Promise<SubscriptionCase[C] | ErrorResponse>;
+
+    removeItem(
+      id: string,
+      itemId: string,
+    ): Promise<SubscriptionCase[C] | ErrorResponse>;
+  };
+
+  invoices: {
+    get(id: string, query?: object): Promise<InvoiceCase[C] | null>;
+    list(query?: object): Promise<ResultsResponseCase<InvoiceCase[C]>[C]>;
+  };
+
+  session: {
+    get(): Promise<Record<string, unknown>>;
+    getCookie(): string | undefined;
+    setCookie(value: string): void;
+  };
+
+  functions: {
+    request<T>(
+      method: string,
+      appId: string,
+      functionName: string,
+      data?: unknown,
+      options?: unknown,
+    ): Promise<T>;
+
+    get(
+      appId: string,
+      functionName: string,
+      data?: unknown,
+      options?: unknown,
+    ): Promise<object | null>;
+
+    put(
+      appId: string,
+      functionName: string,
+      data?: unknown,
+      options?: unknown,
+    ): Promise<object>;
+
+    post(
+      appId: string,
+      functionName: string,
+      data?: unknown,
+      options?: unknown,
+    ): Promise<object>;
+  };
+
+  utils: {
+    get: typeof import('lodash-es/get');
+    set: typeof import('lodash-es/set');
+    uniq: typeof import('lodash-es/uniq');
+    find: typeof import('lodash-es/find');
+    round: typeof import('lodash-es/round');
+    pick: typeof import('lodash-es/pick');
+    findIndex: typeof import('lodash-es/findIndex');
+    cloneDeep: typeof import('lodash-es/cloneDeep');
+    toNumber: typeof import('lodash-es/toNumber');
+    toLower: typeof import('lodash-es/toLower');
+    isEqual: typeof import('lodash-es/isEqual');
+    isEmpty: typeof import('lodash-es/isEmpty');
+    merge: typeof import('deepmerge');
+
+    map<T, R>(arr: T[], mapper: (item: T) => R): R[];
+
+    reduce<T, R>(
+      arr: T[],
+      reducer: (acc: R, item: T, index: number) => R,
+      init: R,
+    ): R;
+
+    toSnake<T, R>(obj: T): R;
+    toCamel<T, R>(obj: T): R;
+    snakeCase(str: string): string;
+    camelCase(str: string): string;
+    trimStart(str: string): string;
+    trimBoth(str: string): string;
+    trimEnd(str: string): string;
+    stringifyQuery(query: object): string;
+    base64Encode(input: string): string;
+  };
+
+  // Backward compatible functions
+
+  auth: SwellClient<C>['init'];
+
+  request<T>(
     method: string,
-    appId: string,
-    functionName: string,
+    url: string,
+    id?: string,
     data?: unknown,
     options?: unknown,
   ): Promise<T>;
 
-  export function get(
-    appId: string,
-    functionName: string,
-    data?: unknown,
-    options?: unknown,
-  ): Promise<object | null>;
+  get<T>(url: string, query?: Query): Promise<T>;
+  put<T>(url: string, data?: unknown): Promise<T>;
+  post<T>(url: string, data?: unknown): Promise<T>;
 
-  export function put(
-    appId: string,
-    functionName: string,
-    data?: unknown,
-    options?: unknown,
-  ): Promise<object>;
+  delete<T>(url: string, data?: unknown): Promise<T>;
 
-  export function post(
-    appId: string,
-    functionName: string,
-    data?: unknown,
-    options?: unknown,
-  ): Promise<object>;
+  getCookie(key: string): string | undefined;
+  setCookie(key: string, value: string, options?: Record<string, string>): void;
 }
 
-import _get from 'lodash-es/get';
-import _set from 'lodash-es/set';
-import _uniq from 'lodash-es/uniq';
-import _find from 'lodash-es/find';
-import _round from 'lodash-es/round';
-import _pick from 'lodash-es/pick';
-import _findIndex from 'lodash-es/findIndex';
-import _cloneDeep from 'lodash-es/cloneDeep';
-import _toNumber from 'lodash-es/toNumber';
-import _toLower from 'lodash-es/toLower';
-import _isEqual from 'lodash-es/isEqual';
-import _isEmpty from 'lodash-es/isEmpty';
-import * as deepmerge from 'deepmerge';
+export interface SwellClientDefault<C extends 'snake' | 'camel'>
+  extends SwellClient<C> {
+  create<C extends 'snake' | 'camel' = 'snake'>(
+    store?: string,
+    key?: string,
+    options?: InitOptions,
+  ): SwellClient<C>;
 
-export namespace utils {
-  export {
-    _get as get,
-    _set as set,
-    _uniq as uniq,
-    _find as find,
-    _round as round,
-    _pick as pick,
-    _findIndex as findIndex,
-    _cloneDeep as cloneDeep,
-    _toNumber as toNumber,
-    _toLower as toLower,
-    _isEqual as isEqual,
-    _isEmpty as isEmpty,
-    deepmerge as merge,
-  };
+  create(
+    store?: string,
+    key?: string,
+    options?: InitOptionsCamel,
+  ): SwellClient<'camel'>;
 
-  export function map<T, R>(arr: T[], mapper: (item: T) => R): R[];
-
-  export function reduce<T, R>(
-    arr: T[],
-    reducer: (acc: R, item: T, index: number) => R,
-    init: R,
-  ): R;
-
-  export function toSnake<T, R>(obj: T): R;
-  export function toCamel<T, R>(obj: T): R;
-  export function snakeCase(str: string): string;
-  export function camelCase(str: string): string;
-  export function trimStart(str: string): string;
-  export function trimBoth(str: string): string;
-  export function trimEnd(str: string): string;
-  export function stringifyQuery(query: object): string;
-  export function base64Encode(input: string): string;
+  default: SwellClientDefault<'snake'>;
 }
 
-// Backward compatible functions
+declare const swell: SwellClientDefault<'snake'>;
 
-export { init as auth };
-
-export function request<T>(
-  method: string,
-  url: string,
-  id?: string,
-  data?: unknown,
-  options?: unknown,
-): Promise<T>;
-
-export function get<T>(url: string, query?: Query): Promise<T>;
-export function put<T>(url: string, data?: unknown): Promise<T>;
-export function post<T>(url: string, data?: unknown): Promise<T>;
-
-declare function _delete<T>(url: string, data?: unknown): Promise<T>;
-export { _delete as delete };
-
-export function getCookie(key: string): string | undefined;
-export function setCookie(
-  key: string,
-  value: string,
-  options?: { [key: string]: string },
-): void;
-
-export default swell;
+export as namespace swell;
+export = swell;

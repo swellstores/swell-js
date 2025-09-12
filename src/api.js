@@ -17,12 +17,21 @@ import currency from './currency';
 import functions from './functions';
 import * as utils from './utils';
 
+/** @typedef {import('../types').InitOptions} InitOptions */
+
+/**
+ * @template {'snake' | 'camel'} C
+ * @typedef {import('../types').SwellClient<C>} SwellClient<C>
+ */
+
 /**
  * Swell API client
- * @param {string} initStore - Store name
- * @param {string} initKey - API key
- * @param {InitOptions} initOptions - Options
- * @returns {SwellClient} API client
+ *
+ * @template {'snake' | 'camel'} C
+ * @param {string} [initStore] - Store name
+ * @param {string} [initKey] - API key
+ * @param {InitOptions} [initOptions] - Options
+ * @returns {SwellClient<C>} API client
  */
 function swell(initStore = undefined, initKey, initOptions = {}) {
   const options = {
