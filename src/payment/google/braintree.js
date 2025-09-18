@@ -7,7 +7,9 @@ import {
 
 const API_VERSION = 2;
 const API_MINOR_VERSION = 0;
+
 const ALLOWED_CARD_AUTH_METHODS = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+
 const ALLOWED_CARD_NETWORKS = [
   'AMEX',
   'DISCOVER',
@@ -46,6 +48,7 @@ export default class BraintreeGooglePayment extends Payment {
     return window.google;
   }
 
+  /** @returns {google.payments.api.PaymentsClient} */
   get googleClient() {
     if (!BraintreeGooglePayment.googleClient) {
       if (this.google) {
@@ -66,6 +69,7 @@ export default class BraintreeGooglePayment extends Payment {
     BraintreeGooglePayment.googleClient = googleClient;
   }
 
+  /** @returns {google.payments.api.PaymentMethodSpecification} */
   get cardPaymentMethod() {
     return {
       type: 'CARD',
@@ -81,6 +85,7 @@ export default class BraintreeGooglePayment extends Payment {
     };
   }
 
+  /** @returns {google.payments.api.PaymentMethodSpecification[]} */
   get allowedPaymentMethods() {
     return [this.cardPaymentMethod];
   }
@@ -156,6 +161,7 @@ export default class BraintreeGooglePayment extends Payment {
     });
   }
 
+  /** @returns {google.payments.api.PaymentDataRequest} */
   _createPaymentRequestData(cart) {
     const {
       settings: { name },
@@ -185,6 +191,10 @@ export default class BraintreeGooglePayment extends Payment {
     };
   }
 
+  /**
+   * @param {object} googlePayment
+   * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
+   */
   async _onClick(googlePayment, paymentDataRequest) {
     try {
       const paymentData =

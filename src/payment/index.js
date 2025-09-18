@@ -8,6 +8,7 @@ import StripeApplePayment from './apple/stripe';
 import BraintreePaypalPayment from './paypal/braintree';
 import BraintreeGooglePayment from './google/braintree';
 import BraintreeApplePayment from './apple/braintree';
+import AuthorizeNetGooglePayment from './google/authorizenet';
 import QuickpayCardPayment from './card/quickpay';
 import PaysafecardDirectPayment from './paysafecard/paysafecard';
 import KlarnaDirectPayment from './klarna/klarna';
@@ -354,6 +355,8 @@ export default class PaymentController {
         return StripeGooglePayment;
       case 'braintree':
         return BraintreeGooglePayment;
+      case 'authorizenet':
+        return AuthorizeNetGooglePayment;
       default:
         return null;
     }
