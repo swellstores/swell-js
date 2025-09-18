@@ -164,7 +164,7 @@ export default class BraintreeGooglePayment extends Payment {
   /** @returns {google.payments.api.PaymentDataRequest} */
   _createPaymentRequestData(cart) {
     const {
-      settings: { name },
+      settings: { name, country },
       capture_total,
       currency,
     } = cart;
@@ -174,6 +174,7 @@ export default class BraintreeGooglePayment extends Payment {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
       transactionInfo: {
+        countryCode: country,
         currencyCode: currency,
         totalPrice: capture_total.toString(),
         totalPriceStatus: 'ESTIMATED',
@@ -208,6 +209,10 @@ export default class BraintreeGooglePayment extends Payment {
     }
   }
 
+  /**
+   * @param {object} googlePayment
+   * @param {google.payments.api.PaymentData} paymentData
+   */
   async _submitPayment(googlePayment, paymentData) {
     const { require: { shipping: requireShipping } = {} } = this.params;
     const { nonce } = await googlePayment.parseResponse(paymentData);
@@ -236,6 +241,7 @@ export default class BraintreeGooglePayment extends Payment {
     this.onSuccess();
   }
 
+  /** @param {google.payments.api.Address} address */
   _mapAddress(address) {
     return {
       name: address.name,

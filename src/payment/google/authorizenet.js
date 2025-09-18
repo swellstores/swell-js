@@ -129,6 +129,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
     };
   }
 
+  /** @param {google.payments.api.Address} address */
   _mapAddress(address) {
     return {
       name: address.name,
