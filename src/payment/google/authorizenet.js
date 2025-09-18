@@ -100,7 +100,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
    */
   _createPaymentRequestData(cart) {
     const {
-      settings: { name },
+      settings: { name, country },
       capture_total,
       currency,
     } = cart;
@@ -111,7 +111,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
       transactionInfo: {
-        countryCode: 'US', // TODO get merchant country
+        countryCode: country,
         currencyCode: currency,
         totalPrice: capture_total.toString(),
         totalPriceStatus: 'ESTIMATED',
