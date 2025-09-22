@@ -94,7 +94,7 @@ export default class BraintreeGooglePayment extends Payment {
     const {
       elementId = 'googlepay-button',
       locale = 'en',
-      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
+      style: { color = 'black', type = 'plain', sizeMode = 'fill' } = {},
     } = this.params;
 
     if (!this.method.merchant_id) {
@@ -134,6 +134,12 @@ export default class BraintreeGooglePayment extends Payment {
       buttonLocale: locale,
       onClick: this._onClick.bind(this, googlePayment, paymentDataRequest),
     });
+
+    const button = this.element.querySelector('#gpay-button-online-api-id');
+
+    if (button) {
+      button.style['min-width'] = 'auto';
+    }
   }
 
   mountElements() {
