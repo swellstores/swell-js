@@ -7,7 +7,9 @@ import {
 
 const API_VERSION = 2;
 const API_MINOR_VERSION = 0;
+
 const ALLOWED_CARD_AUTH_METHODS = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+
 const ALLOWED_CARD_NETWORKS = [
   'AMEX',
   'DISCOVER',
@@ -46,6 +48,7 @@ export default class BraintreeGooglePayment extends Payment {
     return window.google;
   }
 
+  /** @returns {google.payments.api.PaymentsClient} */
   get googleClient() {
     if (!BraintreeGooglePayment.googleClient) {
       if (this.google) {
@@ -66,6 +69,7 @@ export default class BraintreeGooglePayment extends Payment {
     BraintreeGooglePayment.googleClient = googleClient;
   }
 
+  /** @returns {google.payments.api.PaymentMethodSpecification} */
   get cardPaymentMethod() {
     return {
       type: 'CARD',
@@ -81,6 +85,7 @@ export default class BraintreeGooglePayment extends Payment {
     };
   }
 
+  /** @returns {google.payments.api.PaymentMethodSpecification[]} */
   get allowedPaymentMethods() {
     return [this.cardPaymentMethod];
   }
@@ -89,7 +94,7 @@ export default class BraintreeGooglePayment extends Payment {
     const {
       elementId = 'googlepay-button',
       locale = 'en',
-      style: { color = 'black', type = 'buy', sizeMode = 'fill' } = {},
+      style: { color = 'black', type = 'plain', sizeMode = 'fill' } = {},
     } = this.params;
 
     if (!this.method.merchant_id) {
@@ -129,6 +134,12 @@ export default class BraintreeGooglePayment extends Payment {
       buttonLocale: locale,
       onClick: this._onClick.bind(this, googlePayment, paymentDataRequest),
     });
+
+    const button = this.element.querySelector('#gpay-button-online-api-id');
+
+    if (button) {
+      button.style['min-width'] = 'auto';
+    }
   }
 
   mountElements() {
@@ -156,9 +167,10 @@ export default class BraintreeGooglePayment extends Payment {
     });
   }
 
+  /** @returns {google.payments.api.PaymentDataRequest} */
   _createPaymentRequestData(cart) {
     const {
-      settings: { name },
+      settings: { name, country },
       capture_total,
       currency,
     } = cart;
@@ -168,6 +180,7 @@ export default class BraintreeGooglePayment extends Payment {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
       transactionInfo: {
+        countryCode: country,
         currencyCode: currency,
         totalPrice: capture_total.toString(),
         totalPriceStatus: 'ESTIMATED',
@@ -185,6 +198,10 @@ export default class BraintreeGooglePayment extends Payment {
     };
   }
 
+  /**
+   * @param {object} googlePayment
+   * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
+   */
   async _onClick(googlePayment, paymentDataRequest) {
     try {
       const paymentData =
@@ -198,6 +215,10 @@ export default class BraintreeGooglePayment extends Payment {
     }
   }
 
+  /**
+   * @param {object} googlePayment
+   * @param {google.payments.api.PaymentData} paymentData
+   */
   async _submitPayment(googlePayment, paymentData) {
     const { require: { shipping: requireShipping } = {} } = this.params;
     const { nonce } = await googlePayment.parseResponse(paymentData);
@@ -226,6 +247,7 @@ export default class BraintreeGooglePayment extends Payment {
     this.onSuccess();
   }
 
+  /** @param {google.payments.api.Address} address */
   _mapAddress(address) {
     return {
       name: address.name,
