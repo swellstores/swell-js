@@ -4,6 +4,7 @@ const SCRIPT_HANDLERS = {
   'stripe-js': loadStripe,
   'paypal-sdk': loadPaypal,
   'google-pay': loadGoogle,
+  'apple-pay': loadApple,
   'braintree-web': loadBraintree,
   'braintree-paypal-sdk': loadBraintreePaypal,
   'braintree-web-paypal-checkout': loadBraintreePaypalCheckout,
@@ -63,6 +64,19 @@ async function loadPaypal(params) {
 
   if (!window.paypal) {
     console.error('Warning: PayPal was not loaded');
+  }
+}
+
+async function loadApple() {
+  if (!window.ApplePaySession) {
+    await loadScript(
+      'apple-pay',
+      'https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js',
+    );
+  }
+
+  if (!window.ApplePaySession) {
+    console.error('Warning: Apple Pay was not loaded');
   }
 }
 

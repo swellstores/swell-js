@@ -5,6 +5,7 @@ import {
 } from '../../utils/errors';
 
 const VERSION = 3;
+
 const MERCHANT_CAPABILITIES = [
   'supports3DS',
   'supportsDebit',
@@ -32,6 +33,7 @@ export default class BraintreeApplePayment extends Payment {
     return window.braintree;
   }
 
+  /** @returns {typeof ApplePaySession} */
   get ApplePaySession() {
     if (!window.ApplePaySession) {
       throw new LibraryNotLoadedError('Apple');
@@ -72,6 +74,10 @@ export default class BraintreeApplePayment extends Payment {
     }
   }
 
+  /**
+   * @param {object} applePayment
+   * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
+   */
   _createButton(applePayment, paymentRequest) {
     const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
       this.params;
@@ -105,10 +111,11 @@ export default class BraintreeApplePayment extends Payment {
     });
   }
 
+  /** @returns {ApplePayJS.ApplePayPaymentRequest} */
   _createPaymentRequest(cart, applePayment) {
     const { require = {} } = this.params;
     const {
-      settings: { name },
+      settings: { name, country },
       capture_total,
       currency,
     } = cart;
@@ -135,6 +142,7 @@ export default class BraintreeApplePayment extends Payment {
         type: 'pending',
         amount: capture_total.toString(),
       },
+      countryCode: country,
       currencyCode: currency,
       merchantCapabilities: MERCHANT_CAPABILITIES,
       requiredShippingContactFields,
@@ -142,6 +150,10 @@ export default class BraintreeApplePayment extends Payment {
     });
   }
 
+  /**
+   * @param {object} applePayment
+   * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
+   */
   _createPaymentSession(applePayment, paymentRequest) {
     const session = new this.ApplePaySession(VERSION, paymentRequest);
 
@@ -198,6 +210,7 @@ export default class BraintreeApplePayment extends Payment {
     session.begin();
   }
 
+  /** @param {ApplePayJS.ApplePayPaymentContact} [address] */
   _mapAddress(address = {}) {
     return {
       first_name: address.givenName,
