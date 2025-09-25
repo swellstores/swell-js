@@ -1,23 +1,33 @@
 import Payment from '../payment';
+import {
+  getOfferInfo,
+  getTransactionInfo,
+  getShippingOptionParameters,
+  convertToSwellAddress,
+  onPaymentAuthorized,
+  onPaymentDataChanged,
+} from '../google';
 import { isLiveMode, base64Encode } from '../../utils';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
+/** @typedef {import('../../../types').Cart} Cart */
+
 const API_VERSION = 2;
 const API_MINOR_VERSION = 0;
 
-const ALLOWED_CARD_AUTH_METHODS = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+const ALLOWED_CARD_AUTH_METHODS = Object.freeze(['PAN_ONLY', 'CRYPTOGRAM_3DS']);
 
-const ALLOWED_CARD_NETWORKS = [
+const ALLOWED_CARD_NETWORKS = Object.freeze([
   'AMEX',
   'DISCOVER',
   'INTERAC',
   'JCB',
   'MASTERCARD',
   'VISA',
-];
+]);
 
 export default class AuthorizeNetGooglePayment extends Payment {
   constructor(api, options, params, methods) {
@@ -47,6 +57,14 @@ export default class AuthorizeNetGooglePayment extends Payment {
         AuthorizeNetGooglePayment.googleClient =
           new this.google.payments.api.PaymentsClient({
             environment: isLiveMode(this.method.mode) ? 'PRODUCTION' : 'TEST',
+            paymentDataCallbacks: {
+              onPaymentAuthorized: onPaymentAuthorized.bind(
+                this,
+                this._submitPayment.bind(this),
+              ),
+
+              onPaymentDataChanged: onPaymentDataChanged.bind(this),
+            },
           });
       }
 
@@ -60,7 +78,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
 
   /**
    * @param {boolean} [submit]
-   * @returns {google.payments.api.PaymentMethodSpecification[]}
+   * @returns {google.payments.api.PaymentMethodSpecification}
    */
   _getCardPaymentMethod(submit = false) {
     return {
@@ -95,14 +113,13 @@ export default class AuthorizeNetGooglePayment extends Payment {
   }
 
   /**
-   * @param {import('../../../types').Cart} cart
+   * @param {Cart} cart
    * @returns {google.payments.api.PaymentDataRequest}
    */
   _createPaymentRequestData(cart) {
     const {
-      settings: { name, country },
-      capture_total,
-      currency,
+      settings: { name },
+      shipment_delivery,
     } = cart;
 
     const { require: { email, shipping, phone } = {} } = this.params;
@@ -110,36 +127,26 @@ export default class AuthorizeNetGooglePayment extends Payment {
     return {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
-      transactionInfo: {
-        countryCode: country,
-        currencyCode: currency,
-        totalPrice: capture_total.toString(),
-        totalPriceStatus: 'ESTIMATED',
-      },
+      transactionInfo: getTransactionInfo(cart),
       allowedPaymentMethods: this._getAllowedPaymentMethods(true),
       emailRequired: Boolean(email),
       shippingAddressRequired: Boolean(shipping),
       shippingAddressParameters: {
         phoneNumberRequired: Boolean(phone),
       },
+      shippingOptionRequired: Boolean(shipment_delivery),
+      shippingOptionParameters: getShippingOptionParameters.call(this, cart),
+      offerInfo: getOfferInfo(cart),
       merchantInfo: {
         merchantName: name,
         merchantId: this.method.merchant_id,
       },
-    };
-  }
-
-  /** @param {google.payments.api.Address} address */
-  _mapAddress(address) {
-    return {
-      name: address.name,
-      address1: address.address1,
-      address2: address.address2,
-      city: address.locality,
-      state: address.administrativeArea,
-      zip: address.postalCode,
-      country: address.countryCode,
-      phone: address.phoneNumber,
+      callbackIntents: [
+        'OFFER',
+        'SHIPPING_ADDRESS',
+        'SHIPPING_OPTION',
+        'PAYMENT_AUTHORIZATION',
+      ],
     };
   }
 
@@ -158,14 +165,16 @@ export default class AuthorizeNetGooglePayment extends Payment {
       },
       billing: {
         method: 'google',
+        account_card_id: null,
+        card: null,
         google: {
           gateway: 'authorizenet',
           token: base64Encode(token),
         },
-        ...this._mapAddress(billingAddress),
+        ...convertToSwellAddress(billingAddress),
       },
       ...(requireShipping && {
-        shipping: this._mapAddress(shippingAddress),
+        shipping: convertToSwellAddress(shippingAddress),
       }),
     });
 
@@ -175,20 +184,11 @@ export default class AuthorizeNetGooglePayment extends Payment {
   /**
    * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
    */
-  async _onClick(paymentDataRequest) {
-    try {
-      const paymentData =
-        await this.googleClient.loadPaymentData(paymentDataRequest);
-
-      if (paymentData) {
-        await this._submitPayment(paymentData);
-      }
-    } catch (error) {
-      this.onError(error);
-    }
+  _onClick(paymentDataRequest) {
+    this.googleClient.loadPaymentData(paymentDataRequest);
   }
 
-  /** @param {import('../../../types').Cart} cart */
+  /** @param {Cart} cart */
   async createElements(cart) {
     const {
       elementId = 'googlepay-button',

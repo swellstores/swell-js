@@ -1,4 +1,5 @@
 import Payment from '../payment';
+import { convertToSwellAddress } from '../google';
 import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
@@ -237,27 +238,13 @@ export default class BraintreeGooglePayment extends Payment {
           nonce,
           gateway: 'braintree',
         },
-        ...this._mapAddress(billingAddress),
+        ...convertToSwellAddress(billingAddress),
       },
       ...(requireShipping && {
-        shipping: this._mapAddress(shippingAddress),
+        shipping: convertToSwellAddress(shippingAddress),
       }),
     });
 
     this.onSuccess();
-  }
-
-  /** @param {google.payments.api.Address} address */
-  _mapAddress(address) {
-    return {
-      name: address.name,
-      address1: address.address1,
-      address2: address.address2,
-      city: address.locality,
-      state: address.administrativeArea,
-      zip: address.postalCode,
-      country: address.countryCode,
-      phone: address.phoneNumber,
-    };
   }
 }
