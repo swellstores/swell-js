@@ -48,7 +48,7 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
         );
       }
 
-      if (cart.shipment_rating?.services?.length <= 0) {
+      if (!cart.shipment_rating?.services?.length) {
         return createError(
           intermediatePaymentData.callbackTrigger,
           'SHIPPING_ADDRESS_UNSERVICEABLE',
@@ -248,7 +248,7 @@ export function getShippingOptionParameters(cart) {
     return undefined;
   }
 
-  if (!shipment_rating) {
+  if (!shipment_rating?.services?.length) {
     return {
       defaultSelectedOptionId: 'unknown',
       shippingOptions: [
