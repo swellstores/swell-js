@@ -31,6 +31,7 @@ export interface DiscountRule {
 export interface Discount {
   id: string;
   amount?: number;
+  source_id?: string;
   rule?: DiscountRule;
   type?: string;
 }

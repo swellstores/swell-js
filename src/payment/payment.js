@@ -14,10 +14,19 @@ import {
   PaymentElementNotCreatedError,
 } from '../utils/errors';
 
+/** @typedef {import('../../types').SwellClient} SwellClient */
+/** @typedef {import('../../types').Cart} Cart */
+
 export default class Payment {
   _element = null;
   _elementContainer = null;
 
+  /**
+   * @param {SwellClient} api
+   * @param {object} options
+   * @param {object} params
+   * @param {object} method
+   */
   constructor(api, options, params, method) {
     this.api = api;
     this.options = options;
@@ -82,7 +91,7 @@ export default class Payment {
   /**
    * Returns a cart.
    *
-   * @returns {Promise<object>}
+   * @returns {Promise<Cart>}
    */
   async getCart() {
     const cart = await cartApi(this.api, this.options).get();
@@ -98,7 +107,7 @@ export default class Payment {
    * Updates a cart.
    *
    * @param {object} data
-   * @returns {Promise<object>}
+   * @returns {Promise<Cart>}
    */
   async updateCart(data) {
     const updateData = cloneDeep(data);
