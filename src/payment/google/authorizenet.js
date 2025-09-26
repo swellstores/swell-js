@@ -4,6 +4,7 @@ import {
   getTransactionInfo,
   getShippingOptionParameters,
   convertToSwellAddress,
+  getErrorMessage,
   onPaymentAuthorized,
   onPaymentDataChanged,
 } from '../google';
@@ -50,11 +51,15 @@ export default class AuthorizeNetGooglePayment extends Payment {
     return window.google;
   }
 
-  /** @returns {google.payments.api.PaymentsClient} */
+  /**
+   * Gets the Google Pay client instance, creating one if it doesn't exist.
+   * Each instance creates its own client to ensure proper callback binding.
+   * @returns {google.payments.api.PaymentsClient}
+   */
   get googleClient() {
-    if (!AuthorizeNetGooglePayment.googleClient) {
+    if (!this._googleClientInstance) {
       if (this.google) {
-        AuthorizeNetGooglePayment.googleClient =
+        this._googleClientInstance =
           new this.google.payments.api.PaymentsClient({
             environment: isLiveMode(this.method.mode) ? 'PRODUCTION' : 'TEST',
             paymentDataCallbacks: {
@@ -62,18 +67,17 @@ export default class AuthorizeNetGooglePayment extends Payment {
                 this,
                 this._submitPayment.bind(this),
               ),
-
               onPaymentDataChanged: onPaymentDataChanged.bind(this),
             },
           });
       }
 
-      if (!AuthorizeNetGooglePayment.googleClient) {
+      if (!this._googleClientInstance) {
         throw new LibraryNotLoadedError('Google client');
       }
     }
 
-    return AuthorizeNetGooglePayment.googleClient;
+    return this._googleClientInstance;
   }
 
   /**
@@ -113,8 +117,9 @@ export default class AuthorizeNetGooglePayment extends Payment {
   }
 
   /**
-   * @param {Cart} cart
-   * @returns {google.payments.api.PaymentDataRequest}
+   * Creates the payment data request object for Google Pay.
+   * @param {Cart} cart - The current cart data
+   * @returns {google.payments.api.PaymentDataRequest} Payment data request object
    */
   _createPaymentRequestData(cart) {
     const {
@@ -159,7 +164,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
       tokenizationData: { token },
     } = paymentMethodData;
 
-    await this.updateCart({
+    const cart = await this.updateCart({
       account: {
         email,
       },
@@ -178,10 +183,15 @@ export default class AuthorizeNetGooglePayment extends Payment {
       }),
     });
 
+    if (cart.errors) {
+      throw new Error(getErrorMessage(cart.errors));
+    }
+
     this.onSuccess();
   }
 
   /**
+   * Handles the click event on the Google Pay button.
    * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
    */
   _onClick(paymentDataRequest) {
