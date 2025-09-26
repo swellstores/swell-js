@@ -1,4 +1,5 @@
 import Payment from '../payment';
+import { convertToSwellAddress } from '../apple';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
@@ -195,10 +196,10 @@ export default class BraintreeApplePayment extends Payment {
             nonce: payload.nonce,
             gateway: 'braintree',
           },
-          ...this._mapAddress(billingContact),
+          ...convertToSwellAddress(billingContact),
         },
         ...(requireShipping && {
-          shipping: this._mapAddress(shippingContact),
+          shipping: convertToSwellAddress(shippingContact),
         }),
       });
 
@@ -208,20 +209,5 @@ export default class BraintreeApplePayment extends Payment {
     };
 
     session.begin();
-  }
-
-  /** @param {ApplePayJS.ApplePayPaymentContact} [address] */
-  _mapAddress(address = {}) {
-    return {
-      first_name: address.givenName,
-      last_name: address.familyName,
-      address1: address.addressLines[0],
-      address2: address.addressLines[1],
-      city: address.locality,
-      state: address.administrativeArea,
-      zip: address.postalCode,
-      country: address.countryCode,
-      phone: address.phoneNumber,
-    };
   }
 }
