@@ -22,87 +22,122 @@ export async function onPaymentAuthorized(submitPayment, paymentData) {
 }
 
 /**
+ * Handles Google Pay payment data changes including shipping address updates,
+ * shipping option selections, and coupon applications.
  * @this {Payment}
- * @param {google.payments.api.IntermediatePaymentData} intermediatePaymentData
- * @returns {Promise<google.payments.api.PaymentDataRequestUpdate>}
+ * @param {google.payments.api.IntermediatePaymentData} intermediatePaymentData - The payment data from Google Pay
+ * @returns {Promise<google.payments.api.PaymentDataRequestUpdate>} Updated payment data request
  */
 export async function onPaymentDataChanged(intermediatePaymentData) {
-  switch (intermediatePaymentData.callbackTrigger) {
-    case 'INITIALIZE':
-    case 'SHIPPING_ADDRESS': {
-      if (!intermediatePaymentData.shippingAddress) {
+  try {
+    switch (intermediatePaymentData.callbackTrigger) {
+      case 'INITIALIZE':
+      case 'SHIPPING_ADDRESS': {
+        if (!intermediatePaymentData.shippingAddress) {
+          break;
+        }
+
+        // Update cart with new shipping address and force tax recalculation
+        let cart = await this.updateCart({
+          shipping: convertToSwellAddress(
+            intermediatePaymentData.shippingAddress,
+          ),
+        });
+
+        // Handle any errors from cart update
+        if (cart.errors) {
+          return createError(
+            intermediatePaymentData.callbackTrigger,
+            'OTHER_ERROR',
+            getErrorMessage(cart.errors),
+          );
+        }
+
+        // Check if shipping is available for this address
+        if (!cart.shipment_rating?.services?.length) {
+          return createError(
+            intermediatePaymentData.callbackTrigger,
+            'SHIPPING_ADDRESS_UNSERVICEABLE',
+            'Shipping is not available for the provided address.',
+          );
+        }
+
+        // Auto-apply shipping if only one service is available
+        if (cart.shipment_rating.services.length === 1) {
+          const [singleService] = cart.shipment_rating.services;
+
+          cart = await this.updateCart({
+            shipping: { service: singleService.id },
+          });
+
+          // Handle any errors from cart update
+          if (cart.errors) {
+            return createError(
+              intermediatePaymentData.callbackTrigger,
+              'OTHER_ERROR',
+              getErrorMessage(cart.errors),
+            );
+          }
+        }
+
+        return {
+          newShippingOptionParameters: getShippingOptionParameters.call(
+            this,
+            cart,
+          ),
+          newTransactionInfo: getTransactionInfo(cart),
+        };
+      }
+
+      case 'SHIPPING_OPTION': {
+        // Update cart with selected shipping option
+        const cart = await this.updateCart({
+          shipping: {
+            service: intermediatePaymentData.shippingOptionData?.id || null,
+          },
+        });
+
+        if (cart.errors) {
+          return createError(
+            intermediatePaymentData.callbackTrigger,
+            'SHIPPING_OPTION_INVALID',
+            getErrorMessage(cart.errors),
+          );
+        }
+
+        return { newTransactionInfo: getTransactionInfo(cart) };
+      }
+
+      case 'OFFER': {
+        // Handle coupon code application
+        const codes = intermediatePaymentData.offerData.redemptionCodes ?? [];
+        const code = codes.length > 0 ? codes[codes.length - 1] : null;
+
+        const cart = await this.updateCart({
+          coupon_code: code,
+        });
+
+        if (cart.errors) {
+          const message = getErrorMessage(cart.errors);
+          return createError('OFFER', 'OFFER_INVALID', `COUPON: ${message}`);
+        }
+
+        return {
+          newOfferInfo: getOfferInfo(cart),
+          newTransactionInfo: getTransactionInfo(cart),
+        };
+      }
+
+      default:
         break;
-      }
-
-      const cart = await this.updateCart({
-        shipping: convertToSwellAddress(
-          intermediatePaymentData.shippingAddress,
-        ),
-      });
-
-      if (cart.errors) {
-        return createError(
-          intermediatePaymentData.callbackTrigger,
-          'OTHER_ERROR',
-          getErrorMessage(cart.errors),
-        );
-      }
-
-      if (!cart.shipment_rating?.services?.length) {
-        return createError(
-          intermediatePaymentData.callbackTrigger,
-          'SHIPPING_ADDRESS_UNSERVICEABLE',
-          'Shipping is not available for the provided address.',
-        );
-      }
-
-      return {
-        newShippingOptionParameters: getShippingOptionParameters.call(
-          this,
-          cart,
-        ),
-      };
     }
-
-    case 'SHIPPING_OPTION': {
-      const cart = await this.updateCart({
-        shipping: {
-          service: intermediatePaymentData.shippingOptionData?.id || null,
-        },
-      });
-
-      if (cart.errors) {
-        return createError(
-          intermediatePaymentData.callbackTrigger,
-          'SHIPPING_OPTION_INVALID',
-          getErrorMessage(cart.errors),
-        );
-      }
-
-      return { newTransactionInfo: getTransactionInfo(cart) };
-    }
-
-    case 'OFFER': {
-      const codes = intermediatePaymentData.offerData.redemptionCodes ?? [];
-      const code = codes.length > 0 ? codes[codes.length - 1] : null;
-
-      const cart = await this.updateCart({
-        coupon_code: code,
-      });
-
-      if (cart.errors) {
-        const message = getErrorMessage(cart.errors);
-        return createError('OFFER', 'OFFER_INVALID', `COUPON: ${message}`);
-      }
-
-      return {
-        newOfferInfo: getOfferInfo(cart),
-        newTransactionInfo: getTransactionInfo(cart),
-      };
-    }
-
-    default:
-      break;
+  } catch (error) {
+    // Return structured error response as required by Google Pay API
+    return createError(
+      intermediatePaymentData.callbackTrigger || 'PAYMENT_AUTHORIZATION',
+      'OTHER_ERROR',
+      error?.message || 'An unexpected error occurred',
+    );
   }
 
   return {};
@@ -148,11 +183,10 @@ export function getDiscountLabel(discount, cart) {
 }
 
 /**
- * __Important!__ This only works if the `onPaymentAuthorized` and `onPaymentDataChanged` callbacks are set.
- * Also require `totalPriceLabel` property in `TransactionInfo`.
- *
- * @param {Cart} cart
- * @returns {google.payments.api.DisplayItem[]}
+ * Converts cart data to Google Pay display items for the payment sheet.
+ * Only works when payment callbacks are properly configured.
+ * @param {Cart} cart - The current cart data
+ * @returns {google.payments.api.DisplayItem[]} Array of display items for Google Pay
  */
 export function getDisplayItems(cart) {
   const {
@@ -168,78 +202,82 @@ export function getDisplayItems(cart) {
   /** @type {google.payments.api.DisplayItem[]} */
   const displayItems = [];
 
+  // Add individual line items
   if (Array.isArray(items)) {
     for (const item of items) {
       displayItems.push({
         type: 'LINE_ITEM',
-        label: item.product?.name,
-        price: String(item.price_total),
+        label: item.product?.name || 'Item',
+        price: String(item.price_total || 0),
         status: 'FINAL',
       });
     }
   }
 
+  // Add discount items
   if (Array.isArray(discounts)) {
     for (const item of discounts) {
       displayItems.push({
         type: 'DISCOUNT',
         label: getDiscountLabel(item, cart),
-        price: String(-item.amount),
+        price: String(-(item.amount || 0)),
       });
     }
   }
 
+  // Add tax if applicable
   if (tax_total) {
     displayItems.push({
       type: 'TAX',
       label: 'Taxes',
-      price: String(tax_total),
+      price: String(tax_total || 0),
     });
   }
 
+  // Add shipping if applicable
   if (shipment_delivery) {
     displayItems.push({
       type: 'SHIPPING_OPTION',
       label: shipping?.service_name ?? 'Shipping',
-      price: String(shipment_price),
+      price: String(shipment_price || 0),
       status: shipping?.service ? 'FINAL' : 'PENDING',
     });
   }
 
+  // Add subtotal
   displayItems.push({
     type: 'SUBTOTAL',
     label: 'Subtotal',
-    price: String(sub_total),
+    price: String(sub_total || 0),
   });
 
   return displayItems;
 }
 
 /**
- * @param {Cart} cart
- * @returns {google.payments.api.TransactionInfo}
+ * Converts cart data to Google Pay transaction information.
+ * @param {Cart} cart - The current cart data
+ * @returns {google.payments.api.TransactionInfo} Transaction info for Google Pay
  */
 export function getTransactionInfo(cart) {
-  const {
-    settings: { country },
-    capture_total,
-    currency,
-  } = cart;
+  const { settings, capture_total, currency, shipping } = cart;
 
   return {
-    countryCode: country,
-    currencyCode: currency,
-    totalPrice: String(capture_total),
-    totalPriceStatus: 'ESTIMATED',
+    countryCode: settings?.country || 'US',
+    currencyCode: currency || settings.currency || 'USD',
+    totalPrice: String(capture_total ?? 0),
+    // Set status to FINAL if shipping has been selected, otherwise ESTIMATED
+    totalPriceStatus: shipping?.service ? 'FINAL' : 'ESTIMATED',
     totalPriceLabel: 'Total',
     displayItems: getDisplayItems(cart),
   };
 }
 
 /**
+ * Converts cart shipping data to Google Pay shipping option parameters.
  * @this {Payment}
- * @param {Cart} cart
- * @returns {google.payments.api.ShippingOptionParameters | undefined}
+ * @param {Cart} cart - The current cart data
+ * @returns {google.payments.api.ShippingOptionParameters | undefined} Shipping options for Google Pay
  */
 export function getShippingOptionParameters(cart) {
   const { shipment_delivery, shipment_rating, shipping } = cart;
@@ -249,6 +287,7 @@ export function getShippingOptionParameters(cart) {
   }
 
   if (!shipment_rating?.services?.length) {
+    // Return placeholder when no shipping services are available
     return {
       defaultSelectedOptionId: 'unknown',
       shippingOptions: [
@@ -261,13 +300,17 @@ export function getShippingOptionParameters(cart) {
     };
   }
 
+  const shippingOptions = shipment_rating.services?.map((service) => ({
+    id: service.id,
+    label: `${service.price ? this.api.currency.format(service.price) : 'Free'}: ${service.name}`,
+    description: service.description,
+  }));
+
+  // Google Pay requires a valid defaultSelectedOptionId to enable shipping option callbacks
+  // Use the current shipping service if available, otherwise use the first available option
   return {
-    defaultSelectedOptionId: shipping?.service,
-    shippingOptions: shipment_rating.services?.map((service) => ({
-      id: service.id,
-      label: `${service.price ? this.api.currency.format(service.price) : 'Free'}: ${service.name}`,
-      description: service.description,
-    })),
+    defaultSelectedOptionId: shipping?.service ?? shippingOptions[0].id,
+    shippingOptions,
   };
 }
 
@@ -311,7 +354,7 @@ export function convertToSwellAddress(address) {
  * @param {object} errors
  * @returns {string}
  */
-function getErrorMessage(errors) {
+export function getErrorMessage(errors) {
   const param = Object.keys(errors)[0];
   return errors[param].message || 'Unknown error';
 }
