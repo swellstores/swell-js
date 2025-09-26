@@ -16,7 +16,7 @@ import {
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
-const VERSION = 3;
+const VERSION = 14;
 
 const MERCHANT_CAPABILITIES = Object.freeze([
   'supports3DS',
@@ -100,90 +100,79 @@ export default class AuthorizeNetApplePayment extends Payment {
   _createPaymentSession(paymentRequest) {
     const session = new this.ApplePaySession(VERSION, paymentRequest);
 
-    session.addEventListener(
-      'validatemerchant',
-      /** @param {ApplePayJS.ApplePayValidateMerchantEvent} event */
-      async (event) => {
-        const merchantSession = await this.authorizeGateway({
-          gateway: 'authorizenet',
-          params: {
-            method: 'apple',
-            merchantIdentifier: this.method.merchant_id,
-            validationURL: event.validationURL,
-            displayName: paymentRequest.total.label,
-            domainName: window.location.hostname,
+    session.onvalidatemerchant = async (event) => {
+      const merchantSession = await this.authorizeGateway({
+        gateway: 'authorizenet',
+        params: {
+          method: 'apple',
+          merchantIdentifier: this.method.merchant_id,
+          validationURL: event.validationURL,
+          displayName: paymentRequest.total.label,
+          domainName: window.location.hostname,
+        },
+      });
+
+      if (merchantSession.error) {
+        throw new Error(merchantSession.error.message);
+      }
+
+      if (merchantSession) {
+        session.completeMerchantValidation(merchantSession);
+      } else {
+        session.abort();
+      }
+    };
+
+    session.onshippingcontactselected = onShippingContactSelected.bind(
+      this,
+      session,
+    );
+
+    session.onshippingmethodselected = onShippingMethodSelected.bind(
+      this,
+      session,
+    );
+
+    session.oncouponcodechanged = onCouponCodeChanged.bind(this, session);
+
+    session.onpaymentauthorized = async (event) => {
+      const {
+        payment: { token, shippingContact, billingContact },
+      } = event;
+      const { require: { shipping: requireShipping } = {} } = this.params;
+
+      const cart = await this.updateCart({
+        account: {
+          email: shippingContact.emailAddress,
+        },
+        billing: {
+          method: 'apple',
+          account_card_id: null,
+          card: null,
+          apple: {
+            token: base64Encode(JSON.stringify(token.paymentData)),
+            gateway: 'authorizenet',
           },
-        });
+          ...convertToSwellAddress(billingContact),
+        },
+        ...(requireShipping && {
+          shipping: convertToSwellAddress(shippingContact),
+        }),
+      });
 
-        if (merchantSession.error) {
-          throw new Error(merchantSession.error.message);
-        }
-
-        if (merchantSession) {
-          session.completeMerchantValidation(merchantSession);
-        } else {
-          session.abort();
-        }
-      },
-    );
-
-    session.addEventListener(
-      'shippingcontactselected',
-      onShippingContactSelected.bind(this, session),
-    );
-
-    session.addEventListener(
-      'shippingmethodselected',
-      onShippingMethodSelected.bind(this, session),
-    );
-
-    session.addEventListener(
-      'couponcodechanged',
-      onCouponCodeChanged.bind(this, session),
-    );
-
-    session.addEventListener(
-      'paymentauthorized',
-      /** @param {ApplePayJS.ApplePayPaymentAuthorizedEvent} event */
-      async (event) => {
-        const {
-          payment: { token, shippingContact, billingContact },
-        } = event;
-        const { require: { shipping: requireShipping } = {} } = this.params;
-
-        const cart = await this.updateCart({
-          account: {
-            email: shippingContact.emailAddress,
-          },
-          billing: {
-            method: 'apple',
-            account_card_id: null,
-            card: null,
-            apple: {
-              token: base64Encode(JSON.stringify(token.paymentData)),
-              gateway: 'authorizenet',
-            },
-            ...convertToSwellAddress(billingContact),
-          },
-          ...(requireShipping && {
-            shipping: convertToSwellAddress(shippingContact),
-          }),
-        });
-
-        if (cart.errors) {
-          return session.completePayment({
-            status: this.ApplePaySession.STATUS_FAILURE,
-            errors: createError('unknown', getErrorMessage(cart.errors)),
-          });
-        }
-
-        this.onSuccess();
-
+      if (cart.errors) {
         return session.completePayment({
-          status: this.ApplePaySession.STATUS_SUCCESS,
+          status: this.ApplePaySession.STATUS_FAILURE,
+          errors: createError('unknown', getErrorMessage(cart.errors)),
         });
-      },
-    );
+      }
+
+      this.onSuccess();
+
+      return session.completePayment({
+        status: this.ApplePaySession.STATUS_SUCCESS,
+      });
+    };
 
     session.begin();
   }
