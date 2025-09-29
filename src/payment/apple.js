@@ -95,11 +95,13 @@ export function getTotal(cart) {
   const {
     settings: { name },
     capture_total,
+    shipment_delivery,
+    shipping,
   } = cart;
 
   return {
     label: name,
-    type: 'pending',
+    type: !shipment_delivery || shipping?.service ? 'final' : 'pending',
     amount: String(capture_total),
   };
 }
