@@ -21,12 +21,13 @@ export async function onShippingContactSelected(session, event) {
   }
 
   if (!cart.shipment_rating?.services?.length) {
+    const message =
+      cart.shipment_rating?.errors?.find(Boolean)?.message ??
+      'Shipping is not available for the provided address.';
+
     return session.completeShippingContactSelection({
       newTotal: getTotal(cart),
-      errors: createError(
-        'addressUnserviceable',
-        'Shipping is not available for the provided address.',
-      ),
+      errors: createError('addressUnserviceable', message),
     });
   }
 
