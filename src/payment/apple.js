@@ -154,8 +154,8 @@ export function convertToSwellAddress(address = {}) {
   return {
     first_name: address.givenName,
     last_name: address.familyName,
-    address1: address.addressLines[0],
-    address2: address.addressLines[1],
+    address1: address.addressLines?.[0],
+    address2: address.addressLines?.[1],
     city: address.locality,
     state: address.administrativeArea,
     zip: address.postalCode,
