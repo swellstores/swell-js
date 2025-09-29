@@ -15,12 +15,14 @@ export async function onShippingContactSelected(session, event) {
 
   if (cart.errors) {
     return session.completeShippingContactSelection({
+      newTotal: getTotal(await this.getCart()),
       errors: createError('unknown', getErrorMessage(cart.errors)),
     });
   }
 
   if (!cart.shipment_rating?.services?.length) {
     return session.completeShippingContactSelection({
+      newTotal: getTotal(cart),
       errors: createError(
         'addressUnserviceable',
         'Shipping is not available for the provided address.',
@@ -29,6 +31,7 @@ export async function onShippingContactSelected(session, event) {
   }
 
   session.completeShippingContactSelection({
+    newTotal: getTotal(cart),
     newShippingMethods: getShippingMethods(cart),
   });
 }
@@ -48,6 +51,7 @@ export async function onShippingMethodSelected(session, event) {
 
   if (cart.errors) {
     return session.completeShippingMethodSelection({
+      newTotal: getTotal(await this.getCart()),
       errors: createError('unknown', getErrorMessage(cart.errors)),
     });
   }
@@ -71,6 +75,7 @@ export async function onCouponCodeChanged(session, event) {
 
   if (cart.errors) {
     return session.completeCouponCodeChange({
+      newTotal: getTotal(await this.getCart()),
       errors: createError('couponCodeInvalid', getErrorMessage(cart.errors)),
     });
   }
