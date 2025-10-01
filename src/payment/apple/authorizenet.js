@@ -17,14 +17,7 @@
  *    - User authorizes with Face ID/Touch ID → Payment token stored in cart
  *    - User must manually click "Place Order" to submit (no auto-processing)
  *
- * 3. CRITICAL FIXES APPLIED:
- *    - Optional chaining on addressLines (can be undefined during privacy mode)
- *    - Country codes uppercased (Apple sends lowercase, Swell needs uppercase)
- *    - All amounts formatted as strings with 2 decimals
- *    - newShippingMethods always provided (even as [] in errors)
- *    - Container clearing logic to prevent duplicate buttons with multiple gateways
- *
- * 4. TOTAL DISPLAY:
+ * 3. TOTAL DISPLAY:
  *    - Shows "Amount Pending" until shipping method selected
  *    - Shows actual amount after shipping selected (type: 'pending' → 'final')
  *
@@ -275,8 +268,7 @@ export default class AuthorizeNetApplePayment extends Payment {
    *
    * IMPORTANT: The cart passed in should have shipping address cleared.
    * This ensures Apple Pay doesn't use pre-existing shipping data from
-   * checkout forms. The calling code (ApplePayButton.svelte) should clear
-   * the shipping address before calling this method.
+   * checkout forms.
    *
    * The button is created but NOT clicked yet. When clicked, it will:
    * 1. Create a new Apple Pay session
