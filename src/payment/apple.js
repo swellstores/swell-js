@@ -290,5 +290,12 @@ export function getErrorMessage(errors) {
  * @returns {ApplePayJS.ApplePayError[]}
  */
 export function createError(code, message, contactField) {
-  return [{ code, contactField, message }];
+  /** @type {ApplePayJS.ApplePayError} */
+  const error = { code, message };
+
+  if (contactField) {
+    error.contactField = contactField;
+  }
+
+  return [error];
 }
