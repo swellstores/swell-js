@@ -4,7 +4,6 @@ import {
   getTransactionInfo,
   getShippingOptionParameters,
   convertToSwellAddress,
-  getErrorMessage,
   onPaymentAuthorized,
   onPaymentDataChanged,
 } from '../google';
@@ -159,10 +158,25 @@ export default class AuthorizeNetGooglePayment extends Payment {
   async _submitPayment(paymentData) {
     const { require: { shipping: requireShipping } = {} } = this.params;
     const { email, shippingAddress, paymentMethodData } = paymentData;
+
+    // Validate payment method data structure
+    if (
+      !paymentMethodData ||
+      !paymentMethodData.info ||
+      !paymentMethodData.tokenizationData
+    ) {
+      throw new Error('Invalid payment method data structure');
+    }
+
     const {
       info: { billingAddress },
       tokenizationData: { token },
     } = paymentMethodData;
+
+    // Ensure token exists
+    if (!token) {
+      throw new Error('Payment token is missing');
+    }
 
     const cart = await this.updateCart({
       account: {
@@ -183,19 +197,29 @@ export default class AuthorizeNetGooglePayment extends Payment {
       }),
     });
 
-    if (cart.errors) {
-      throw new Error(getErrorMessage(cart.errors));
-    }
-
-    this.onSuccess();
+    this.onSuccess(cart);
   }
 
   /**
    * Handles the click event on the Google Pay button.
+   *
    * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
    */
-  _onClick(paymentDataRequest) {
-    this.googleClient.loadPaymentData(paymentDataRequest);
+  async _onClick(paymentDataRequest) {
+    try {
+      // This must be called directly from user gesture to avoid popup blockers
+      await this.googleClient.loadPaymentData(paymentDataRequest);
+    } catch (error) {
+      // Check if user closed the payment request
+      if (typeof error === 'object' && error !== null) {
+        if (error.statusCode === 'CANCELED') {
+          // User cancelled - this is not an error
+          return;
+        }
+      }
+
+      this.onError(error);
+    }
   }
 
   /** @param {Cart} cart */

@@ -4,6 +4,7 @@
 /** @typedef {import('../../types').Discount} Discount */
 
 /**
+ * @this {Payment}
  * @param {() => Promise<void>} submitPayment
  * @param {google.payments.api.PaymentData} paymentData
  * @returns {google.payments.api.PaymentAuthorizationResult}
@@ -44,21 +45,16 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
           ),
         });
 
-        // Handle any errors from cart update
-        if (cart.errors) {
-          return createError(
-            intermediatePaymentData.callbackTrigger,
-            'OTHER_ERROR',
-            getErrorMessage(cart.errors),
-          );
-        }
-
         // Check if shipping is available for this address
         if (!cart.shipment_rating?.services?.length) {
+          const message =
+            cart.shipment_rating?.errors?.find(Boolean)?.message ??
+            'Shipping is not available for the provided address.';
+
           return createError(
             intermediatePaymentData.callbackTrigger,
             'SHIPPING_ADDRESS_UNSERVICEABLE',
-            'Shipping is not available for the provided address.',
+            message,
           );
         }
 
@@ -69,15 +65,6 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
           cart = await this.updateCart({
             shipping: { service: singleService.id },
           });
-
-          // Handle any errors from cart update
-          if (cart.errors) {
-            return createError(
-              intermediatePaymentData.callbackTrigger,
-              'OTHER_ERROR',
-              getErrorMessage(cart.errors),
-            );
-          }
         }
 
         return {
@@ -90,53 +77,56 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
       }
 
       case 'SHIPPING_OPTION': {
-        // Update cart with selected shipping option
-        const cart = await this.updateCart({
-          shipping: {
-            service: intermediatePaymentData.shippingOptionData?.id || null,
-          },
-        });
+        try {
+          // Update cart with selected shipping option
+          const cart = await this.updateCart({
+            shipping: {
+              service: intermediatePaymentData.shippingOptionData?.id || null,
+            },
+          });
 
-        if (cart.errors) {
+          return { newTransactionInfo: getTransactionInfo(cart) };
+        } catch (err) {
           return createError(
             intermediatePaymentData.callbackTrigger,
             'SHIPPING_OPTION_INVALID',
-            getErrorMessage(cart.errors),
+            err.message,
           );
         }
-
-        return { newTransactionInfo: getTransactionInfo(cart) };
       }
 
       case 'OFFER': {
-        // Handle coupon code application
-        const codes = intermediatePaymentData.offerData.redemptionCodes ?? [];
-        const code = codes.length > 0 ? codes[codes.length - 1] : null;
+        try {
+          // Handle coupon code application
+          const codes = intermediatePaymentData.offerData.redemptionCodes ?? [];
+          const code = codes.length > 0 ? codes[codes.length - 1] : null;
 
-        const cart = await this.updateCart({
-          coupon_code: code,
-        });
+          const cart = await this.updateCart({
+            coupon_code: code,
+          });
 
-        if (cart.errors) {
-          const message = getErrorMessage(cart.errors);
-          return createError('OFFER', 'OFFER_INVALID', `COUPON: ${message}`);
+          return {
+            newOfferInfo: getOfferInfo(cart),
+            newTransactionInfo: getTransactionInfo(cart),
+          };
+        } catch (err) {
+          return createError(
+            'OFFER',
+            'OFFER_INVALID',
+            `COUPON: ${err.message}`,
+          );
         }
-
-        return {
-          newOfferInfo: getOfferInfo(cart),
-          newTransactionInfo: getTransactionInfo(cart),
-        };
       }
 
       default:
         break;
     }
-  } catch (error) {
+  } catch (err) {
     // Return structured error response as required by Google Pay API
     return createError(
-      intermediatePaymentData.callbackTrigger || 'PAYMENT_AUTHORIZATION',
+      intermediatePaymentData.callbackTrigger,
       'OTHER_ERROR',
-      error?.message || 'An unexpected error occurred',
+      err.message || 'An unexpected error occurred',
     );
   }
 
@@ -260,14 +250,16 @@ export function getDisplayItems(cart) {
  * @returns {google.payments.api.TransactionInfo} Transaction info for Google Pay
  */
 export function getTransactionInfo(cart) {
-  const { settings, capture_total, currency, shipping } = cart;
+  const { settings, capture_total, currency, shipment_delivery, shipping } =
+    cart;
 
   return {
     countryCode: settings?.country || 'US',
     currencyCode: currency || settings.currency || 'USD',
     totalPrice: String(capture_total ?? 0),
     // Set status to FINAL if shipping has been selected, otherwise ESTIMATED
-    totalPriceStatus: shipping?.service ? 'FINAL' : 'ESTIMATED',
+    totalPriceStatus:
+      !shipment_delivery || shipping?.service ? 'FINAL' : 'ESTIMATED',
     totalPriceLabel: 'Total',
     displayItems: getDisplayItems(cart),
   };
@@ -348,15 +340,6 @@ export function convertToSwellAddress(address) {
     country: address.countryCode,
     phone: address.phoneNumber,
   };
-}
-
-/**
- * @param {object} errors
- * @returns {string}
- */
-export function getErrorMessage(errors) {
-  const param = Object.keys(errors)[0];
-  return errors[param].message || 'Unknown error';
 }
 
 /**
