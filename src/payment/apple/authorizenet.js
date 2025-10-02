@@ -147,9 +147,10 @@ export default class AuthorizeNetApplePayment extends Payment {
    * - shippingmethodselected: Updates cart when user selects shipping method
    * - couponcodechanged: Applies/removes coupon codes
    * - paymentauthorized: Stores payment token and prepares cart for submission
+   *
+   * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
    */
-  async _createPaymentSession() {
-    const paymentRequest = this._createPaymentRequest(await this.getCart());
+  async _createPaymentSession(paymentRequest) {
     const session = new this.ApplePaySession(VERSION, paymentRequest);
 
     // VALIDATEMERCHANT: Required to authorize this domain with Apple Pay
@@ -252,7 +253,8 @@ export default class AuthorizeNetApplePayment extends Payment {
     session.begin();
   }
 
-  _createButton() {
+  /** @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest */
+  _createButton(paymentRequest) {
     const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
       this.params;
 
@@ -263,7 +265,10 @@ export default class AuthorizeNetApplePayment extends Payment {
     button.style.setProperty('--apple-pay-button-width', '100%');
     button.style.setProperty('--apple-pay-button-height', height);
 
-    button.addEventListener('click', this._createPaymentSession.bind(this));
+    button.addEventListener(
+      'click',
+      this._createPaymentSession.bind(this, paymentRequest),
+    );
 
     return button;
   }
@@ -276,9 +281,9 @@ export default class AuthorizeNetApplePayment extends Payment {
    * 2. Open the Apple Pay sheet
    * 3. Handle all payment events (address selection, authorization, etc.)
    *
-   * @param {Cart} _cart
+   * @param {Cart} cart
    */
-  async createElements(_cart) {
+  async createElements(cart) {
     const { elementId = 'applepay-button' } = this.params;
 
     this.setElementContainer(elementId);
@@ -290,7 +295,9 @@ export default class AuthorizeNetApplePayment extends Payment {
       );
     }
 
-    this.element = this._createButton();
+    const paymentRequest = this._createPaymentRequest(cart);
+
+    this.element = this._createButton(paymentRequest);
   }
 
   /**
