@@ -6,7 +6,7 @@ export interface ShipmentRating {
   errors?: {
     code?: string;
     message?: string;
-  };
+  }[];
 }
 
 export interface ShipmentService {

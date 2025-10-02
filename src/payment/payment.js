@@ -37,7 +37,7 @@ export default class Payment {
   /**
    * Returns a payment element.
    *
-   * @returns {any}
+   * @returns {HTMLElement}
    */
   get element() {
     if (!this._element) {
@@ -50,7 +50,7 @@ export default class Payment {
   /**
    * Sets a payment element.
    *
-   * @param {any} element
+   * @param {HTMLElement} element
    */
   set element(element) {
     this._element = element;
@@ -226,8 +226,8 @@ export default class Payment {
   /**
    * Adjusts cart data.
    *
-   * @param {object} cart
-   * @returns {Promise<object>}
+   * @param {Cart} cart
+   * @returns {Promise<Cart>}
    */
   async _adjustCart(cart) {
     return this._ensureCartSettings(cart).then(toSnake);
@@ -236,8 +236,8 @@ export default class Payment {
   /**
    * Sets the store settings to cart.
    *
-   * @param {object} cart
-   * @returns {Promise<object>}
+   * @param {Cart} cart
+   * @returns {Promise<Cart>}
    */
   async _ensureCartSettings(cart) {
     if (cart.settings) {
