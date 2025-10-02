@@ -29,8 +29,6 @@ import {
   getTotal,
   getLineItems,
   convertToSwellAddress,
-  createError,
-  getErrorMessage,
   onCouponCodeChanged,
   onShippingMethodSelected,
   onShippingContactSelected,
@@ -40,6 +38,8 @@ import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
 } from '../../utils/errors';
+
+/* global ApplePayError */
 
 const VERSION = 14;
 
@@ -93,6 +93,8 @@ export default class AuthorizeNetApplePayment extends Payment {
    * @returns {ApplePayJS.ApplePayPaymentRequest}
    */
   _createPaymentRequest(cart) {
+    cart = { ...cart };
+
     const { require = {} } = this.params;
     const {
       settings: { country },
@@ -118,6 +120,11 @@ export default class AuthorizeNetApplePayment extends Payment {
       requiredShippingContactFields.push('postalAddress');
     }
 
+    // When initiating a payment request,
+    // we should not display the shipping cost, as it will be calculated later.
+    cart.shipment_price = 0;
+    cart.shipping = {};
+
     return {
       total: getTotal(cart),
       countryCode: country, // Merchant's country
@@ -140,10 +147,9 @@ export default class AuthorizeNetApplePayment extends Payment {
    * - shippingmethodselected: Updates cart when user selects shipping method
    * - couponcodechanged: Applies/removes coupon codes
    * - paymentauthorized: Stores payment token and prepares cart for submission
-   *
-   * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
    */
-  _createPaymentSession(paymentRequest) {
+  async _createPaymentSession() {
+    const paymentRequest = this._createPaymentRequest(await this.getCart());
     const session = new this.ApplePaySession(VERSION, paymentRequest);
 
     // VALIDATEMERCHANT: Required to authorize this domain with Apple Pay
@@ -190,61 +196,63 @@ export default class AuthorizeNetApplePayment extends Payment {
     // PAYMENTAUTHORIZED: User confirmed payment with Face ID/Touch ID
     // This is where we store the payment token in the cart
     session.onpaymentauthorized = async (event) => {
-      const {
-        payment: { token, shippingContact, billingContact },
-      } = event;
-      const { require: { shipping: requireShipping } = {} } = this.params;
+      try {
+        const {
+          payment: { token, shippingContact, billingContact },
+        } = event;
 
-      // CRITICAL: Apple Pay addresses are the ONLY addresses we use
-      // - shippingContact: For shipping address (already validated in shippingcontactselected)
-      // - billingContact: For billing address (can be different from shipping)
-      // - email: From shippingContact.emailAddress
-      //
-      // We store the payment token but DO NOT process the order yet.
-      // The user must manually click "Place Order" to complete the transaction.
-      const cart = await this.updateCart({
-        account: {
-          email: shippingContact.emailAddress,
-        },
-        billing: {
-          method: 'apple',
-          account_card_id: null,
-          card: null,
-          apple: {
-            token: base64Encode(JSON.stringify(token.paymentData)),
-            gateway: 'authorizenet',
+        const { require: { shipping: requireShipping } = {} } = this.params;
+
+        // CRITICAL: Apple Pay addresses are the ONLY addresses we use
+        // - shippingContact: For shipping address (already validated in shippingcontactselected)
+        // - billingContact: For billing address (can be different from shipping)
+        // - email: From shippingContact.emailAddress
+        //
+        // We store the payment token but DO NOT process the order yet.
+        // The user must manually click "Place Order" to complete the transaction.
+        const cart = await this.updateCart({
+          account: {
+            email: shippingContact.emailAddress,
           },
-          ...convertToSwellAddress(billingContact),
-        },
-        ...(requireShipping && {
-          shipping: convertToSwellAddress(shippingContact),
-        }),
-      });
-
-      if (cart.errors) {
-        return session.completePayment({
-          status: this.ApplePaySession.STATUS_FAILURE,
-          errors: createError('unknown', getErrorMessage(cart.errors)),
+          billing: {
+            method: 'apple',
+            account_card_id: null,
+            card: null,
+            apple: {
+              token: base64Encode(JSON.stringify(token.paymentData)),
+              gateway: 'authorizenet',
+            },
+            ...convertToSwellAddress(billingContact),
+          },
+          ...(requireShipping && {
+            shipping: convertToSwellAddress(shippingContact),
+          }),
         });
+
+        // Complete Apple Pay session successfully
+        // This closes the Apple Pay sheet and shows success to the user
+        session.completePayment({
+          status: this.ApplePaySession.STATUS_SUCCESS,
+        });
+
+        // Notify that Apple Pay authorization is complete
+        // The cart now has the payment token and is ready for submission
+        // NOTE: This does NOT submit the order - user must click "Place Order"
+        this.onSuccess(cart);
+      } catch (err) {
+        session.completePayment({
+          status: this.ApplePaySession.STATUS_FAILURE,
+          errors: new ApplePayError('unknown', undefined, err.message),
+        });
+
+        this.onError(err);
       }
-
-      // Complete Apple Pay session successfully
-      // This closes the Apple Pay sheet and shows success to the user
-      session.completePayment({
-        status: this.ApplePaySession.STATUS_SUCCESS,
-      });
-
-      // Notify that Apple Pay authorization is complete
-      // The cart now has the payment token and is ready for submission
-      // NOTE: This does NOT submit the order - user must click "Place Order"
-      this.onSuccess(cart);
     };
 
     session.begin();
   }
 
-  /** @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest */
-  _createButton(paymentRequest) {
+  _createButton() {
     const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
       this.params;
 
@@ -255,10 +263,7 @@ export default class AuthorizeNetApplePayment extends Payment {
     button.style.setProperty('--apple-pay-button-width', '100%');
     button.style.setProperty('--apple-pay-button-height', height);
 
-    button.addEventListener(
-      'click',
-      this._createPaymentSession.bind(this, paymentRequest),
-    );
+    button.addEventListener('click', this._createPaymentSession.bind(this));
 
     return button;
   }
@@ -266,18 +271,14 @@ export default class AuthorizeNetApplePayment extends Payment {
   /**
    * Creates the Apple Pay button element
    *
-   * IMPORTANT: The cart passed in should have shipping address cleared.
-   * This ensures Apple Pay doesn't use pre-existing shipping data from
-   * checkout forms.
-   *
    * The button is created but NOT clicked yet. When clicked, it will:
    * 1. Create a new Apple Pay session
    * 2. Open the Apple Pay sheet
    * 3. Handle all payment events (address selection, authorization, etc.)
    *
-   * @param {Cart} cart - Should have shipping fields set to null
+   * @param {Cart} _cart
    */
-  async createElements(cart) {
+  async createElements(_cart) {
     const { elementId = 'applepay-button' } = this.params;
 
     this.setElementContainer(elementId);
@@ -289,11 +290,7 @@ export default class AuthorizeNetApplePayment extends Payment {
       );
     }
 
-    // Cart should already be cleaned by the calling code
-    // Don't fetch it again to avoid timing issues
-    const paymentRequest = this._createPaymentRequest(cart);
-
-    this.element = this._createButton(paymentRequest);
+    this.element = this._createButton();
   }
 
   /**

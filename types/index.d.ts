@@ -96,7 +96,7 @@ export interface IncludeQuery {
   };
 }
 
-export interface InitOptions {
+export interface InitOptions<C extends 'snake' | 'camel' = 'snake'> {
   currency?: string;
   key?: string;
   locale?: string;
@@ -110,9 +110,17 @@ export interface InitOptions {
   setCookie?: (key: string, value: string) => void;
   getCookie?: (key: string) => string | undefined;
   headers?: Record<string, string>;
+  getCart?: () => Promise<CartCase[C] | null>;
+  /**
+   * When overriding `updateCart` you should throw an exception
+   * if the server returns an error, instead of silently returning the error.
+   * This is necessary for the correct processing of payment forms
+   * and payment integrations such as Google Pay and Apple Pay.
+   */
+  updateCart?: (input: object) => Promise<CartCase[C] | null>;
 }
 
-export interface InitOptionsCamel extends InitOptions {
+export interface InitOptionsCamel extends InitOptions<'camel'> {
   useCamelCase: true;
 }
 
@@ -175,7 +183,7 @@ export interface ProductQuery extends Query {
 export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
   version: string;
 
-  init(storeId: string, publicKey: string, options?: InitOptions): void;
+  init(storeId: string, publicKey: string, options?: InitOptions<C>): void;
 
   account: {
     create(input: AccountCase[C]): Promise<AccountCase[C] | ErrorResponse>;
@@ -538,7 +546,7 @@ export interface SwellClientDefault<C extends 'snake' | 'camel'>
   create<C extends 'snake' | 'camel' = 'snake'>(
     store?: string,
     key?: string,
-    options?: InitOptions,
+    options?: InitOptions<C>,
   ): SwellClient<C>;
 
   create(

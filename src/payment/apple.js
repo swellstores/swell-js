@@ -1,3 +1,5 @@
+/* global ApplePayError */
+
 /** @typedef {import('./payment').default} Payment */
 /** @typedef {import('../../types').Cart} Cart */
 /** @typedef {import('../../types').Address} Address */
@@ -21,42 +23,44 @@
  * @returns {void}
  */
 export async function onShippingContactSelected(session, event) {
-  // Update cart with Apple Pay shipping address to get shipping options and tax
-  // This happens immediately when the sheet opens with the default address
-  const cart = await this.updateCart({
-    shipping: convertToSwellAddress(event.shippingContact),
-  });
+  try {
+    // Update cart with Apple Pay shipping address to get shipping options and tax
+    // This happens immediately when the sheet opens with the default address
+    const cart = await this.updateCart({
+      shipping: convertToSwellAddress(event.shippingContact),
+    });
 
-  if (cart.errors) {
+    if (!cart.shipment_rating?.services?.length) {
+      const message =
+        cart.shipment_rating?.errors?.find(Boolean)?.message ??
+        'Shipping is not available for the provided address.';
+
+      return session.completeShippingContactSelection({
+        newTotal: getTotal(cart),
+        newLineItems: getLineItems(cart),
+        newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
+        errors: [
+          new ApplePayError('addressUnserviceable', 'postalAddress', message),
+        ],
+      });
+    }
+
+    // Success: Return updated totals and shipping methods
+    session.completeShippingContactSelection({
+      newTotal: getTotal(cart),
+      newLineItems: getLineItems(cart),
+      newShippingMethods: getShippingMethods(cart),
+    });
+  } catch (err) {
     const cartData = await this.getCart();
 
-    return session.completeShippingContactSelection({
+    session.completeShippingContactSelection({
       newTotal: getTotal(cartData),
       newLineItems: getLineItems(cartData),
       newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
-      errors: createError('unknown', getErrorMessage(cart.errors)),
+      errors: [new ApplePayError('unknown', undefined, err.message)],
     });
   }
-
-  if (!cart.shipment_rating?.services?.length) {
-    const message =
-      cart.shipment_rating?.errors?.find(Boolean)?.message ??
-      'Shipping is not available for the provided address.';
-
-    return session.completeShippingContactSelection({
-      newTotal: getTotal(cart),
-      newLineItems: getLineItems(cart),
-      newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
-      errors: createError('addressUnserviceable', message, 'postalAddress'),
-    });
-  }
-
-  // Success: Return updated totals and shipping methods
-  session.completeShippingContactSelection({
-    newTotal: getTotal(cart),
-    newLineItems: getLineItems(cart),
-    newShippingMethods: getShippingMethods(cart),
-  });
 }
 
 /**
@@ -75,23 +79,23 @@ export async function onShippingContactSelected(session, event) {
  * @returns {void}
  */
 export async function onShippingMethodSelected(session, event) {
-  const cart = await this.updateCart({
-    shipping: {
-      service: event.shippingMethod.identifier,
-    },
-  });
+  try {
+    const cart = await this.updateCart({
+      shipping: {
+        service: event.shippingMethod.identifier,
+      },
+    });
 
-  if (cart.errors) {
-    return session.completeShippingMethodSelection({
+    session.completeShippingMethodSelection({
+      newTotal: getTotal(cart),
+      newLineItems: getLineItems(cart),
+    });
+  } catch (err) {
+    session.completeShippingMethodSelection({
       newTotal: getTotal(await this.getCart()),
-      errors: createError('unknown', getErrorMessage(cart.errors)),
+      errors: [new ApplePayError('unknown', undefined, err.message)],
     });
   }
-
-  return session.completeShippingMethodSelection({
-    newTotal: getTotal(cart),
-    newLineItems: getLineItems(cart),
-  });
 }
 
 /**
@@ -106,21 +110,26 @@ export async function onShippingMethodSelected(session, event) {
  * @returns {void}
  */
 export async function onCouponCodeChanged(session, event) {
-  const cart = await this.updateCart({
-    coupon_code: event.couponCode || null,
-  });
+  try {
+    const cart = await this.updateCart({
+      coupon_code: event.couponCode || null,
+    });
 
-  if (cart.errors) {
-    return session.completeCouponCodeChange({
-      newTotal: getTotal(await this.getCart()),
-      errors: createError('couponCodeInvalid', getErrorMessage(cart.errors)),
+    // Valid coupon applied successfully
+    session.completeCouponCodeChange({
+      newTotal: getTotal(cart),
+      newLineItems: getLineItems(cart),
+    });
+  } catch (err) {
+    // HTTP 400 error from invalid coupon - get fresh cart state
+    const currentCart = await this.getCart();
+
+    session.completeCouponCodeChange({
+      newTotal: getTotal(currentCart),
+      newLineItems: getLineItems(currentCart),
+      errors: [new ApplePayError('couponCodeInvalid', undefined, err.message)],
     });
   }
-
-  return session.completeCouponCodeChange({
-    newTotal: getTotal(cart),
-    newLineItems: getLineItems(cart),
-  });
 }
 
 /**
@@ -215,17 +224,17 @@ export function getLineItems(cart) {
  * IMPORTANT: Amounts must be formatted as strings with 2 decimals.
  *
  * @param {Cart} cart
- * @returns {ApplePayJS.ApplePayShippingMethod[] | undefined}
+ * @returns {ApplePayJS.ApplePayShippingMethod[]}
  */
-export function getShippingMethods(cart) {
+function getShippingMethods(cart) {
   const { shipment_delivery, shipment_rating } = cart;
 
   if (!shipment_delivery) {
-    return undefined;
+    return [];
   }
 
   if (!shipment_rating?.services?.length) {
-    return undefined;
+    return [];
   }
 
   return shipment_rating.services.map((service, index) => ({
@@ -272,30 +281,4 @@ export function convertToSwellAddress(address = {}) {
     country: address.countryCode?.toUpperCase(),
     phone: address.phoneNumber,
   };
-}
-
-/**
- * @param {object} errors
- * @returns {string}
- */
-export function getErrorMessage(errors) {
-  const param = Object.keys(errors)[0];
-  return errors[param].message || 'Unknown error';
-}
-
-/**
- * @param {ApplePayJS.ApplePayErrorCode} code
- * @param {string} message
- * @param {ApplePayJS.ApplePayErrorContactField} contactField
- * @returns {ApplePayJS.ApplePayError[]}
- */
-export function createError(code, message, contactField) {
-  /** @type {ApplePayJS.ApplePayError} */
-  const error = { code, message };
-
-  if (contactField) {
-    error.contactField = contactField;
-  }
-
-  return [error];
 }
