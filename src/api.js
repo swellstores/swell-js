@@ -17,7 +17,10 @@ import currency from './currency';
 import functions from './functions';
 import * as utils from './utils';
 
-/** @typedef {import('../types').InitOptions} InitOptions */
+/**
+ * @template {'snake' | 'camel'} C
+ * @typedef {import('../types').InitOptions<C>} InitOptions<C>
+ */
 
 /**
  * @template {'snake' | 'camel'} C
@@ -30,7 +33,7 @@ import * as utils from './utils';
  * @template {'snake' | 'camel'} C
  * @param {string} [initStore] - Store name
  * @param {string} [initKey] - API key
- * @param {InitOptions} [initOptions] - Options
+ * @param {InitOptions<C>} [initOptions] - Options
  * @returns {SwellClient<C>} API client
  */
 function swell(initStore = undefined, initKey, initOptions = {}) {
@@ -49,6 +52,11 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     options,
     request,
 
+    /**
+     * @param {string} store
+     * @param {string} key
+     * @param {InitOptions<C>} [opt]
+     */
     init(store, key, opt = {}) {
       options.key = key;
       options.store = store;
