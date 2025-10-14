@@ -211,7 +211,7 @@ export default class AuthorizeNetApplePayment extends Payment {
         //
         // We store the payment token but DO NOT process the order yet.
         // The user must manually click "Place Order" to complete the transaction.
-        const cart = await this.updateCart({
+        await this.updateCart({
           account: {
             email: shippingContact.emailAddress,
           },
@@ -239,7 +239,7 @@ export default class AuthorizeNetApplePayment extends Payment {
         // Notify that Apple Pay authorization is complete
         // The cart now has the payment token and is ready for submission
         // NOTE: This does NOT submit the order - user must click "Place Order"
-        this.onSuccess(cart);
+        this.onSuccess();
       } catch (err) {
         session.completePayment({
           status: this.ApplePaySession.STATUS_FAILURE,

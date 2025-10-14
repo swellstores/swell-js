@@ -183,8 +183,8 @@ export default class Payment {
   /**
    * Calls the onSuccess handler.
    *
-   * @param {object | undefined} data
-   * @returns {any}
+   * @param {unknown} [data]
+   * @returns {unknown}
    */
   onSuccess(data) {
     const successHandler = get(this.params, 'onSuccess');
@@ -197,7 +197,7 @@ export default class Payment {
   /**
    * Calls the onCancel handler.
    *
-   * @returns {any}
+   * @returns {unknown}
    */
   onCancel() {
     const cancelHandler = get(this.params, 'onCancel');
@@ -211,7 +211,7 @@ export default class Payment {
    * Calls the onError handler.
    *
    * @param {Error} error
-   * @returns {any}
+   * @returns {unknown}
    */
   onError(error) {
     const errorHandler = get(this.params, 'onError');

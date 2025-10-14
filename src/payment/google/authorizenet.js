@@ -178,7 +178,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
       throw new Error('Payment token is missing');
     }
 
-    const cart = await this.updateCart({
+    await this.updateCart({
       account: {
         email,
       },
@@ -197,7 +197,7 @@ export default class AuthorizeNetGooglePayment extends Payment {
       }),
     });
 
-    this.onSuccess(cart);
+    this.onSuccess();
   }
 
   /**
