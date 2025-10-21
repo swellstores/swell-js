@@ -11,6 +11,7 @@ const SCRIPT_HANDLERS = {
   'braintree-google-payment': loadBraintreeGoogle,
   'braintree-apple-payment': loadBraintreeApple,
   'amazon-checkout': loadAmazonCheckout,
+  'sezzle-sdk': loadSezzleCheckout,
 };
 
 const BRAINTREE_VERSION = '3.91.0';
@@ -175,6 +176,19 @@ async function loadAmazonCheckout() {
 
   if (!window.amazon) {
     console.error('Warning: Amazon Checkout was not loaded');
+  }
+}
+
+async function loadSezzleCheckout() {
+  if (!window.Checkout) {
+    await loadScript(
+      'sezzle-sdk',
+      'https://checkout-sdk.sezzle.com/express_checkout.min.js',
+    );
+  }
+
+  if (!window.Checkout) {
+    console.error('Warning: Sezzle Checkout was not loaded');
   }
 }
 

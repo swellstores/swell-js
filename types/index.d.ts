@@ -34,6 +34,7 @@ import type {
   InputPaymentElementPaypalCase,
   InputPaymentElementGoogleCase,
   InputPaymentElementAppleCase,
+  InputPaymentElementSezzleCase,
   InputPaymentRedirectCase,
   PaymentCase,
 } from './payment';
@@ -326,6 +327,7 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
       paypal?: InputPaymentElementPaypalCase[C];
       google?: InputPaymentElementGoogleCase[C];
       apple?: InputPaymentElementAppleCase[C];
+      sezzle?: InputPaymentElementSezzleCase[C];
     }): Promise<void>;
 
     tokenize(input?: {
@@ -486,18 +488,18 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
   };
 
   utils: {
-    get: typeof import('lodash-es/get');
-    set: typeof import('lodash-es/set');
-    uniq: typeof import('lodash-es/uniq');
-    find: typeof import('lodash-es/find');
-    round: typeof import('lodash-es/round');
-    pick: typeof import('lodash-es/pick');
-    findIndex: typeof import('lodash-es/findIndex');
-    cloneDeep: typeof import('lodash-es/cloneDeep');
-    toNumber: typeof import('lodash-es/toNumber');
-    toLower: typeof import('lodash-es/toLower');
-    isEqual: typeof import('lodash-es/isEqual');
-    isEmpty: typeof import('lodash-es/isEmpty');
+    get: typeof import('lodash-es/get').default;
+    set: typeof import('lodash-es/set').default;
+    uniq: typeof import('lodash-es/uniq').default;
+    find: typeof import('lodash-es/find').default;
+    round: typeof import('lodash-es/round').default;
+    pick: typeof import('lodash-es/pick').default;
+    findIndex: typeof import('lodash-es/findIndex').default;
+    cloneDeep: typeof import('lodash-es/cloneDeep').default;
+    toNumber: typeof import('lodash-es/toNumber').default;
+    toLower: typeof import('lodash-es/toLower').default;
+    isEqual: typeof import('lodash-es/isEqual').default;
+    isEmpty: typeof import('lodash-es/isEmpty').default;
     merge: typeof import('deepmerge');
 
     map<T, R>(arr: T[], mapper: (item: T) => R): R[];

@@ -1,3 +1,5 @@
+import { getDiscountLabel } from './utils';
+
 /** @typedef {import('./payment').default} Payment */
 /** @typedef {import('../../types').Cart} Cart */
 /** @typedef {import('../../types').Address} Address */
@@ -131,45 +133,6 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
   }
 
   return {};
-}
-
-/**
- * @param {Discount} discount
- * @param {Cart} cart
- */
-export function getDiscountLabel(discount, cart) {
-  switch (discount.type) {
-    case 'coupon': {
-      const { coupon } = cart;
-
-      if (coupon?.name) {
-        return coupon.name;
-      }
-
-      break;
-    }
-
-    case 'promo': {
-      const { promotions } = cart;
-
-      if (Array.isArray(promotions?.results)) {
-        const promo = promotions.results.find(
-          (promo) => promo.id === discount.source_id,
-        );
-
-        if (promo?.name) {
-          return promo?.name;
-        }
-      }
-
-      break;
-    }
-
-    default:
-      break;
-  }
-
-  return discount.id;
 }
 
 /**

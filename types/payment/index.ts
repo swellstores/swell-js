@@ -7,6 +7,7 @@ import type {
   InputPaymentElementGoogle,
   InputPaymentElementIdeal,
   InputPaymentElementPaypal,
+  InputPaymentElementSezzle,
   InputPaymentRedirect,
   Payment,
 } from './snake';
@@ -18,6 +19,7 @@ import type {
   InputPaymentElementGoogleCamel,
   InputPaymentElementIdealCamel,
   InputPaymentElementPaypalCamel,
+  InputPaymentElementSezzleCamel,
   InputPaymentRedirectCamel,
   PaymentCamel,
 } from './camel';
@@ -50,6 +52,11 @@ export type InputPaymentElementIdealCase = MakeCase<
 export type InputPaymentElementPaypalCase = MakeCase<
   InputPaymentElementPaypal,
   InputPaymentElementPaypalCamel
+>;
+
+export type InputPaymentElementSezzleCase = MakeCase<
+  InputPaymentElementSezzle,
+  InputPaymentElementSezzleCamel
 >;
 
 export type InputPaymentRedirectCase = MakeCase<
