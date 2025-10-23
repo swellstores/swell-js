@@ -48,21 +48,21 @@ export interface Payment extends BaseModel {
 export interface InputPaymentElementBase {
   element_id?: string;
   /** @optional called when the Element value changes */
-  on_change?: (event: unknown) => void;
+  onChange?: (event: unknown) => void;
   /** @optional called when the Element is fully rendered */
-  on_ready?: (event: unknown) => void;
+  onReady?: (event: unknown) => void;
   /** @optional called when the Element gains focus */
-  on_focus?: (event: unknown) => void;
+  onFocus?: (event: unknown) => void;
   /** @optional called when the Element loses focus */
-  on_blur?: (event: unknown) => void;
+  onBlur?: (event: unknown) => void;
   /** @optional */
-  on_escape?: (event: unknown) => void;
+  onEscape?: (event: unknown) => void;
   /** @optional optional, called when the Element is clicked */
-  on_click?: (event: unknown) => void;
+  onClick?: (event: unknown) => void;
   /** @optional called on card payment success */
-  on_success?: (event: unknown) => void;
+  onSuccess?: (data?: unknown) => void;
   /** @optional called on card payment error */
-  on_error?: (event: unknown) => void;
+  onError?: (error: Error) => void;
 }
 
 export interface InputPaymentElementCard extends InputPaymentElementBase {
@@ -127,9 +127,41 @@ export interface InputPaymentElementGoogle extends InputPaymentElementBase {
   };
 }
 
+export interface InputPaymentElementSezzle extends InputPaymentElementBase {
+  /** @see {@link https://docs.sezzle.com/docs/guides/express/express-checkout#options-2} */
+  style?: {
+    /** @default "Checkout with %%logo%%" */
+    templateText?: string;
+    borderType?: 'square' | 'semi-rounded';
+    customClass?: string;
+    /** @default "1px" */
+    paddingTop?: string;
+    /** @default "7px" */
+    paddingBottom?: string;
+    /** @default "30px" */
+    paddingLeft?: string;
+    /** @default "30px" */
+    paddingRight?: string;
+    /** @default "84px" */
+    sezzleImageWidth?: string;
+    sezzleImagePositionTop?: string;
+    sezzleImagePositionBottom?: string;
+    sezzleImagePositionLeft?: string;
+    sezzleImagePositionRight?: string;
+    letterSpacing?: string;
+    width?: string;
+    /** @default "4.2em" */
+    height?: string;
+  };
+
+  classes?: {
+    base?: string;
+  };
+}
+
 export interface InputPaymentRedirect {
   /** @optional called on card payment success */
-  on_success?: (event: unknown) => void;
+  onSuccess?: (event: unknown) => void;
   /** @optional called on card payment error */
-  on_error?: (event: unknown) => void;
+  onError?: (event: unknown) => void;
 }

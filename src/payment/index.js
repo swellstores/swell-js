@@ -15,6 +15,7 @@ import PaysafecardDirectPayment from './paysafecard/paysafecard';
 import KlarnaDirectPayment from './klarna/klarna';
 import PaypalDirectPayment from './paypal/paypal';
 import AmazonDirectPayment from './amazon/amazon';
+import SezzleDirectPayment from './sezzle/sezzle';
 import { adjustParams, adjustMethodParams } from './utils';
 import {
   PaymentMethodDisabledError,
@@ -195,6 +196,9 @@ export default class PaymentController {
     return response;
   }
 
+  /**
+   * @returns {Promise<Payment[]>}
+   */
   async _createPaymentInstances() {
     const paymentMethods = await this._getPaymentMethods();
     const params = adjustParams(this.params);
@@ -240,6 +244,12 @@ export default class PaymentController {
     }, []);
   }
 
+  /**
+   * @param {Payment[]} paymentInstances
+   * @param {string} action
+   * @param  {...unknown} args
+   * @returns {Promise<Payment[]>}
+   */
   async _performPaymentAction(paymentInstances, action, ...args) {
     const actions = paymentInstances.reduce((acc, instance) => {
       const paymentAction = instance[action];
@@ -260,9 +270,7 @@ export default class PaymentController {
         await resultPromise;
         nextPaymentInstances.push(instance);
       } catch (error) {
-        const onPaymentError = instance.onError.bind(instance);
-
-        onPaymentError(error);
+        instance.onError(error);
       }
     }
 
@@ -289,6 +297,8 @@ export default class PaymentController {
         return this._getApplePaymentClass(gateway);
       case 'amazon':
         return this._getAmazonPaymentClass(gateway);
+      case 'sezzle':
+        return this._getSezzlePaymentClass(gateway);
       default:
         return null;
     }
@@ -380,6 +390,13 @@ export default class PaymentController {
     switch (gateway) {
       default:
         return AmazonDirectPayment;
+    }
+  }
+
+  _getSezzlePaymentClass(gateway) {
+    switch (gateway) {
+      default:
+        return SezzleDirectPayment;
     }
   }
 }
