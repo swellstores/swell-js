@@ -199,6 +199,17 @@ async function vaultRequest(method, url, data) {
     connectionError.status = result?.$status;
 
     throw connectionError;
+  } else if (result.$data.errors) {
+    const param = Object.keys(result.$data.errors)[0];
+    const err = new Error(
+      result.$data.errors[param].message || 'Unknown error',
+    );
+
+    err.code = 'vault_error';
+    err.status = 402;
+    err.param = param;
+
+    throw err;
   }
 
   return result.$data;
