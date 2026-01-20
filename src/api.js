@@ -3,6 +3,7 @@ import { getCookie, setCookie } from './cookie';
 import cache from './cache';
 import cart from './cart';
 import account from './account';
+import App from './app';
 import products from './products';
 import categories from './categories';
 import attributes from './attributes';
@@ -110,6 +111,8 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
     cart: cart(api, options),
 
     account: account(api, options),
+
+    app: new App(api, options),
 
     products: products(api, options),
 

@@ -180,15 +180,6 @@ export default class PaymentController {
   async _vaultRequest(method, url, data) {
     const response = await vaultRequest(method, url, data);
 
-    if (response.errors) {
-      const param = Object.keys(response.errors)[0];
-      const err = new Error(response.errors[param].message || 'Unknown error');
-      err.code = 'vault_error';
-      err.status = 402;
-      err.param = param;
-      throw err;
-    }
-
     if (this.options.useCamelCase) {
       return toCamel(response);
     }

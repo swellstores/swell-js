@@ -145,7 +145,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async createIntent(data) {
-    return this._vaultRequest('post', '/intent', data);
+    return vaultRequest('post', '/intent', data);
   }
 
   /**
@@ -155,7 +155,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async updateIntent(data) {
-    return this._vaultRequest('put', '/intent', data);
+    return vaultRequest('put', '/intent', data);
   }
 
   /**
@@ -165,7 +165,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async authorizeGateway(data) {
-    return this._vaultRequest('post', '/authorization', data);
+    return vaultRequest('post', '/authorization', data);
   }
 
   /**
@@ -247,29 +247,6 @@ export default class Payment {
     const settings = await this.getSettings();
 
     return { ...cart, settings: { ...settings.store } };
-  }
-
-  /**
-   * Sends a Vault request.
-   *
-   * @param {string} method
-   * @param {string} url
-   * @param {object} data
-   * @returns {Promise<object>}
-   */
-  async _vaultRequest(method, url, data) {
-    const response = await vaultRequest(method, url, data);
-
-    if (response.errors) {
-      const param = Object.keys(response.errors)[0];
-      const err = new Error(response.errors[param].message || 'Unknown error');
-      err.code = 'vault_error';
-      err.status = 402;
-      err.param = param;
-      throw err;
-    }
-
-    return response;
   }
 
   /**
