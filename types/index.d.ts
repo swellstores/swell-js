@@ -162,6 +162,25 @@ export interface ItemDiscount {
   amount?: number;
 }
 
+export interface Image {
+  caption?: string;
+  file?: {
+    content_type?: string;
+    date_uploaded?: string;
+    filename?: string;
+    height?: number;
+    length?: number;
+    metadata?: object;
+    md5?: string;
+    private?: boolean;
+    url?: string;
+    width?: number;
+  };
+  id?: string;
+}
+
+export type ImageCamel = ConvertSnakeToCamelCase<Image>;
+
 export interface SwellError {
   code: string;
   message: string;

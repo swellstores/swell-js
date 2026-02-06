@@ -1,7 +1,11 @@
-import type { ConvertSnakeToCamelCase, ResultsResponseCamel } from '..';
+import type {
+  ConvertSnakeToCamelCase,
+  ResultsResponseCamel,
+  ImageCamel,
+} from '..';
 import type { Replace } from '../utils';
 
-import type { ProductCamel, ImageCamel } from '../product/camel';
+import type { ProductCamel } from '../product/camel';
 
 import type { Category } from './snake';
 

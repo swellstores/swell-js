@@ -1,6 +1,6 @@
-import type { BaseModel, ResultsResponse } from '..';
+import type { BaseModel, ResultsResponse, Image } from '..';
 
-import type { Image, Product } from '../product';
+import type { Product } from '../product';
 
 export interface Category extends BaseModel {
   active?: boolean;
