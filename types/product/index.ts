@@ -4,7 +4,6 @@ import type { MakeCase } from '../utils';
 import type {
   Product,
   Variant,
-  Image,
   Price,
   Upsell,
   ProductOption,
@@ -16,7 +15,6 @@ import type {
 import type {
   ProductCamel,
   VariantCamel,
-  ImageCamel,
   PriceCamel,
   UpsellCamel,
   ProductOptionCamel,
@@ -53,7 +51,6 @@ export type ProductCase = MakeCase<Product, ProductCamel>;
 export type {
   Product,
   Variant,
-  Image,
   Price,
   Upsell,
   ProductOption,
@@ -62,7 +59,6 @@ export type {
   CrossSell,
   ProductCamel,
   VariantCamel,
-  ImageCamel,
   PriceCamel,
   UpsellCamel,
   ProductOptionCamel,

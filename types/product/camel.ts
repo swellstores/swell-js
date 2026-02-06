@@ -1,4 +1,8 @@
-import type { ConvertSnakeToCamelCase, ResultsResponseCamel } from '..';
+import type {
+  ConvertSnakeToCamelCase,
+  ResultsResponseCamel,
+  ImageCamel,
+} from '..';
 import type { Replace } from '../utils';
 
 import type { AttributeCamel } from '../attribute/camel';
@@ -6,7 +10,6 @@ import type { AttributeCamel } from '../attribute/camel';
 import type {
   Product,
   Variant,
-  Image,
   Price,
   Upsell,
   ProductOption,
@@ -54,7 +57,6 @@ export type ProductOptionCamel = ConvertSnakeToCamelCase<
 >;
 
 export type UpsellCamel = ConvertSnakeToCamelCase<Upsell>;
-export type ImageCamel = ConvertSnakeToCamelCase<Image>;
 export type PriceCamel = ConvertSnakeToCamelCase<Price>;
 
 export type VariantCamel = ConvertSnakeToCamelCase<

@@ -1,4 +1,4 @@
-import type { BaseModel, ResultsResponse } from '../index';
+import type { BaseModel, ResultsResponse, Image } from '../index';
 
 import type { Attribute } from '../attribute';
 
@@ -68,23 +68,6 @@ export interface ProductOption {
 export interface Upsell {
   product?: string;
   product_id?: string;
-}
-
-export interface Image {
-  caption?: string;
-  file?: {
-    content_type?: string;
-    date_uploaded?: string;
-    filename?: string;
-    height?: number;
-    length?: number;
-    metadata?: object;
-    md5?: string;
-    private?: boolean;
-    url?: string;
-    width?: number;
-  };
-  id?: string;
 }
 
 export interface Price {
