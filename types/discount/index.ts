@@ -1,4 +1,10 @@
-export type { Discount, DiscountRule, DiscountRuleBuyGetItem } from './snake';
+export type {
+  Discount,
+  DiscountRule,
+  DiscountRuleBuyGetItem,
+  DiscountRuleBuyGetProduct,
+  DiscountRuleBuyGetCategory,
+} from './snake';
 
 export type {
   DiscountCamel,

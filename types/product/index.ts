@@ -2,6 +2,7 @@ import type { ResultsResponse, ResultsResponseCamel } from '../index';
 import type { MakeCase } from '../utils';
 
 import type {
+  ContentObject,
   Product,
   Variant,
   Price,
@@ -49,6 +50,7 @@ export interface PurchaseOptions {
 export type ProductCase = MakeCase<Product, ProductCamel>;
 
 export type {
+  ContentObject,
   Product,
   Variant,
   Price,
