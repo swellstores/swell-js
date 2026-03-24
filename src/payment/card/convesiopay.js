@@ -58,9 +58,7 @@ export default class ConvesioCardPayment extends Payment {
 
     this.convesioPayComponent = component;
 
-    component.mount(
-      this.params.elementId ? `#${this.params.elementId}` : '#card-element',
-    );
+    component.mount(`#${this.params.elementId || 'card-element'}`);
   }
 
   async tokenize() {
