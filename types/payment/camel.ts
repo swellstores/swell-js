@@ -9,17 +9,7 @@ import type { RefundCamel } from '../refund/camel';
 import type { OrderCamel } from '../order/camel';
 import type { CardCamel } from '../card/camel';
 
-import type {
-  Payment,
-  InputPaymentElementApple,
-  InputPaymentElementBase,
-  InputPaymentElementCard,
-  InputPaymentElementGoogle,
-  InputPaymentElementIdeal,
-  InputPaymentElementPaypal,
-  InputPaymentElementSezzle,
-  InputPaymentRedirect,
-} from './snake';
+import type { Payment } from './snake';
 
 export type PaymentCamel = ConvertSnakeToCamelCase<
   Replace<
@@ -36,27 +26,3 @@ export type PaymentCamel = ConvertSnakeToCamelCase<
     }
   >
 >;
-
-export type InputPaymentElementBaseCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementBase>;
-
-export type InputPaymentElementCardCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementCard>;
-
-export type InputPaymentElementIdealCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementIdeal>;
-
-export type InputPaymentElementPaypalCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementPaypal>;
-
-export type InputPaymentElementAppleCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementApple>;
-
-export type InputPaymentElementGoogleCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementGoogle>;
-
-export type InputPaymentElementSezzleCamel =
-  ConvertSnakeToCamelCase<InputPaymentElementSezzle>;
-
-export type InputPaymentRedirectCamel =
-  ConvertSnakeToCamelCase<InputPaymentRedirect>;

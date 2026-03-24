@@ -5,6 +5,8 @@ import { get, isEmpty } from './index';
 /** @typedef {import('@stripe/stripe-js').StripeCardNumberElement} StripeCardNumberElement */
 /** @typedef {import('@stripe/stripe-js').CreateSourceData} CreateSourceData */
 
+/** @typedef {import('../../types').Cart} Cart */
+
 // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
 const MINIMUM_CHARGE_AMOUNT = {
   USD: 0.5,
@@ -59,6 +61,10 @@ function mapValues(fieldsMap, data) {
   return result;
 }
 
+/**
+ * @param {Cart} cart
+ * @returns {object}
+ */
 function getBillingDetails(cart) {
   const details = {
     ...mapValues(billingFieldsMap, cart.billing),
@@ -82,7 +88,7 @@ function getBillingDetails(cart) {
  * @param {object} params
  * @returns {import('@stripe/stripe-js').StripeElement}
  */
-function createElement(type, elements, params) {
+export function createElement(type, elements, params) {
   const elementParams = params[type] || params;
   const elementOptions = elementParams.options || {};
   const elementId = elementParams.elementId || `${type}-element`;
@@ -103,9 +109,9 @@ function createElement(type, elements, params) {
 /**
  * @param {Stripe} stripe
  * @param {StripeCardElement | StripeCardNumberElement} cardElement
- * @param {object} cart
+ * @param {Cart} cart
  */
-async function createPaymentMethod(stripe, cardElement, cart) {
+export async function createPaymentMethod(stripe, cardElement, cart) {
   const billingDetails = getBillingDetails(cart);
   const { paymentMethod, error } = await stripe.createPaymentMethod({
     type: 'card',
@@ -131,9 +137,9 @@ async function createPaymentMethod(stripe, cardElement, cart) {
 /**
  * @param {Stripe} stripe
  * @param {import('@stripe/stripe-js').StripeIdealBankElement} element
- * @param {object} cart
+ * @param {Cart} cart
  */
-async function createIDealPaymentMethod(stripe, element, cart) {
+export async function createIDealPaymentMethod(stripe, element, cart) {
   const billingDetails = getBillingDetails(cart);
   return stripe.createPaymentMethod({
     type: 'ideal',
@@ -142,7 +148,11 @@ async function createIDealPaymentMethod(stripe, element, cart) {
   });
 }
 
-function getKlarnaIntentDetails(cart) {
+/**
+ * @param {Cart} cart
+ * @returns {object}
+ */
+export function getKlarnaIntentDetails(cart) {
   const { account, currency, capture_total } = cart;
   const stripeCustomer = account && account.stripe_customer;
   const stripeCurrency = (currency || 'USD').toLowerCase();
@@ -162,10 +172,10 @@ function getKlarnaIntentDetails(cart) {
 }
 
 /**
- * @param {object} cart
+ * @param {Cart} cart
  * @returns {import('@stripe/stripe-js').ConfirmKlarnaPaymentData}
  */
-function getKlarnaConfirmationDetails(cart) {
+export function getKlarnaConfirmationDetails(cart) {
   const billingDetails = getBillingDetails(cart);
   const returnUrl = `${
     window.location.origin + window.location.pathname
@@ -182,10 +192,10 @@ function getKlarnaConfirmationDetails(cart) {
 /**
  * Returns Bancontact Setup Intent confirmation details.
  *
- * @param {object} cart
+ * @param {Cart} cart
  * @returns {import('@stripe/stripe-js').ConfirmBancontactPaymentData}
  */
-function getBancontactConfirmationDetails(cart) {
+export function getBancontactConfirmationDetails(cart) {
   const billingDetails = getBillingDetails(cart);
   const returnUrl = `${
     window.location.origin + window.location.pathname
@@ -200,11 +210,11 @@ function getBancontactConfirmationDetails(cart) {
 }
 
 /**
- * @param {object} cart
+ * @param {Cart} cart
  * @param {object} params
  * @returns {import('@stripe/stripe-js').PaymentRequestOptions}
  */
-function getPaymentRequestData(cart, params) {
+export function getPaymentRequestData(cart, params) {
   const {
     currency,
     shipping,
@@ -284,7 +294,12 @@ const zeroDecimalCurrencies = new Set([
   'XOF', // West African Cfa Franc
 ]);
 
-function stripeAmountByCurrency(currency, amount) {
+/**
+ * @param {string} currency
+ * @param {number} amount
+ * @returns {number}
+ */
+export function stripeAmountByCurrency(currency, amount) {
   if (zeroDecimalCurrencies.has(currency.toUpperCase())) {
     return amount;
   }
@@ -292,19 +307,12 @@ function stripeAmountByCurrency(currency, amount) {
   return Math.round(amount * 100);
 }
 
-function isStripeChargeableAmount(amount, currency) {
+/**
+ * @param {number} amount
+ * @param {string} currency
+ * @returns {boolean}
+ */
+export function isStripeChargeableAmount(amount, currency) {
   const minAmount = MINIMUM_CHARGE_AMOUNT[currency];
   return !minAmount || amount >= minAmount;
 }
-
-export {
-  createElement,
-  createPaymentMethod,
-  createIDealPaymentMethod,
-  getKlarnaIntentDetails,
-  getKlarnaConfirmationDetails,
-  getBancontactConfirmationDetails,
-  getPaymentRequestData,
-  stripeAmountByCurrency,
-  isStripeChargeableAmount,
-};
