@@ -5,6 +5,52 @@
 /** @typedef {import('../../types').Address} Address */
 
 /**
+ * @this {Payment}
+ * @param {ApplePayJS.ApplePayPaymentContact} shippingContact
+ * @returns {Promise<ApplePayJS.ApplePayShippingContactUpdate>}
+ */
+export async function onShippingAddressChange(shippingContact) {
+  try {
+    // Update cart with Apple Pay shipping address to get shipping options and tax
+    // This happens immediately when the sheet opens with the default address
+    const cart = await this.updateCart({
+      shipping: convertToSwellAddress(shippingContact),
+    });
+
+    if (!cart.shipment_rating?.services?.length) {
+      const message =
+        cart.shipment_rating?.errors?.find(Boolean)?.message ??
+        'Shipping is not available for the provided address.';
+
+      return {
+        newTotal: getTotal(cart),
+        newLineItems: getLineItems(cart),
+        newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
+        errors: [
+          new ApplePayError('addressUnserviceable', 'postalAddress', message),
+        ],
+      };
+    }
+
+    // Success: Return updated totals and shipping methods
+    return {
+      newTotal: getTotal(cart),
+      newLineItems: getLineItems(cart),
+      newShippingMethods: getShippingMethods(cart),
+    };
+  } catch (err) {
+    const cartData = await this.getCart();
+
+    return {
+      newTotal: getTotal(cartData),
+      newLineItems: getLineItems(cartData),
+      newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
+      errors: [new ApplePayError('unknown', undefined, err.message)],
+    };
+  }
+}
+
+/**
  * Handles Apple Pay shipping contact selection event
  *
  * IMPORTANT: This event fires automatically when the Apple Pay sheet opens
@@ -23,43 +69,33 @@
  * @returns {void}
  */
 export async function onShippingContactSelected(session, event) {
+  session.completeShippingContactSelection(
+    await onShippingAddressChange.call(this, event.shippingContact),
+  );
+}
+
+/**
+ * @this {Payment}
+ * @param {ApplePayJS.ApplePayShippingMethod} shippingMethod
+ * @returns {Promise<ApplePayJS.ApplePayShippingMethodUpdate>}
+ */
+export async function onShippingMethodChange(shippingMethod) {
   try {
-    // Update cart with Apple Pay shipping address to get shipping options and tax
-    // This happens immediately when the sheet opens with the default address
     const cart = await this.updateCart({
-      shipping: convertToSwellAddress(event.shippingContact),
+      shipping: {
+        service: shippingMethod.identifier,
+      },
     });
 
-    if (!cart.shipment_rating?.services?.length) {
-      const message =
-        cart.shipment_rating?.errors?.find(Boolean)?.message ??
-        'Shipping is not available for the provided address.';
-
-      return session.completeShippingContactSelection({
-        newTotal: getTotal(cart),
-        newLineItems: getLineItems(cart),
-        newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
-        errors: [
-          new ApplePayError('addressUnserviceable', 'postalAddress', message),
-        ],
-      });
-    }
-
-    // Success: Return updated totals and shipping methods
-    session.completeShippingContactSelection({
+    return {
       newTotal: getTotal(cart),
       newLineItems: getLineItems(cart),
-      newShippingMethods: getShippingMethods(cart),
-    });
+    };
   } catch (err) {
-    const cartData = await this.getCart();
-
-    session.completeShippingContactSelection({
-      newTotal: getTotal(cartData),
-      newLineItems: getLineItems(cartData),
-      newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
+    return {
+      newTotal: getTotal(await this.getCart()),
       errors: [new ApplePayError('unknown', undefined, err.message)],
-    });
+    };
   }
 }
 
@@ -79,23 +115,9 @@ export async function onShippingContactSelected(session, event) {
  * @returns {void}
  */
 export async function onShippingMethodSelected(session, event) {
-  try {
-    const cart = await this.updateCart({
-      shipping: {
-        service: event.shippingMethod.identifier,
-      },
-    });
-
-    session.completeShippingMethodSelection({
-      newTotal: getTotal(cart),
-      newLineItems: getLineItems(cart),
-    });
-  } catch (err) {
-    session.completeShippingMethodSelection({
-      newTotal: getTotal(await this.getCart()),
-      errors: [new ApplePayError('unknown', undefined, err.message)],
-    });
-  }
+  session.completeShippingMethodSelection(
+    await onShippingMethodChange.call(this, event.shippingMethod),
+  );
 }
 
 /**

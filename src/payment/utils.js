@@ -101,3 +101,41 @@ export function getDiscountLabel(discount, cart) {
 
   return discount.id;
 }
+
+/** @type {Map<string, number>} */
+const CURRENCIES_CENTS = new Map();
+
+/**
+ * @param {string} currency
+ * @returns {number}
+ */
+function getCurrencyCents(currency) {
+  let cents = CURRENCIES_CENTS.get(currency);
+
+  if (cents !== undefined) {
+    return cents;
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+  });
+
+  const options = formatter.resolvedOptions();
+  const decimals = options.maximumFractionDigits ?? 2;
+
+  cents = 10 ** decimals;
+
+  CURRENCIES_CENTS.set(currency, cents);
+
+  return cents;
+}
+
+/**
+ * @param {string} currency
+ * @param {number} amount
+ * @returns {number}
+ */
+export function amountInCents(currency, amount) {
+  return Math.round(amount * getCurrencyCents(currency));
+}

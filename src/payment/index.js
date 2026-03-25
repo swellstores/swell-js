@@ -11,6 +11,8 @@ import BraintreeApplePayment from './apple/braintree';
 import AuthorizeNetGooglePayment from './google/authorizenet';
 import AuthorizeNetApplePayment from './apple/authorizenet';
 import QuickpayCardPayment from './card/quickpay';
+import ConvesioCardPayment from './card/convesiopay';
+import ConvesioPayApplePayment from './apple/convesiopay';
 import PaysafecardDirectPayment from './paysafecard/paysafecard';
 import KlarnaDirectPayment from './klarna/klarna';
 import PaypalDirectPayment from './paypal/paypal';
@@ -301,6 +303,8 @@ export default class PaymentController {
         return StripeCardPayment;
       case 'quickpay':
         return QuickpayCardPayment;
+      case 'convesiopay':
+        return ConvesioCardPayment;
       default:
         return null;
     }
@@ -372,6 +376,8 @@ export default class PaymentController {
         return BraintreeApplePayment;
       case 'authorizenet':
         return AuthorizeNetApplePayment;
+      case 'convesiopay':
+        return ConvesioPayApplePayment;
       default:
         return null;
     }

@@ -29,13 +29,13 @@ import type {
 } from './product';
 
 import type {
-  InputPaymentElementCardCase,
-  InputPaymentElementIdealCase,
-  InputPaymentElementPaypalCase,
-  InputPaymentElementGoogleCase,
-  InputPaymentElementAppleCase,
-  InputPaymentElementSezzleCase,
-  InputPaymentRedirectCase,
+  InputPaymentElementCard,
+  InputPaymentElementIdeal,
+  InputPaymentElementPaypal,
+  InputPaymentElementGoogle,
+  InputPaymentElementApple,
+  InputPaymentElementSezzle,
+  InputPaymentRedirect,
   PaymentCase,
 } from './payment';
 
@@ -341,12 +341,12 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     methods(): Promise<object>;
 
     createElements(input: {
-      card?: InputPaymentElementCardCase[C];
-      ideal?: InputPaymentElementIdealCase[C];
-      paypal?: InputPaymentElementPaypalCase[C];
-      google?: InputPaymentElementGoogleCase[C];
-      apple?: InputPaymentElementAppleCase[C];
-      sezzle?: InputPaymentElementSezzleCase[C];
+      card?: InputPaymentElementCard;
+      ideal?: InputPaymentElementIdeal;
+      paypal?: InputPaymentElementPaypal;
+      google?: InputPaymentElementGoogle;
+      apple?: InputPaymentElementApple;
+      sezzle?: InputPaymentElementSezzle;
     }): Promise<void>;
 
     tokenize(input?: {
@@ -359,10 +359,10 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     }): Promise<void>;
 
     handleRedirect(input?: {
-      card?: InputPaymentRedirectCase[C];
-      paysafecard?: InputPaymentRedirectCase[C];
-      klarna?: InputPaymentRedirectCase[C];
-      bancontact?: InputPaymentRedirectCase[C];
+      card?: InputPaymentRedirect;
+      paysafecard?: InputPaymentRedirect;
+      klarna?: InputPaymentRedirect;
+      bancontact?: InputPaymentRedirect;
     }): Promise<void>;
 
     authenticate(id: string): Promise<object | { error: Error }>;
