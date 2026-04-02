@@ -1,8 +1,12 @@
 import type { BaseModel, ResultsResponse, Image } from '../index';
 
 import type { Attribute } from '../attribute';
+import type {
+  SubscriptionBillingSchedule,
+  SubscriptionOrderSchedule,
+} from '../subscription';
 
-import type { PurchaseOptions } from './index';
+export type SubscriptionInterval = 'monthly' | 'daily' | 'weekly' | 'yearly';
 
 export interface ContentObject {
   [key: string]: unknown;
@@ -36,8 +40,11 @@ export interface OptionValue {
   name?: string;
   price?: number;
   shipment_weight?: number;
-  subscription_interval?: number;
+  /** @deprecated */
+  subscription_interval?: SubscriptionInterval;
+  /** @deprecated */
   subscription_interval_count?: number;
+  /** @deprecated */
   subscription_trial_days?: number;
 }
 
@@ -77,6 +84,43 @@ export interface Price {
   quantity_min?: number;
 }
 
+export interface StandardPurchaseOption {
+  id?: string;
+  name?: string;
+  description?: string;
+  active?: boolean;
+  price?: number;
+  sale?: boolean;
+  sale_price?: number;
+  orig_price?: number;
+  prices?: Price[];
+  account_groups?: string[];
+}
+
+export interface SubscriptionPlan {
+  id?: string;
+  name?: string;
+  description?: string;
+  active?: boolean;
+  price?: number;
+  billing_schedule?: SubscriptionBillingSchedule;
+  order_schedule?: SubscriptionOrderSchedule;
+}
+
+export interface SubscriptionPurchaseOption {
+  id?: string;
+  name?: string;
+  description?: string;
+  active?: boolean;
+  account_groups?: string[];
+  plans?: SubscriptionPlan[];
+}
+
+export interface PurchaseOptions {
+  standard?: StandardPurchaseOption;
+  subscription?: SubscriptionPurchaseOption;
+}
+
 export interface Variant extends BaseModel {
   active?: boolean;
   archived?: boolean;
@@ -96,7 +140,9 @@ export interface Variant extends BaseModel {
   sku?: string;
   stock_level?: number;
   /** @deprecated use `purchase_options.subscription` instead */
-  subscription_interval?: 'monthly' | 'yearly' | 'weekly' | 'daily';
+  subscription_interval?: SubscriptionInterval;
+  /** @deprecated use `purchase_options.subscription` instead */
+  subscription_interval_count?: number;
   /** @deprecated use `purchase_options.subscription` instead */
   subscription_trial_days?: number;
 }
@@ -157,6 +203,7 @@ export interface Product extends BaseModel {
     | null;
   stock_tracking?: boolean;
   tags?: string[];
+  type?: 'standard' | 'subscription' | 'bundle' | 'giftcard';
   up_sells?: Upsell[];
   variable?: boolean;
   variants?: ResultsResponse<Variant>;

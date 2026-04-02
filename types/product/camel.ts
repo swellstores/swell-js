@@ -6,6 +6,10 @@ import type {
 import type { Replace } from '../utils';
 
 import type { AttributeCamel } from '../attribute/camel';
+import type {
+  SubscriptionBillingScheduleCamel,
+  SubscriptionOrderScheduleCamel,
+} from '../subscription/camel';
 
 import type {
   Product,
@@ -16,6 +20,9 @@ import type {
   OptionValue,
   Bundle,
   CrossSell,
+  StandardPurchaseOption,
+  SubscriptionPlan,
+  SubscriptionPurchaseOption,
 } from './snake';
 
 export type BundleCamel = ConvertSnakeToCamelCase<
@@ -59,6 +66,39 @@ export type ProductOptionCamel = ConvertSnakeToCamelCase<
 export type UpsellCamel = ConvertSnakeToCamelCase<Upsell>;
 export type PriceCamel = ConvertSnakeToCamelCase<Price>;
 
+export type SubscriptionPlanCamel = ConvertSnakeToCamelCase<
+  Replace<
+    SubscriptionPlan,
+    {
+      billing_schedule?: SubscriptionBillingScheduleCamel;
+      order_schedule?: SubscriptionOrderScheduleCamel;
+    }
+  >
+>;
+
+export type StandardPurchaseOptionCamel = ConvertSnakeToCamelCase<
+  Replace<
+    StandardPurchaseOption,
+    {
+      prices?: PriceCamel[];
+    }
+  >
+>;
+
+export type SubscriptionPurchaseOptionCamel = ConvertSnakeToCamelCase<
+  Replace<
+    SubscriptionPurchaseOption,
+    {
+      plans?: SubscriptionPlanCamel[];
+    }
+  >
+>;
+
+export type PurchaseOptionsCamel = {
+  standard?: StandardPurchaseOptionCamel;
+  subscription?: SubscriptionPurchaseOptionCamel;
+};
+
 export type VariantCamel = ConvertSnakeToCamelCase<
   Replace<
     Variant,
@@ -67,6 +107,7 @@ export type VariantCamel = ConvertSnakeToCamelCase<
       images?: ImageCamel[];
       parent?: ProductCamel;
       prices?: PriceCamel[];
+      purchase_options?: PurchaseOptionsCamel;
     }
   >
 >;
@@ -81,6 +122,7 @@ export type ProductCamel = ConvertSnakeToCamelCase<
       images?: ImageCamel[];
       options?: ProductOptionCamel[];
       prices?: PriceCamel[];
+      purchase_options?: PurchaseOptionsCamel;
       up_sells?: UpsellCamel[];
       variants?: ResultsResponseCamel<VariantCamel>;
     }

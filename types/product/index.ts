@@ -11,6 +11,11 @@ import type {
   OptionValue,
   Bundle,
   CrossSell,
+  PurchaseOptions,
+  StandardPurchaseOption,
+  SubscriptionPlan,
+  SubscriptionPurchaseOption,
+  SubscriptionInterval,
 } from './snake';
 
 import type {
@@ -22,6 +27,10 @@ import type {
   OptionValueCamel,
   BundleCamel,
   CrossSellCamel,
+  PurchaseOptionsCamel,
+  StandardPurchaseOptionCamel,
+  SubscriptionPlanCamel,
+  SubscriptionPurchaseOptionCamel,
 } from './camel';
 
 export interface PriceRange {
@@ -41,12 +50,6 @@ export type FlexibleProductInputCase = MakeCase<
   FlexibleProductInputCamel
 >;
 
-export interface PurchaseOptions {
-  standard?: object;
-  subscription?: object;
-  trial?: object;
-}
-
 export type ProductCase = MakeCase<Product, ProductCamel>;
 
 export type {
@@ -59,6 +62,11 @@ export type {
   OptionValue,
   Bundle,
   CrossSell,
+  PurchaseOptions,
+  StandardPurchaseOption,
+  SubscriptionPlan,
+  SubscriptionPurchaseOption,
+  SubscriptionInterval,
   ProductCamel,
   VariantCamel,
   PriceCamel,
@@ -67,4 +75,8 @@ export type {
   OptionValueCamel,
   BundleCamel,
   CrossSellCamel,
+  PurchaseOptionsCamel,
+  StandardPurchaseOptionCamel,
+  SubscriptionPlanCamel,
+  SubscriptionPurchaseOptionCamel,
 };
