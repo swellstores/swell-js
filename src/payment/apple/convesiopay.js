@@ -1,223 +1,169 @@
-import Payment from '../payment';
-
 import { isLiveMode } from '../../utils';
 
-import {
-  PaymentMethodDisabledError,
-  LibraryNotLoadedError,
-} from '../../utils/errors';
-
-import { amountInCents } from '../utils';
+import { convertToSwellAddress } from '../apple';
 
 import {
-  getTotal as getAppleTotal,
-  getLineItems as getAppleLineItems,
-  convertToSwellAddress,
-  onShippingAddressChange,
-  onShippingMethodChange,
-} from '../apple';
+  getBrowserInfo,
+  getBaseConvesioApiUrl,
+  getConvesioPaymentSettings,
+} from '../convesiopay';
+
+import AbstractApplePayment from './abstract';
 
 /** @typedef {import('../../../types').Cart} Cart */
 
-export default class ConvesioPayApplePayment extends Payment {
-  static convesioPay = null;
-  static convesioPayComponent = null;
-
+export default class ConvesioPayApplePayment extends AbstractApplePayment {
   constructor(api, options, params, methods) {
-    if (!methods.card) {
-      throw new PaymentMethodDisabledError('Credit cards');
-    }
-
-    super(api, options, params, methods.apple);
+    super(api, options, params, methods);
 
     this.convesiopay = methods.card;
   }
 
-  get scripts() {
-    return ['convesiopay-js'];
-  }
-
-  get convesioPay() {
-    if (ConvesioPayApplePayment.convesioPay === null) {
-      if (window.ConvesioPay) {
-        this.convesioPay = window.ConvesioPay(this.convesiopay.public_key);
-      }
-
-      if (!ConvesioPayApplePayment.convesioPay) {
-        throw new LibraryNotLoadedError('ConvesioPay');
-      }
-    }
-
-    return ConvesioPayApplePayment.convesioPay;
-  }
-
-  set convesioPay(convesioPay) {
-    ConvesioPayApplePayment.convesioPay = convesioPay;
-  }
-
-  get convesioPayComponent() {
-    return ConvesioPayApplePayment.convesioPayComponent;
-  }
-
-  set convesioPayComponent(convesioPayComponent) {
-    ConvesioPayApplePayment.convesioPayComponent = convesioPayComponent;
+  /**
+   * @override
+   * @returns {string[]}
+   */
+  getSupportedCardNetworks() {
+    return ['visa', 'masterCard', 'amex', 'discover'];
   }
 
   /**
-   * Creates the Apple Pay button element
-   *
+   * @override
+   * @returns {ApplePayJS.ApplePayMerchantCapability[]}
+   */
+  getMerchantCapabilities() {
+    return ['supports3DS'];
+  }
+
+  /**
+   * @override
    * @param {Cart} cart
    */
-  async createElements(cart) {
-    const { elementId = 'applepay-button' } = this.params;
+  async getApplePayMerchantInfo(cart) {
+    const settings = await getConvesioPaymentSettings(
+      this.method.mode,
+      this.convesiopay,
+      cart.settings?.country,
+    );
 
-    this.setElementContainer(elementId);
-    await this.loadScripts(this.scripts);
+    if (!settings) {
+      throw new Error('ConvesioPay payment settings not found');
+    }
 
-    this.convesioPayComponent = this.convesioPay.component({
-      environment: isLiveMode(this.method.mode) ? 'live' : 'test',
-      integration: this.convesiopay.integration,
-      customerEmail: cart.account?.email,
-      express: true,
-      disabledPaymentMethods: {
-        cards: true,
-        btcpay: true,
-        googlePay: true,
-      },
-    });
-
-    // When initiating a payment request,
-    // we should not display the shipping cost, as it will be calculated later.
-    cart = { ...cart };
-    cart.shipment_price = 0;
-    cart.shipping = {};
-
-    this.sessionOptions = {
-      integration: this.convesiopay.integration,
-      returnUrl: this.params.returnUrl,
-      amount: amountInCents(cart.currency, cart.capture_total),
-      currency: cart.currency,
-      shippingMethods: getShippingMethods(cart),
-      lineItems: getLineItems(cart),
+    this.merchantInfo = {
+      displayName: settings.statementDescriptor || cart.settings.name || '',
     };
   }
 
   /**
-   * Mounts the Apple Pay button to the DOM
+   * @override
+   * @param {ApplePayJS.ApplePayValidateMerchantEvent} event
    */
-  mountElements() {
-    const { classes = {} } = this.params;
-    const container = this.elementContainer;
+  async createMerchantSession(event) {
+    return createMerchantApplePaySession(
+      this.method.mode,
+      this.convesiopay,
+      event.validationURL,
+      this.merchantInfo.displayName,
+    );
+  }
 
-    this.convesioPayComponent.mount(`#${container.id}`);
+  /**
+   * @override
+   * @param {ApplePayJS.ApplePayPaymentAuthorizedEvent} event
+   * @returns {Promise<object>}
+   */
+  async preparePaymentDataForCartUpdate(event) {
+    const {
+      payment: { token, shippingContact, billingContact },
+    } = event;
 
-    if (classes.base) {
-      container.classList.add(classes.base);
-    }
+    const { require: { shipping: requireShipping } = {} } = this.params;
 
-    this.convesioPayComponent.createApplePaySession({
-      ...this.sessionOptions,
-      onShippingAddressChange: onShippingAddressChange.bind(this),
-      onShippingMethodChange: onShippingMethodChange.bind(this),
-      onPaymentMethodChange: async (_paymentMethod) => {
-        const currentCart = await this.getCart();
-
-        return {
-          newTotal: getAppleTotal(currentCart),
-          newLineItems: getAppleLineItems(currentCart),
-        };
+    const payment = await createConvesioApplePaymentToken(
+      this.method.mode,
+      this.convesiopay,
+      {
+        paymentMethod: {
+          type: 'applepay',
+        },
+        token: {
+          paymentData: token.paymentData,
+          paymentMethod: token.paymentMethod,
+          transactionIdentifier: token.transactionIdentifier,
+        },
+        browserInfo: getBrowserInfo(),
+        origin: window.location.origin,
+        billingContact: billingContact || undefined,
+        shippingContact: shippingContact || undefined,
       },
-    });
+    );
 
-    this.convesioPayComponent.on('change', async (event) => {
-      if (event.type === 'applepay') {
-        if (event.isSuccessful) {
-          const { token, shippingContact, billingContact } = event;
-          const { require: { shipping: requireShipping } = {} } = this.params;
-
-          await this.updateCart({
-            account: {
-              email: shippingContact.emailAddress,
-            },
-            billing: {
-              method: 'apple',
-              account_card_id: null,
-              card: null,
-              apple: {
-                token,
-                gateway: 'convesiopay',
-              },
-              ...convertToSwellAddress(billingContact),
-            },
-            ...(requireShipping && {
-              shipping: convertToSwellAddress(shippingContact),
-            }),
-          });
-        }
-      }
-    });
+    return {
+      account: {
+        email: shippingContact.emailAddress,
+      },
+      billing: {
+        method: 'apple',
+        account_card_id: null,
+        card: null,
+        apple: {
+          gateway: 'convesiopay',
+          token: payment.token || payment.paymentToken,
+        },
+        convesiopay: {
+          return_url: this.params.returnUrl,
+        },
+        ...convertToSwellAddress(billingContact),
+      },
+      ...(requireShipping && {
+        shipping: convertToSwellAddress(shippingContact),
+      }),
+    };
   }
 }
 
-/**
- * @param {Cart} cart
- * @returns {object[]}
- */
-function getLineItems(cart) {
-  const { sub_total, shipment_price, discount_total, tax_total, currency } =
-    cart;
+async function createMerchantApplePaySession(
+  mode,
+  settings,
+  validationURL,
+  displayName,
+) {
+  const baseUrl = getBaseConvesioApiUrl(mode);
 
-  /** @type {ApplePayJS.ApplePayLineItem[]} */
-  const lineItems = [
-    {
-      label: 'Subtotal',
-      amount: amountInCents(currency, sub_total || 0),
+  const response = await fetch(`${baseUrl}/v1/applepay/session`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Api-Key': settings.public_key,
     },
-  ];
+    body: JSON.stringify({
+      validationURL,
+      displayName,
+      initiativeContext: window.location.hostname,
+    }),
+  });
 
-  if (shipment_price) {
-    lineItems.push({
-      label: 'Shipping',
-      amount: amountInCents(currency, shipment_price),
-    });
+  if (!response.ok) {
+    throw new Error(`Merchant validation failed: ${response.status}`);
   }
 
-  if (discount_total) {
-    lineItems.push({
-      label: 'Discount',
-      amount: amountInCents(currency, -discount_total),
-    });
-  }
-
-  if (tax_total) {
-    lineItems.push({
-      label: 'Taxes',
-      amount: amountInCents(currency, tax_total),
-    });
-  }
-
-  return lineItems;
+  return response.json();
 }
 
-/**
- * @param {Cart} cart
- * @returns {object[]}
- */
-function getShippingMethods(cart) {
-  const { shipment_delivery, shipment_rating, currency } = cart;
+function createConvesioApplePaymentToken(mode, settings, data) {
+  const baseUrl = isLiveMode(mode)
+    ? 'https://vault-apay.convesiopay.com'
+    : 'https://qa-vault-apay.convesiopay.com';
 
-  if (!shipment_delivery) {
-    return [];
-  }
-
-  if (!shipment_rating?.services?.length) {
-    return [];
-  }
-
-  return shipment_rating.services.map((service, index) => ({
-    label: service.name || `Shipping ${index + 1}`,
-    detail: service.description || '',
-    amount: amountInCents(currency, service.price || 0),
-    identifier: service.id,
-  }));
+  return fetch(`${baseUrl}/v1/create-token`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Api-Key': settings.public_key,
+    },
+    body: JSON.stringify(data),
+  }).then((res) => res.json());
 }

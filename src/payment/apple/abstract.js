@@ -1,0 +1,308 @@
+/**
+ * Apple Pay Payment Integration for Authorize.Net Gateway
+ *
+ * This implementation integrates Apple Pay with Swell using Authorize.Net as the payment processor.
+ *
+ * KEY IMPLEMENTATION DETAILS:
+ *
+ * 1. SHIPPING ADDRESS HANDLING:
+ *    - Apple Pay is the ONLY source of shipping address
+ *    - Any pre-existing shipping data from checkout forms is cleared before initialization
+ *    - When Apple Pay sheet opens, it immediately fires 'shippingcontactselected' with default address
+ *    - Each address change triggers recalculation of shipping options and tax
+ *
+ * 2. PAYMENT FLOW:
+ *    - User clicks Apple Pay button → Sheet opens
+ *    - User confirms address/shipping → Calculations update in real-time
+ *    - User authorizes with Face ID/Touch ID → Payment token stored in cart
+ *    - User must manually click "Place Order" to submit (no auto-processing)
+ *
+ * 3. TOTAL DISPLAY:
+ *    - Shows "Amount Pending" until shipping method selected
+ *    - Shows actual amount after shipping selected (type: 'pending' → 'final')
+ *
+ * @see https://developer.apple.com/documentation/applepayontheweb/apple-pay-js-api
+ */
+
+import {
+  PaymentMethodDisabledError,
+  LibraryNotLoadedError,
+} from '../../utils/errors';
+
+import {
+  getTotal,
+  getLineItems,
+  onCouponCodeChanged,
+  onShippingMethodSelected,
+  onShippingContactSelected,
+} from '../apple';
+
+import Payment from '../payment';
+
+/** @typedef {import('../../../types').Cart} Cart */
+
+/* global ApplePayError */
+
+const VERSION = 14;
+
+export default class AbstractApplePayment extends Payment {
+  constructor(api, options, params, methods) {
+    if (!methods.card) {
+      throw new PaymentMethodDisabledError('Credit cards');
+    }
+
+    super(api, options, params, methods.apple);
+
+    this.merchantInfo = null;
+  }
+
+  get scripts() {
+    return ['apple-pay'];
+  }
+
+  /** @returns {typeof ApplePaySession} */
+  get ApplePaySession() {
+    if (!window.ApplePaySession) {
+      throw new LibraryNotLoadedError('Apple');
+    }
+
+    return window.ApplePaySession;
+  }
+
+  /** @returns {string[]} */
+  getSupportedCardNetworks() {
+    return ['amex', 'discover', 'interac', 'jcb', 'masterCard', 'visa'];
+  }
+
+  /** @returns {ApplePayJS.ApplePayMerchantCapability[]} */
+  getMerchantCapabilities() {
+    return ['supports3DS', 'supportsDebit', 'supportsCredit'];
+  }
+
+  /**
+   * Creates the Apple Pay payment request object
+   *
+   * IMPORTANT: countryCode here is the MERCHANT's country (where your business is located),
+   * NOT the customer's country. Customer country comes from shippingContact.countryCode.
+   *
+   * NOTE: We do NOT pass shippingMethods in the initial request. Shipping methods
+   * are provided dynamically after the user selects/confirms their address in the
+   * 'shippingcontactselected' event handler.
+   *
+   * @param {Cart} cart
+   * @returns {ApplePayJS.ApplePayPaymentRequest}
+   */
+  _createPaymentRequest(cart) {
+    cart = { ...cart };
+
+    const { require = {} } = this.params;
+    const {
+      settings: { country },
+      currency,
+    } = cart;
+
+    const requiredShippingContactFields = [];
+    const requiredBillingContactFields = ['postalAddress'];
+
+    if (require.name) {
+      requiredShippingContactFields.push('name');
+    }
+
+    if (require.email) {
+      requiredShippingContactFields.push('email');
+    }
+
+    if (require.phone) {
+      requiredShippingContactFields.push('phone');
+    }
+
+    if (require.shipping) {
+      requiredShippingContactFields.push('postalAddress');
+    }
+
+    // When initiating a payment request,
+    // we should not display the shipping cost, as it will be calculated later.
+    cart.shipment_price = 0;
+    cart.shipping = {};
+
+    return {
+      total: getTotal(cart, this.merchantInfo),
+      countryCode: country, // Merchant's country
+      currencyCode: currency,
+      supportedNetworks: this.getSupportedCardNetworks(),
+      merchantCapabilities: this.getMerchantCapabilities(),
+      requiredShippingContactFields,
+      requiredBillingContactFields,
+      supportsCouponCode: true,
+      lineItems: getLineItems(cart),
+    };
+  }
+
+  /** @param {Cart} cart */
+  async getApplePayMerchantInfo(cart) {
+    this.merchantInfo = {
+      displayName: cart.settings.name || '',
+    };
+  }
+
+  /** @param {ApplePayJS.ApplePayValidateMerchantEvent} event */
+  // eslint-disable-next-line no-unused-vars
+  async createMerchantSession(event) {
+    throw new Error('Implement this!');
+  }
+
+  /**
+   * @param {ApplePayJS.ApplePayPaymentAuthorizedEvent} event
+   * @returns {Promise<object>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async preparePaymentDataForCartUpdate(event) {
+    throw new Error('Implement this!');
+  }
+
+  /**
+   * Creates and configures the Apple Pay session with all event handlers
+   *
+   * Event handlers:
+   * - validatemerchant: Validates with Authorize.Net to authorize this domain
+   * - shippingcontactselected: Updates cart when user selects/changes address
+   * - shippingmethodselected: Updates cart when user selects shipping method
+   * - couponcodechanged: Applies/removes coupon codes
+   * - paymentauthorized: Stores payment token and prepares cart for submission
+   *
+   * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
+   */
+  async _createPaymentSession(paymentRequest) {
+    const session = new this.ApplePaySession(VERSION, paymentRequest);
+
+    // VALIDATEMERCHANT: Required to authorize this domain with Apple Pay
+    session.onvalidatemerchant = async (event) => {
+      try {
+        const merchantSession = await this.createMerchantSession(event);
+
+        if (merchantSession) {
+          session.completeMerchantValidation(merchantSession);
+        } else {
+          session.abort();
+        }
+      } catch (err) {
+        console.error('[Apple Pay] Merchant validation error:', err);
+        session.abort();
+      }
+    };
+
+    session.onshippingcontactselected = onShippingContactSelected.bind(
+      this,
+      session,
+    );
+
+    session.onshippingmethodselected = onShippingMethodSelected.bind(
+      this,
+      session,
+    );
+
+    session.oncouponcodechanged = onCouponCodeChanged.bind(this, session);
+
+    // PAYMENTAUTHORIZED: User confirmed payment with Face ID/Touch ID
+    // This is where we store the payment token in the cart
+    session.onpaymentauthorized = async (event) => {
+      try {
+        // CRITICAL: Apple Pay addresses are the ONLY addresses we use
+        // - shippingContact: For shipping address (already validated in shippingcontactselected)
+        // - billingContact: For billing address (can be different from shipping)
+        // - email: From shippingContact.emailAddress
+        //
+        // We store the payment token but DO NOT process the order yet.
+        // The user must manually click "Place Order" to complete the transaction.
+        await this.preparePaymentDataForCartUpdate(event).then((data) =>
+          this.updateCart(data),
+        );
+
+        // Complete Apple Pay session successfully
+        // This closes the Apple Pay sheet and shows success to the user
+        session.completePayment({
+          status: this.ApplePaySession.STATUS_SUCCESS,
+        });
+
+        // Notify that Apple Pay authorization is complete
+        // The cart now has the payment token and is ready for submission
+        // NOTE: This does NOT submit the order - user must click "Place Order"
+        this.onSuccess();
+      } catch (err) {
+        session.completePayment({
+          status: this.ApplePaySession.STATUS_FAILURE,
+          errors: new ApplePayError('unknown', undefined, err.message),
+        });
+
+        this.onError(err);
+      }
+    };
+
+    session.begin();
+  }
+
+  /** @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest */
+  _createButton(paymentRequest) {
+    const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
+      this.params;
+
+    const button = document.createElement('apple-pay-button');
+
+    button.setAttribute('buttonstyle', theme);
+    button.setAttribute('type', type);
+    button.style.setProperty('--apple-pay-button-width', '100%');
+    button.style.setProperty('--apple-pay-button-height', height);
+
+    button.addEventListener(
+      'click',
+      this._createPaymentSession.bind(this, paymentRequest),
+    );
+
+    return button;
+  }
+
+  /**
+   * Creates the Apple Pay button element
+   *
+   * The button is created but NOT clicked yet. When clicked, it will:
+   * 1. Create a new Apple Pay session
+   * 2. Open the Apple Pay sheet
+   * 3. Handle all payment events (address selection, authorization, etc.)
+   *
+   * @param {Cart} cart
+   */
+  async createElements(cart) {
+    const { elementId = 'applepay-button' } = this.params;
+
+    this.setElementContainer(elementId);
+
+    await Promise.all([
+      this.getApplePayMerchantInfo(cart),
+      this.loadScripts(this.scripts),
+    ]);
+
+    if (!this.ApplePaySession.canMakePayments()) {
+      throw new Error(
+        'This device is not capable of making Apple Pay payments',
+      );
+    }
+
+    const paymentRequest = this._createPaymentRequest(cart);
+
+    this.element = this._createButton(paymentRequest);
+  }
+
+  /**
+   * Mounts the Apple Pay button to the DOM
+   */
+  mountElements() {
+    const { classes = {} } = this.params;
+    const container = this.elementContainer;
+
+    container.appendChild(this.element);
+
+    if (classes.base) {
+      container.classList.add(classes.base);
+    }
+  }
+}

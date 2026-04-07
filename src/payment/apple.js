@@ -9,7 +9,7 @@
  * @param {ApplePayJS.ApplePayPaymentContact} shippingContact
  * @returns {Promise<ApplePayJS.ApplePayShippingContactUpdate>}
  */
-export async function onShippingAddressChange(shippingContact) {
+async function onShippingAddressChange(shippingContact) {
   try {
     // Update cart with Apple Pay shipping address to get shipping options and tax
     // This happens immediately when the sheet opens with the default address
@@ -23,7 +23,7 @@ export async function onShippingAddressChange(shippingContact) {
         'Shipping is not available for the provided address.';
 
       return {
-        newTotal: getTotal(cart),
+        newTotal: getTotal(cart, this.merchantInfo),
         newLineItems: getLineItems(cart),
         newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
         errors: [
@@ -34,7 +34,7 @@ export async function onShippingAddressChange(shippingContact) {
 
     // Success: Return updated totals and shipping methods
     return {
-      newTotal: getTotal(cart),
+      newTotal: getTotal(cart, this.merchantInfo),
       newLineItems: getLineItems(cart),
       newShippingMethods: getShippingMethods(cart),
     };
@@ -42,7 +42,7 @@ export async function onShippingAddressChange(shippingContact) {
     const cartData = await this.getCart();
 
     return {
-      newTotal: getTotal(cartData),
+      newTotal: getTotal(cartData, this.merchantInfo),
       newLineItems: getLineItems(cartData),
       newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
       errors: [new ApplePayError('unknown', undefined, err.message)],
@@ -79,7 +79,7 @@ export async function onShippingContactSelected(session, event) {
  * @param {ApplePayJS.ApplePayShippingMethod} shippingMethod
  * @returns {Promise<ApplePayJS.ApplePayShippingMethodUpdate>}
  */
-export async function onShippingMethodChange(shippingMethod) {
+async function onShippingMethodChange(shippingMethod) {
   try {
     const cart = await this.updateCart({
       shipping: {
@@ -88,12 +88,12 @@ export async function onShippingMethodChange(shippingMethod) {
     });
 
     return {
-      newTotal: getTotal(cart),
+      newTotal: getTotal(cart, this.merchantInfo),
       newLineItems: getLineItems(cart),
     };
   } catch (err) {
     return {
-      newTotal: getTotal(await this.getCart()),
+      newTotal: getTotal(await this.getCart(), this.merchantInfo),
       errors: [new ApplePayError('unknown', undefined, err.message)],
     };
   }
@@ -121,6 +121,34 @@ export async function onShippingMethodSelected(session, event) {
 }
 
 /**
+ * @this {Payment}
+ * @param {string} [couponCode]
+ * @returns {Promise<ApplePayJS.ApplePayCouponCodeUpdate>}
+ */
+async function onCouponCodeUpdated(couponCode) {
+  try {
+    const cart = await this.updateCart({
+      coupon_code: couponCode || null,
+    });
+
+    // Valid coupon applied successfully
+    return {
+      newTotal: getTotal(cart, this.merchantInfo),
+      newLineItems: getLineItems(cart),
+    };
+  } catch (err) {
+    // HTTP 400 error from invalid coupon - get fresh cart state
+    const currentCart = await this.getCart();
+
+    return {
+      newTotal: getTotal(currentCart, this.merchantInfo),
+      newLineItems: getLineItems(currentCart),
+      errors: [new ApplePayError('couponCodeInvalid', undefined, err.message)],
+    };
+  }
+}
+
+/**
  * Handles Apple Pay coupon code changes
  *
  * Triggered when the user enters or removes a coupon code in the Apple Pay sheet.
@@ -132,26 +160,9 @@ export async function onShippingMethodSelected(session, event) {
  * @returns {void}
  */
 export async function onCouponCodeChanged(session, event) {
-  try {
-    const cart = await this.updateCart({
-      coupon_code: event.couponCode || null,
-    });
-
-    // Valid coupon applied successfully
-    session.completeCouponCodeChange({
-      newTotal: getTotal(cart),
-      newLineItems: getLineItems(cart),
-    });
-  } catch (err) {
-    // HTTP 400 error from invalid coupon - get fresh cart state
-    const currentCart = await this.getCart();
-
-    session.completeCouponCodeChange({
-      newTotal: getTotal(currentCart),
-      newLineItems: getLineItems(currentCart),
-      errors: [new ApplePayError('couponCodeInvalid', undefined, err.message)],
-    });
-  }
+  session.completeCouponCodeChange(
+    await onCouponCodeUpdated.call(this, event.couponCode),
+  );
 }
 
 /**
@@ -165,15 +176,11 @@ export async function onCouponCodeChanged(session, event) {
  * then sees the final amount once everything is calculated.
  *
  * @param {Cart} cart
+ * @param {object} [merchantInfo]
  * @returns {ApplePayJS.ApplePayLineItem}
  */
-export function getTotal(cart) {
-  const {
-    settings: { name },
-    capture_total,
-    shipment_delivery,
-    shipping,
-  } = cart;
+export function getTotal(cart, merchantInfo) {
+  const { capture_total, shipment_delivery, shipping } = cart;
 
   // Use 'final' only after shipping method is selected or not needed, otherwise 'pending'
   const isFinalPrice = !shipment_delivery || shipping?.service;
@@ -181,7 +188,7 @@ export function getTotal(cart) {
 
   return {
     // Here the label should contain the company name
-    label: name || 'Company name',
+    label: merchantInfo?.displayName || cart.settings?.name || 'Company name',
     type,
     amount: Number(capture_total || 0).toFixed(2),
   };

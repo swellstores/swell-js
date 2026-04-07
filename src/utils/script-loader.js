@@ -11,7 +11,6 @@ const SCRIPT_HANDLERS = {
   'braintree-google-payment': loadBraintreeGoogle,
   'braintree-apple-payment': loadBraintreeApple,
   'amazon-checkout': loadAmazonCheckout,
-  'convesiopay-js': loadConvesioPay,
   'sezzle-sdk': loadSezzleCheckout,
 };
 
@@ -177,16 +176,6 @@ async function loadAmazonCheckout() {
 
   if (!window.amazon) {
     console.error('Warning: Amazon Checkout was not loaded');
-  }
-}
-
-async function loadConvesioPay() {
-  if (!window.ConvesioPay) {
-    await loadScript('convesiopay-js', 'https://js.convesiopay.com/v1/');
-  }
-
-  if (!window.ConvesioPay) {
-    console.error('Warning: ConvesioPay was not loaded');
   }
 }
 

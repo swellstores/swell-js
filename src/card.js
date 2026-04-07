@@ -61,17 +61,28 @@ const cardApi = {
 
     const parts = new String(value).split(/[\s/-]+/, 2);
     const month = parts[0];
-    let year = parts[1];
 
-    // Convert 2 digit year
-    if (year && year.length === 2 && /^\d+$/.test(year)) {
-      const prefix = new Date().getFullYear().toString().substring(0, 2);
-      year = prefix + year;
+    const currentYear = new Date().getUTCFullYear().toString();
+    let strYear = parts[1];
+
+    if (strYear.length !== currentYear.length) {
+      let fullYear =
+        currentYear.slice(0, currentYear.length - strYear.length) + strYear;
+
+      // If the expiration year is less than the current year,
+      // then the expiration year is in the next century.
+      if (fullYear < currentYear) {
+        let year = Number(fullYear);
+        year += 10 ** strYear.length;
+        fullYear = year.toString();
+      }
+
+      strYear = fullYear;
     }
 
     return {
-      month: ~~month,
-      year: ~~year,
+      month: Number.parseInt(month, 10),
+      year: Number.parseInt(strYear, 10),
     };
   },
 
@@ -97,7 +108,7 @@ const cardApi = {
     let t, n, r, i, s, o;
     (r = !0), (i = 0), (n = (num + '').split('').reverse());
     for (s = 0, o = n.length; s < o; s++) {
-      (t = n[s]), (t = parseInt(t, 10));
+      (t = n[s]), (t = Number.parseInt(t, 10));
       if ((r = !r)) t *= 2;
       t > 9 && (t -= 9), (i += t);
     }
@@ -118,7 +129,7 @@ const cardApi = {
       (year = String(year).trim()),
       /^\d+$/.test(month)
         ? /^\d+$/.test(year)
-          ? parseInt(month, 10) <= 12
+          ? Number.parseInt(month, 10) <= 12
             ? ((i = new Date(year, month)),
               (r = new Date()),
               i.setMonth(i.getMonth() - 1),
