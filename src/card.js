@@ -65,7 +65,7 @@ const cardApi = {
     const currentYear = new Date().getUTCFullYear().toString();
     let strYear = parts[1];
 
-    if (strYear.length !== currentYear.length) {
+    if (strYear.length < currentYear.length) {
       let fullYear =
         currentYear.slice(0, currentYear.length - strYear.length) + strYear;
 
@@ -87,17 +87,14 @@ const cardApi = {
   },
 
   types() {
-    let e, t, n, r;
-    t = {};
-    for (e = n = 40; n <= 49; e = ++n) t[e] = 'Visa';
-    for (e = r = 50; r <= 59; e = ++r) t[e] = 'MasterCard';
-    return (
-      (t[34] = t[37] = 'American Express'),
-      (t[60] = t[62] = t[64] = t[65] = 'Discover'),
-      (t[35] = 'JCB'),
-      (t[30] = t[36] = t[38] = t[39] = 'Diners Club'),
-      t
-    );
+    let t = {};
+    for (let e = 40; e <= 49; ++e) t[e] = 'Visa';
+    for (let e = 50; e <= 59; ++e) t[e] = 'MasterCard';
+    t[34] = t[37] = 'American Express';
+    t[60] = t[62] = t[64] = t[65] = 'Discover';
+    t[35] = 'JCB';
+    t[30] = t[36] = t[38] = t[39] = 'Diners Club';
+    return t;
   },
 
   type(num) {
@@ -105,47 +102,67 @@ const cardApi = {
   },
 
   luhnCheck(num) {
-    let t, n, r, i, s, o;
-    (r = !0), (i = 0), (n = (num + '').split('').reverse());
-    for (s = 0, o = n.length; s < o; s++) {
-      (t = n[s]), (t = Number.parseInt(t, 10));
-      if ((r = !r)) t *= 2;
-      t > 9 && (t -= 9), (i += t);
+    const numbers = String(num);
+    let odd = false;
+    let sum = 0;
+
+    for (let i = numbers.length - 1; i >= 0; --i) {
+      let digit = Number.parseInt(numbers[i], 10);
+
+      if (odd) {
+        digit *= 2;
+
+        if (digit > 9) {
+          digit -= 9;
+        }
+      }
+
+      sum += digit;
+      odd = !odd;
     }
-    return i % 10 === 0;
+
+    return sum % 10 === 0;
   },
 
   validateNumber(num) {
-    return (
-      (num = (num + '').replace(/\s+|-/g, '')),
-      num.length >= 10 && num.length <= 16 && this.luhnCheck(num)
-    );
+    num = String(num).replace(/\s+|-/g, '');
+
+    return num.length >= 10 && num.length <= 16 && this.luhnCheck(num);
   },
 
   validateExpiry(month, year) {
-    let r, i;
-    return (
-      (month = String(month).trim()),
-      (year = String(year).trim()),
-      /^\d+$/.test(month)
-        ? /^\d+$/.test(year)
-          ? Number.parseInt(month, 10) <= 12
-            ? ((i = new Date(year, month)),
-              (r = new Date()),
-              i.setMonth(i.getMonth() - 1),
-              i.setMonth(i.getMonth() + 1, 1),
-              i > r)
-            : !1
-          : !1
-        : !1
-    );
+    month = String(month).trim();
+    year = String(year).trim();
+
+    if (!/^\d+$/.test(month) || !/^\d+$/.test(year)) {
+      return false;
+    }
+
+    const numMonth = Number.parseInt(month, 10);
+
+    if (numMonth <= 0 || numMonth > 12) {
+      return false;
+    }
+
+    const date = new Date(year, month);
+    date.setMonth(date.getMonth() - 1);
+    date.setMonth(date.getMonth() + 1, 1);
+
+    const diff = date.getTime() - Date.now();
+
+    // The card has expired
+    if (diff < 0) {
+      return false;
+    }
+
+    // The card's validity period must not exceed 75 years from the current time.
+    return Math.round(diff / 31_557_600_000) < 75;
   },
 
   validateCVC(val) {
-    return (
-      (val = String(val).trim()),
-      /^\d+$/.test(val) && val.length >= 3 && val.length <= 4
-    );
+    val = String(val).trim();
+
+    return /^\d+$/.test(val) && val.length >= 3 && val.length <= 4;
   },
 };
 
