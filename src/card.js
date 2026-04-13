@@ -155,8 +155,8 @@ const cardApi = {
       return false;
     }
 
-    // The card's validity period must not exceed 75 years from the current time.
-    return Math.round(diff / 31_557_600_000) < 75;
+    // The card's validity period must not exceed 50 years from the current time.
+    return Math.round(diff / 31_557_600_000) < 50;
   },
 
   validateCVC(val) {
