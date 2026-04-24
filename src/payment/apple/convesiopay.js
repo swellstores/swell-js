@@ -5,6 +5,7 @@ import { convertToSwellAddress } from '../apple';
 import {
   getBrowserInfo,
   getBaseConvesioApiUrl,
+  getConvesioErrorMessage,
   getConvesioPaymentSettings,
 } from '../convesiopay';
 
@@ -165,5 +166,13 @@ function createConvesioApplePaymentToken(mode, settings, data) {
       'X-Api-Key': settings.public_key,
     },
     body: JSON.stringify(data),
-  }).then((res) => res.json());
+  }).then(async (res) => {
+    if (!res.ok) {
+      throw new Error(
+        (await getConvesioErrorMessage(res)) || 'Failed to create token',
+      );
+    }
+
+    return res.json();
+  });
 }

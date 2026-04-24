@@ -1,7 +1,12 @@
 import { isLiveMode } from '../../utils';
 
 import { convertToSwellAddress } from '../google';
-import { getBrowserInfo, getConvesioPaymentSettings } from '../convesiopay';
+
+import {
+  getBrowserInfo,
+  getConvesioErrorMessage,
+  getConvesioPaymentSettings,
+} from '../convesiopay';
 
 import AbstractGooglePayment from './abstract';
 
@@ -76,7 +81,8 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
    */
   async preparePaymentDataForCartUpdate(paymentData) {
     const { require: { shipping: requireShipping } = {} } = this.params;
-    const { email, shippingAddress, paymentMethodData } = paymentData;
+    const { email, shippingAddress, shippingOptionData, paymentMethodData } =
+      paymentData;
 
     const {
       info: { billingAddress },
@@ -118,7 +124,10 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
         ...convertToSwellAddress(billingAddress),
       },
       ...(requireShipping && {
-        shipping: convertToSwellAddress(shippingAddress),
+        shipping: {
+          ...convertToSwellAddress(shippingAddress),
+          service: shippingOptionData?.id || undefined,
+        },
       }),
     };
   }
@@ -145,7 +154,15 @@ function createConvesioGooglePaymentToken(mode, settings, data) {
       'X-Api-Key': settings.public_key,
     },
     body: JSON.stringify(data),
-  }).then((res) => res.json());
+  }).then(async (res) => {
+    if (!res.ok) {
+      throw new Error(
+        (await getConvesioErrorMessage(res)) || 'Failed to create token',
+      );
+    }
+
+    return res.json();
+  });
 }
 
 function normalizeGooglePayContact(address, email) {

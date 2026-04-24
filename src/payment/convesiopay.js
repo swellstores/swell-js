@@ -58,3 +58,16 @@ export function getBrowserInfo() {
     timeZoneOffset,
   };
 }
+
+/**
+ * @param {Response} response
+ * @returns {Promise<string>}
+ */
+export async function getConvesioErrorMessage(response) {
+  if (response.headers.get('content-type')?.includes('application/json')) {
+    const data = await response.json();
+    return data?.body?.message || '';
+  }
+
+  return '';
+}

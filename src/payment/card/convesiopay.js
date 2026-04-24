@@ -1,7 +1,11 @@
 import cardApi from '../../card';
 import { isLiveMode } from '../../utils';
 
-import { getBrowserInfo, getBaseConvesioApiUrl } from '../convesiopay';
+import {
+  getBrowserInfo,
+  getBaseConvesioApiUrl,
+  getConvesioErrorMessage,
+} from '../convesiopay';
 
 import Payment from '../payment';
 
@@ -101,7 +105,15 @@ function createConvesioCardPaymentToken(settings, data) {
       'X-Api-Key': settings.public_key,
     },
     body: JSON.stringify(data),
-  }).then((res) => res.json());
+  }).then(async (res) => {
+    if (!res.ok) {
+      throw new Error(
+        (await getConvesioErrorMessage(res)) || 'Failed to create token',
+      );
+    }
+
+    return res.json();
+  });
 }
 
 let cachedIp = null;

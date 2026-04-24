@@ -25,7 +25,8 @@ export default class AuthorizeNetGooglePayment extends AbstractGooglePayment {
    */
   async preparePaymentDataForCartUpdate(paymentData) {
     const { require: { shipping: requireShipping } = {} } = this.params;
-    const { email, shippingAddress, paymentMethodData } = paymentData;
+    const { email, shippingAddress, shippingOptionData, paymentMethodData } =
+      paymentData;
 
     const {
       info: { billingAddress },
@@ -45,7 +46,10 @@ export default class AuthorizeNetGooglePayment extends AbstractGooglePayment {
         ...convertToSwellAddress(billingAddress),
       },
       ...(requireShipping && {
-        shipping: convertToSwellAddress(shippingAddress),
+        shipping: {
+          ...convertToSwellAddress(shippingAddress),
+          service: shippingOptionData?.id || undefined,
+        },
       }),
     };
   }
