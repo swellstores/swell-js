@@ -1,72 +1,74 @@
+import cardApi from '../../card';
+import { isLiveMode } from '../../utils';
+
+import {
+  getBrowserInfo,
+  getBaseConvesioApiUrl,
+  getConvesioErrorMessage,
+} from '../convesiopay';
+
 import Payment from '../payment';
 
-import { isLiveMode } from '../../utils';
-import { LibraryNotLoadedError } from '../../utils/errors';
-
 export default class ConvesioCardPayment extends Payment {
-  static convesioPay = null;
-  static convesioPayComponent = null;
-
   constructor(api, options, params, methods) {
     super(api, options, params, methods.card);
   }
 
-  get scripts() {
-    return ['convesiopay-js'];
-  }
-
-  get convesioPay() {
-    if (ConvesioCardPayment.convesioPay === null) {
-      if (window.ConvesioPay) {
-        this.convesioPay = window.ConvesioPay(this.method.public_key);
-      }
-
-      if (!ConvesioCardPayment.convesioPay) {
-        throw new LibraryNotLoadedError('ConvesioPay');
-      }
-    }
-
-    return ConvesioCardPayment.convesioPay;
-  }
-
-  set convesioPay(convesioPay) {
-    ConvesioCardPayment.convesioPay = convesioPay;
-  }
-
-  get convesioPayComponent() {
-    return ConvesioCardPayment.convesioPayComponent;
-  }
-
-  set convesioPayComponent(convesioPayComponent) {
-    ConvesioCardPayment.convesioPayComponent = convesioPayComponent;
-  }
-
-  async createElements(cart) {
-    await this.loadScripts(this.scripts);
-
-    const component = this.convesioPay.component({
-      environment: isLiveMode(this.method.mode) ? 'live' : 'test',
-      integration: this.method.integration,
-      customerEmail: cart.account?.email,
-      express: false,
-      disabledPaymentMethods: {
-        btcpay: true,
-        applePay: true,
-        googlePay: true,
-      },
-    });
-
-    this.convesioPayComponent = component;
-
-    component.mount(`#${this.params.elementId || 'card-element'}`);
-  }
+  async createElements() {}
 
   async tokenize() {
-    if (!this.convesioPayComponent) {
-      throw new Error('ConvesioPay element is not defined');
-    }
+    const cardNumber = (
+      this.params.number ||
+      document.getElementById(
+        this.params.cardNumber?.elementId || 'cardNumber-element',
+      )?.value ||
+      ''
+    ).replace(/[^0-9]+/g, '');
 
-    const token = await this.convesioPayComponent.createToken();
+    const cardExpiry = cardApi.expiry(
+      this.params.exp ||
+        document.getElementById(
+          this.params.cardExpiry?.elementId || 'cardExpiry-element',
+        )?.value ||
+        '',
+    );
+
+    const cardCvc = (
+      this.params.cvc ||
+      document.getElementById(
+        this.params.cardCvc?.elementId || 'cardCvc-element',
+      )?.value ||
+      ''
+    ).trim();
+
+    const cardHolder = (
+      this.params.name ||
+      document.getElementById(
+        this.params.cardHolder?.elementId || 'cardHolder-element',
+      )?.value ||
+      ''
+    ).trim();
+
+    const cardBrand = cardApi.type(cardNumber).toLowerCase();
+
+    const payment = await createConvesioCardPaymentToken(this.method, {
+      paymentMethod: {
+        type: 'scheme',
+        brand: cardBrand,
+        last4: cardNumber.slice(-4),
+      },
+      origin: window.location.origin,
+      storePaymentMethod: true,
+      browserInfo: getBrowserInfo(),
+      shopperIp: await getShopperIp(),
+      number: cardNumber,
+      expiryDate: {
+        expiryMonth: String(cardExpiry.month).padStart(2, '0'),
+        expiryYear: String(cardExpiry.year).slice(-2),
+      },
+      cvc: cardCvc,
+      holderName: cardHolder,
+    });
 
     await this.updateCart({
       billing: {
@@ -74,11 +76,12 @@ export default class ConvesioCardPayment extends Payment {
         account_card_id: null,
         card: {
           gateway: 'convesiopay',
-          token,
-          last4: '????',
-          brand: null,
-          exp_month: null,
-          exp_year: null,
+          token: payment.token || payment.paymentToken,
+          last4: cardNumber.slice(-4),
+          brand: cardBrand,
+          exp_month: cardExpiry.month,
+          exp_year: cardExpiry.year,
+          test: isLiveMode(this.method.mode) ? undefined : true,
         },
         convesiopay: {
           return_url: this.params.returnUrl,
@@ -88,4 +91,59 @@ export default class ConvesioCardPayment extends Payment {
 
     return this.onSuccess();
   }
+}
+
+function createConvesioCardPaymentToken(settings, data) {
+  const baseUrl = getBaseConvesioApiUrl(settings.mode);
+
+  return fetch(`${baseUrl}/v1/create-token`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'convesio-pay-dashboard',
+      'X-Api-Key': settings.public_key,
+    },
+    body: JSON.stringify(data),
+  }).then(async (res) => {
+    if (!res.ok) {
+      throw new Error(
+        (await getConvesioErrorMessage(res)) || 'Failed to create token',
+      );
+    }
+
+    return res.json();
+  });
+}
+
+let cachedIp = null;
+
+function getShopperIp() {
+  // Return cached IP if available
+  if (cachedIp) {
+    return cachedIp;
+  }
+
+  // Fetch IP from ipify (free, no API key required)
+  return fetch('https://api.ipify.org?format=json', {
+    method: 'GET',
+    cache: 'no-store',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch IP');
+      }
+
+      return response.json();
+    })
+    .then(
+      (data) => {
+        cachedIp = data.ip;
+        return cachedIp;
+      },
+      (err) => {
+        console.err(err);
+        return null;
+      },
+    );
 }

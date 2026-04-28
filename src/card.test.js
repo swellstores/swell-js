@@ -5,19 +5,26 @@ describe('card', () => {
     api.init('test', 'pk_test');
   });
 
+  /** @param {number} relative */
+  function getExpYear(relative) {
+    return new Date().getUTCFullYear() + relative;
+  }
+
   describe('createToken', () => {
     it('should make request to POST /tokens', async () => {
       fetch.mockResponse(JSON.stringify({ $data: { token: 't_test' } }));
 
+      const exp_year = getExpYear(5);
+
       await api.card.createToken({
         number: '4242 4242 4242 4242',
         exp_month: 1,
-        exp_year: 2099,
+        exp_year,
         cvc: '098',
       });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=none&%24data%5Bnumber%5D=4242%204242%204242%204242&%24data%5Bexp_month%5D=1&%24data%5Bexp_year%5D=2099&%24data%5Bcvc%5D=098&%24key=pk_test',
+        `https://vault.schema.io/tokens?%24jsonp%5Bmethod%5D=post&%24jsonp%5Bcallback%5D=none&%24data%5Bnumber%5D=4242%204242%204242%204242&%24data%5Bexp_month%5D=1&%24data%5Bexp_year%5D=${exp_year}&%24data%5Bcvc%5D=098&%24key=pk_test`,
         expect.objectContaining({
           signal: expect.any(Object),
         }),
@@ -46,7 +53,7 @@ describe('card', () => {
         api.card.createToken({
           cvc: 123,
           exp_month: 1,
-          exp_year: 2099,
+          exp_year: getExpYear(5),
           number: '1',
         }),
       ).rejects.toThrow('Card number appears to be invalid');
@@ -65,7 +72,7 @@ describe('card', () => {
         api.card.createToken({
           cvc: 123,
           exp_month: 1,
-          exp_year: 2099,
+          exp_year: getExpYear(5),
           number: '4242 4242 4242 4242',
         }),
       ).rejects.toThrow('Test error');
@@ -74,16 +81,33 @@ describe('card', () => {
 
   describe('expiry', () => {
     it('should parse expiration string into parts', () => {
-      const { month, year } = api.card.expiry('01/2099');
+      const exp = api.card.expiry('01/2099');
 
-      expect(month).toEqual(1);
-      expect(year).toEqual(2099);
+      expect(exp).toEqual({ month: 1, year: 2099 });
     });
 
     it('should return existing object', () => {
       const exp = api.card.expiry({ month: 1, year: 2099 });
 
       expect(exp).toEqual({ month: 1, year: 2099 });
+    });
+
+    it('should parse short expiration string into parts', () => {
+      // Future year
+      const year = getExpYear(5);
+      const shortYear = year.toString().slice(-2);
+      expect(shortYear).toHaveLength(2);
+
+      const exp1 = api.card.expiry(`01/${shortYear}`);
+      expect(exp1).toEqual({ month: 1, year });
+
+      // Past years should be counted as years in the next century (+100 years)
+      const pastYear = getExpYear(-5);
+      const shortPastYear = pastYear.toString().slice(-2);
+      expect(shortPastYear).toHaveLength(2);
+
+      const exp2 = api.card.expiry(`01/${shortPastYear}`);
+      expect(exp2).toEqual({ month: 1, year: pastYear + 100 });
     });
   });
 
@@ -134,7 +158,7 @@ describe('card', () => {
 
   describe('validateExpiry', () => {
     it('should validate card expiration date', () => {
-      const year = new Date().getFullYear() + 1;
+      const year = getExpYear(1);
 
       expect(api.card.validateExpiry(9, year)).toStrictEqual(true);
       expect(api.card.validateExpiry('9', `${year}`)).toStrictEqual(true);
@@ -142,13 +166,26 @@ describe('card', () => {
     });
 
     it('should not validate card expiration date', () => {
+      // Empty input
       expect(api.card.validateExpiry()).toStrictEqual(false);
+      // Year is missing
       expect(api.card.validateExpiry(11)).toStrictEqual(false);
-      expect(api.card.validateExpiry(9, 2020)).toStrictEqual(false);
-      expect(api.card.validateExpiry(13, 2020)).toStrictEqual(false);
-      expect(api.card.validateExpiry(13, 9999)).toStrictEqual(false);
-      expect(api.card.validateExpiry('||', 9999)).toStrictEqual(false);
+      // Past year
+      expect(api.card.validateExpiry(9, getExpYear(-1))).toStrictEqual(false);
+      // Month out of range
+      expect(api.card.validateExpiry(13, getExpYear(1))).toStrictEqual(false);
+      expect(api.card.validateExpiry(0, getExpYear(1))).toStrictEqual(false);
+      // The expiration year is too long
+      expect(api.card.validateExpiry(9, getExpYear(100))).toStrictEqual(false);
+      // Invalid month
+      expect(api.card.validateExpiry('||', getExpYear(1))).toStrictEqual(false);
+      // Invalid year
       expect(api.card.validateExpiry(11, '||||')).toStrictEqual(false);
+    });
+
+    it('should only validate expiration dates within 50 years from the current date', () => {
+      expect(api.card.validateExpiry(9, getExpYear(49))).toStrictEqual(true);
+      expect(api.card.validateExpiry(9, getExpYear(51))).toStrictEqual(false);
     });
   });
 
