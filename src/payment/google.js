@@ -60,12 +60,25 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
           );
         }
 
-        // Auto-apply shipping if only one service is available
-        if (cart.shipment_rating.services.length === 1) {
-          const [singleService] = cart.shipment_rating.services;
+        let shippingService;
 
+        if (intermediatePaymentData.shippingOptionData?.id) {
+          const defaultServiceId =
+            intermediatePaymentData.shippingOptionData?.id;
+
+          shippingService = cart.shipment_rating.services.find(
+            (service) => service.id === defaultServiceId,
+          );
+        }
+
+        if (shippingService === undefined) {
+          // Auto-apply first shipping service in the list
+          shippingService = cart.shipment_rating.services[0];
+        }
+
+        if (cart.shipping?.service !== shippingService.id) {
           cart = await this.updateCart({
-            shipping: { service: singleService.id },
+            shipping: { service: shippingService.id },
           });
         }
 
