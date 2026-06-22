@@ -19,6 +19,7 @@ describe('utils/stripe', () => {
       address_check: 'address_line1_check',
       cvc_check: 'cvc_check',
       zip_check: 'address_postal_code_check',
+      gateway: 'stripe',
     };
 
     const stripe = {

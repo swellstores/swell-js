@@ -1,5 +1,7 @@
-import Payment from '../payment';
+import { isLiveMode } from '../../utils';
 import { UnableAuthenticatePaymentMethodError } from '../../utils/errors';
+
+import Payment from '../payment';
 
 export default class QuickpayCardPayment extends Payment {
   constructor(api, options, params, methods) {
@@ -7,7 +9,7 @@ export default class QuickpayCardPayment extends Payment {
   }
 
   get orderId() {
-    return Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).slice(2, 11);
   }
 
   async tokenize() {
@@ -67,6 +69,12 @@ export default class QuickpayCardPayment extends Payment {
 
     if (card.error) {
       throw new Error(card.error.message);
+    }
+
+    card.gateway = 'quickpay';
+
+    if (!isLiveMode(this.method.mode)) {
+      card.test = true;
     }
 
     await this.updateCart({
