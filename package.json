@@ -1,6 +1,6 @@
 {
   "name": "swell-js",
-  "version": "5.6.1",
+  "version": "5.7.0",
   "description": "Swell JS library for client-side stores",
   "engines": {
     "node": ">=16"
