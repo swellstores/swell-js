@@ -6,10 +6,11 @@
     "esModuleInterop": false,
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "baseUrl": "./",
-    "lib": ["es2022", "dom"]
+    "lib": ["es2022", "dom"],
+    "allowJs": true
   },
   "exclude": [
     "node_modules",

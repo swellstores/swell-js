@@ -9,7 +9,7 @@
   "parserOptions": {
     "requireConfigFile": false,
     "sourceType": "module",
-    "ecmaVersion": 2021
+    "ecmaVersion": 2022
   },
   "settings": {
     "react": {
@@ -24,7 +24,7 @@
   },
   "env": {
     "browser": true,
-    "es2021": true
+    "es2022": true
   },
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]

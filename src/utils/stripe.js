@@ -122,6 +122,7 @@ export async function createPaymentMethod(stripe, cardElement, cart) {
   return error
     ? { error }
     : {
+        gateway: 'stripe',
         token: paymentMethod.id,
         last4: paymentMethod.card.last4,
         exp_month: paymentMethod.card.exp_month,

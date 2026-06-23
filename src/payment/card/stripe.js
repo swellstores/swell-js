@@ -1,11 +1,14 @@
-import Payment from '../payment';
+import { isLiveMode } from '../../utils';
+import { LibraryNotLoadedError } from '../../utils/errors';
+
 import {
   createElement,
   createPaymentMethod,
   isStripeChargeableAmount,
   stripeAmountByCurrency,
 } from '../../utils/stripe';
-import { LibraryNotLoadedError } from '../../utils/errors';
+
+import Payment from '../payment';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -80,6 +83,10 @@ export default class StripeCardPayment extends Payment {
 
     if (paymentMethod.error) {
       throw new Error(paymentMethod.error.message);
+    }
+
+    if (!isLiveMode(this.method.mode)) {
+      paymentMethod.test = true;
     }
 
     // should save payment method data when payment amount is not chargeable
