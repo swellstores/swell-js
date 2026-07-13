@@ -79,8 +79,6 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
       payment: { token, shippingContact, billingContact },
     } = event;
 
-    const { require: { shipping: requireShipping } = {} } = this.params;
-
     const payment = await createConvesioApplePaymentToken(
       this.method.mode,
       this.convesiopay,
@@ -102,7 +100,7 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
 
     return {
       account: {
-        email: shippingContact.emailAddress,
+        email: shippingContact?.emailAddress || billingContact?.emailAddress,
       },
       billing: {
         method: 'apple',
@@ -117,7 +115,7 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
         },
         ...convertToSwellAddress(billingContact),
       },
-      ...(requireShipping && {
+      ...(shippingContact && {
         shipping: convertToSwellAddress(shippingContact),
       }),
     };

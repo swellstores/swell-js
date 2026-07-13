@@ -23,7 +23,7 @@ async function onShippingAddressChange(shippingContact) {
         'Shipping is not available for the provided address.';
 
       return {
-        newTotal: getTotal(cart, this.merchantInfo),
+        newTotal: getTotal.call(this, cart, this.merchantInfo),
         newLineItems: getLineItems(cart),
         newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
         errors: [
@@ -34,15 +34,15 @@ async function onShippingAddressChange(shippingContact) {
 
     // Success: Return updated totals and shipping methods
     return {
-      newTotal: getTotal(cart, this.merchantInfo),
+      newTotal: getTotal.call(this, cart, this.merchantInfo),
       newLineItems: getLineItems(cart),
-      newShippingMethods: getShippingMethods(cart),
+      newShippingMethods: getShippingMethods.call(this, cart),
     };
   } catch (err) {
     const cartData = await this.getCart();
 
     return {
-      newTotal: getTotal(cartData, this.merchantInfo),
+      newTotal: getTotal.call(this, cartData, this.merchantInfo),
       newLineItems: getLineItems(cartData),
       newShippingMethods: [], // REQUIRED: Must always provide this, even as empty array
       errors: [new ApplePayError('unknown', undefined, err.message)],
@@ -88,12 +88,12 @@ async function onShippingMethodChange(shippingMethod) {
     });
 
     return {
-      newTotal: getTotal(cart, this.merchantInfo),
+      newTotal: getTotal.call(this, cart, this.merchantInfo),
       newLineItems: getLineItems(cart),
     };
   } catch (err) {
     return {
-      newTotal: getTotal(await this.getCart(), this.merchantInfo),
+      newTotal: getTotal.call(this, await this.getCart(), this.merchantInfo),
       errors: [new ApplePayError('unknown', undefined, err.message)],
     };
   }
@@ -133,7 +133,7 @@ async function onCouponCodeUpdated(couponCode) {
 
     // Valid coupon applied successfully
     return {
-      newTotal: getTotal(cart, this.merchantInfo),
+      newTotal: getTotal.call(this, cart, this.merchantInfo),
       newLineItems: getLineItems(cart),
     };
   } catch (err) {
@@ -141,7 +141,7 @@ async function onCouponCodeUpdated(couponCode) {
     const currentCart = await this.getCart();
 
     return {
-      newTotal: getTotal(currentCart, this.merchantInfo),
+      newTotal: getTotal.call(this, currentCart, this.merchantInfo),
       newLineItems: getLineItems(currentCart),
       errors: [new ApplePayError('couponCodeInvalid', undefined, err.message)],
     };
@@ -175,15 +175,17 @@ export async function onCouponCodeChanged(session, event) {
  * This ensures the user sees "pending" until they've selected shipping,
  * then sees the final amount once everything is calculated.
  *
+ * @this {Payment}
  * @param {Cart} cart
  * @param {object} [merchantInfo]
  * @returns {ApplePayJS.ApplePayLineItem}
  */
 export function getTotal(cart, merchantInfo) {
-  const { capture_total, shipment_delivery, shipping } = cart;
+  const { require: { shipping: shipmentDelivery = false } = {} } = this.params;
+  const { capture_total, shipping } = cart;
 
   // Use 'final' only after shipping method is selected or not needed, otherwise 'pending'
-  const isFinalPrice = !shipment_delivery || shipping?.service;
+  const isFinalPrice = !shipmentDelivery || shipping?.service;
   const type = isFinalPrice ? 'final' : 'pending';
 
   return {
@@ -252,15 +254,18 @@ export function getLineItems(cart) {
  *
  * IMPORTANT: Amounts must be formatted as strings with 2 decimals.
  *
+ * @this {Payment}
  * @param {Cart} cart
  * @returns {ApplePayJS.ApplePayShippingMethod[]}
  */
 function getShippingMethods(cart) {
-  const { shipment_delivery, shipment_rating } = cart;
+  const { require: { shipping: shipmentDelivery = false } = {} } = this.params;
 
-  if (!shipment_delivery) {
+  if (!shipmentDelivery) {
     return [];
   }
+
+  const { shipment_rating } = cart;
 
   if (!shipment_rating?.services?.length) {
     return [];
@@ -310,4 +315,33 @@ export function convertToSwellAddress(address = {}) {
     country: address.countryCode?.toUpperCase(),
     phone: address.phoneNumber,
   };
+}
+
+/** @param {object} params */
+export function getRequiredContactFields(params) {
+  const { require = {} } = params;
+  /** @type {ApplePayJS.ApplePayContactField[]} */
+  const requiredFields = [];
+
+  if (require.email) {
+    requiredFields.push('email');
+  }
+
+  if (require.name) {
+    requiredFields.push('name');
+  }
+
+  if (require.phone) {
+    requiredFields.push('phone');
+  }
+
+  /** @type {ApplePayJS.ApplePayContactField[]} */
+  const requiredShippingContactFields = require.shipping
+    ? [...requiredFields, 'postalAddress']
+    : [];
+
+  /** @type {ApplePayJS.ApplePayContactField[]} */
+  const requiredBillingContactFields = [...requiredFields, 'postalAddress'];
+
+  return { requiredBillingContactFields, requiredShippingContactFields };
 }

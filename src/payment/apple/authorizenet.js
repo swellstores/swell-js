@@ -7,6 +7,22 @@ import AbstractApplePayment from './abstract';
 export default class AuthorizeNetApplePayment extends AbstractApplePayment {
   /**
    * @override
+   * @returns {string[]}
+   */
+  getSupportedCardNetworks() {
+    return ['visa', 'masterCard', 'amex', 'discover'];
+  }
+
+  /**
+   * @override
+   * @returns {ApplePayJS.ApplePayMerchantCapability[]}
+   */
+  getMerchantCapabilities() {
+    return ['supports3DS', 'supportsDebit', 'supportsCredit'];
+  }
+
+  /**
+   * @override
    * @param {ApplePayJS.ApplePayValidateMerchantEvent} event
    */
   async createMerchantSession(event) {
@@ -38,11 +54,9 @@ export default class AuthorizeNetApplePayment extends AbstractApplePayment {
       payment: { token, shippingContact, billingContact },
     } = event;
 
-    const { require: { shipping: requireShipping } = {} } = this.params;
-
     return {
       account: {
-        email: shippingContact.emailAddress,
+        email: shippingContact?.emailAddress || billingContact?.emailAddress,
       },
       billing: {
         method: 'apple',
@@ -54,7 +68,7 @@ export default class AuthorizeNetApplePayment extends AbstractApplePayment {
         },
         ...convertToSwellAddress(billingContact),
       },
-      ...(requireShipping && {
+      ...(shippingContact && {
         shipping: convertToSwellAddress(shippingContact),
       }),
     };

@@ -28,7 +28,7 @@ export async function getConvesioPaymentSettings(mode, settings, country) {
         merchantAccount: false,
         countryCode: country || 'US',
         shopperLocale: 'en-US',
-        // shopperReference: email ? md5(email) : undefined,
+        // shopperReference: email ? md5(email.toLowerCase()) : undefined,
       }),
     },
   ).then((res) => res.json());

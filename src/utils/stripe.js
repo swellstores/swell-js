@@ -1,4 +1,4 @@
-import { get, isEmpty } from './index';
+import { isEmpty } from './index';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -226,13 +226,13 @@ export function getPaymentRequestData(cart, params) {
     tax_included_total,
     settings,
   } = cart;
-  const { price: shippingPrice, service_name } = shipping || {};
+  const { price: shippingPrice, service, service_name } = shipping || {};
   const { country, name } = settings || {};
   const { require: { shipping: requireShipping } = {} } = params;
 
   const stripeCurrency = currency.toLowerCase();
   const displayItems = items.map((item) => ({
-    label: get(item, 'product.name', 'Unknown product'),
+    label: item.product_name || item.product?.name || 'Unknown product',
     amount: stripeAmountByCurrency(
       currency,
       item.price_total - item.discount_total,
@@ -254,14 +254,21 @@ export function getPaymentRequestData(cart, params) {
   }
 
   let shippingOptions;
-  const services = get(shipment_rating, 'services');
-  if (Array.isArray(services) && services.length > 0) {
+  const services = shipment_rating?.services;
+  if (requireShipping && Array.isArray(services) && services.length > 0) {
     shippingOptions = services.map((service) => ({
       id: service.id,
       label: service.name,
       detail: service.description,
       amount: stripeAmountByCurrency(currency, service.price),
     }));
+
+    const index = shippingOptions.findIndex((item) => item.id === service);
+
+    if (index > 0) {
+      // Move selected shipping option to the top
+      shippingOptions.unshift(...shippingOptions.splice(index, 1));
+    }
   }
 
   return {
@@ -273,7 +280,7 @@ export function getPaymentRequestData(cart, params) {
       pending: true,
     },
     displayItems,
-    ...(requireShipping && { shippingOptions }),
+    ...(shippingOptions && { shippingOptions }),
   };
 }
 

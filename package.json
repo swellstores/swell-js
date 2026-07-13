@@ -48,6 +48,7 @@
     "@rollup/plugin-replace": "5.0.5",
     "@stripe/stripe-js": "^3.1.0",
     "@types/applepayjs": "^14.0.9",
+    "@types/braintree-web": "^3.96.17",
     "@types/googlepay": "^0.7.7",
     "@types/jest": "^29.5.11",
     "@types/lodash-es": "^4.17.12",
