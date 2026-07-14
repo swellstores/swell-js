@@ -9,6 +9,22 @@ import AbstractGooglePayment from './abstract';
 export default class AuthorizeNetGooglePayment extends AbstractGooglePayment {
   /**
    * @override
+   * @returns {google.payments.api.CardNetwork[]}
+   */
+  getAllowedCardNetworks() {
+    return ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'];
+  }
+
+  /**
+   * @override
+   * @returns {google.payments.api.CardAuthMethod[]}
+   */
+  getAllowedCardAuthMethods() {
+    return ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+  }
+
+  /**
+   * @override
    * @returns {google.payments.api.PaymentGatewayTokenizationParameters}
    */
   getPaymentGatewayTokenizationParameters() {
@@ -24,7 +40,6 @@ export default class AuthorizeNetGooglePayment extends AbstractGooglePayment {
    * @returns {Promise<object>}
    */
   async preparePaymentDataForCartUpdate(paymentData) {
-    const { require: { shipping: requireShipping } = {} } = this.params;
     const { email, shippingAddress, shippingOptionData, paymentMethodData } =
       paymentData;
 
@@ -45,7 +60,7 @@ export default class AuthorizeNetGooglePayment extends AbstractGooglePayment {
         },
         ...convertToSwellAddress(billingAddress),
       },
-      ...(requireShipping && {
+      ...(shippingAddress && {
         shipping: {
           ...convertToSwellAddress(shippingAddress),
           service: shippingOptionData?.id || undefined,

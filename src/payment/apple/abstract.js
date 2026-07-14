@@ -32,9 +32,10 @@ import {
 import {
   getTotal,
   getLineItems,
-  onCouponCodeChanged,
+  getRequiredContactFields,
   onShippingMethodSelected,
   onShippingContactSelected,
+  onCouponCodeChanged,
 } from '../apple';
 
 import Payment from '../payment';
@@ -69,9 +70,15 @@ export default class AbstractApplePayment extends Payment {
     return window.ApplePaySession;
   }
 
-  /** @returns {string[]} */
+  /**
+   * We should specify the payment methods in the order preferred by the gateway.
+   *
+   * @see {@link https://developer.apple.com/documentation/applepayontheweb/applepaypaymentrequest/supportednetworks}
+   *
+   * @returns {string[]}
+   */
   getSupportedCardNetworks() {
-    return ['amex', 'discover', 'interac', 'jcb', 'masterCard', 'visa'];
+    return ['visa', 'masterCard', 'amex', 'discover', 'interac', 'jcb'];
   }
 
   /** @returns {ApplePayJS.ApplePayMerchantCapability[]} */
@@ -82,12 +89,12 @@ export default class AbstractApplePayment extends Payment {
   /**
    * Creates the Apple Pay payment request object
    *
-   * IMPORTANT: countryCode here is the MERCHANT's country (where your business is located),
-   * NOT the customer's country. Customer country comes from shippingContact.countryCode.
+   * IMPORTANT: `countryCode` here is the MERCHANT's country (where your business is located),
+   * NOT the customer's country. Customer country comes from `shippingContact.countryCode`.
    *
-   * NOTE: We do NOT pass shippingMethods in the initial request. Shipping methods
+   * NOTE: We do NOT pass `shippingMethods` in the initial request. Shipping methods
    * are provided dynamically after the user selects/confirms their address in the
-   * 'shippingcontactselected' event handler.
+   * `'shippingcontactselected'` event handler.
    *
    * @param {Cart} cart
    * @returns {ApplePayJS.ApplePayPaymentRequest}
@@ -95,38 +102,21 @@ export default class AbstractApplePayment extends Payment {
   _createPaymentRequest(cart) {
     cart = { ...cart };
 
-    const { require = {} } = this.params;
     const {
       settings: { country },
       currency,
     } = cart;
-
-    const requiredShippingContactFields = [];
-    const requiredBillingContactFields = ['postalAddress'];
-
-    if (require.name) {
-      requiredShippingContactFields.push('name');
-    }
-
-    if (require.email) {
-      requiredShippingContactFields.push('email');
-    }
-
-    if (require.phone) {
-      requiredShippingContactFields.push('phone');
-    }
-
-    if (require.shipping) {
-      requiredShippingContactFields.push('postalAddress');
-    }
 
     // When initiating a payment request,
     // we should not display the shipping cost, as it will be calculated later.
     cart.shipment_price = 0;
     cart.shipping = {};
 
+    const { requiredBillingContactFields, requiredShippingContactFields } =
+      getRequiredContactFields(this.params);
+
     return {
-      total: getTotal(cart, this.merchantInfo),
+      total: getTotal.call(this, cart, this.merchantInfo),
       countryCode: country, // Merchant's country
       currencyCode: currency,
       supportedNetworks: this.getSupportedCardNetworks(),

@@ -80,7 +80,6 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
    * @returns {Promise<object>}
    */
   async preparePaymentDataForCartUpdate(paymentData) {
-    const { require: { shipping: requireShipping } = {} } = this.params;
     const { email, shippingAddress, shippingOptionData, paymentMethodData } =
       paymentData;
 
@@ -123,7 +122,7 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
         },
         ...convertToSwellAddress(billingAddress),
       },
-      ...(requireShipping && {
+      ...(shippingAddress && {
         shipping: {
           ...convertToSwellAddress(shippingAddress),
           service: shippingOptionData?.id || undefined,

@@ -1,7 +1,8 @@
-import Payment from '../payment';
-import { getDiscountLabel } from '../utils';
 import { isLiveMode } from '../../utils';
 import { LibraryNotLoadedError } from '../../utils/errors';
+
+import { amountInCents, getDiscountLabel } from '../utils';
+import Payment from '../payment';
 
 /** @typedef {import('../../../types').Cart} Cart */
 /** @typedef {import('../../../types').Address} Address */
@@ -155,20 +156,29 @@ export default class SezzleDirectPayment extends Payment {
       settings: { name },
     } = cart;
 
-    const shipmentDelivery = Boolean(cart.shipment_delivery);
+    const { require: { shipping } = {} } = this.params;
     const cartCurrency = getCartCurrency(cart);
 
     return {
       checkout_payload: {
-        express_checkout_type: shipmentDelivery ? 'multi-step' : 'no-shipping',
+        express_checkout_type: shipping ? 'multi-step' : 'no-shipping',
+        customer: {
+          email: cart.account?.email,
+          first_name: cart.account?.first_name,
+          last_name: cart.account?.last_name,
+          phone: cart.account?.phone,
+          // TODO: recurring payments https://docs.sezzle.com/docs/api/tokenization/intro
+          // tokenize: cart.subscription_delivery,
+          // recurring: cart.subscription_delivery,
+        },
         order: {
           intent: 'AUTH',
           reference_id: cart.checkout_id,
           description: `${name} #${cart.number}`,
-          requires_shipping_info: shipmentDelivery,
+          requires_shipping_info: shipping,
           items: getItems(cart),
           discounts: getDiscounts(cart),
-          tax_amount: shipmentDelivery
+          tax_amount: shipping
             ? undefined
             : getAmountInCents(cartCurrency, cart.tax_total),
           order_amount: getAmountInCents(cartCurrency, cart.capture_total),
@@ -426,13 +436,4 @@ function convertToSwellAddress(address) {
     country: address.country_code || null,
     phone: address.phone || null,
   };
-}
-
-/**
- * @param {string} currency
- * @param {number} amount
- * @returns {number}
- */
-export function amountInCents(currency, amount) {
-  return Math.round(amount * 100);
 }

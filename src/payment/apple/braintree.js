@@ -1,17 +1,24 @@
-import Payment from '../payment';
-import { convertToSwellAddress } from '../apple';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
-const VERSION = 3;
+import cardApi from '../../card';
 
-const MERCHANT_CAPABILITIES = [
-  'supports3DS',
-  'supportsDebit',
-  'supportsCredit',
-];
+import {
+  getLineItems,
+  getRequiredContactFields,
+  convertToSwellAddress,
+  onShippingContactSelected,
+  onShippingMethodSelected,
+  onCouponCodeChanged,
+} from '../apple';
+
+import Payment from '../payment';
+
+/** @typedef {import('../../../types').Cart} Cart */
+
+const VERSION = 14;
 
 export default class BraintreeApplePayment extends Payment {
   constructor(api, options, params, methods) {
@@ -43,6 +50,7 @@ export default class BraintreeApplePayment extends Payment {
     return window.ApplePaySession;
   }
 
+  /** @param {Cart} cart */
   async createElements(cart) {
     const { elementId = 'applepay-button' } = this.params;
 
@@ -56,10 +64,12 @@ export default class BraintreeApplePayment extends Payment {
     }
 
     const braintreeClient = await this._createBraintreeClient();
+
     const applePayment = await this.braintree.applePay.create({
       client: braintreeClient,
     });
-    const paymentRequest = await this._createPaymentRequest(cart, applePayment);
+
+    const paymentRequest = this._createPaymentRequest(cart, applePayment);
 
     this.element = this._createButton(applePayment, paymentRequest);
   }
@@ -76,8 +86,9 @@ export default class BraintreeApplePayment extends Payment {
   }
 
   /**
-   * @param {object} applePayment
+   * @param {braintree.ApplePay} applePayment
    * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
+   * @returns {HTMLDivElement}
    */
   _createButton(applePayment, paymentRequest) {
     const { style: { type = 'plain', theme = 'black', height = '40px' } = {} } =
@@ -98,6 +109,7 @@ export default class BraintreeApplePayment extends Payment {
     return button;
   }
 
+  /** @returns {Promise<braintree.Client>} */
   async _createBraintreeClient() {
     const authorization = await this.authorizeGateway({
       gateway: 'braintree',
@@ -112,47 +124,43 @@ export default class BraintreeApplePayment extends Payment {
     });
   }
 
-  /** @returns {ApplePayJS.ApplePayPaymentRequest} */
+  /**
+   * @param {Cart} cart
+   * @param {braintree.ApplePay} applePayment
+   * @returns {ApplePayJS.ApplePayPaymentRequest}
+   */
   _createPaymentRequest(cart, applePayment) {
-    const { require = {} } = this.params;
     const {
       settings: { name, country },
       capture_total,
       currency,
     } = cart;
 
-    const requiredShippingContactFields = [];
-    const requiredBillingContactFields = ['postalAddress'];
-
-    if (require.name) {
-      requiredShippingContactFields.push('name');
-    }
-    if (require.email) {
-      requiredShippingContactFields.push('email');
-    }
-    if (require.phone) {
-      requiredShippingContactFields.push('phone');
-    }
-    if (require.shipping) {
-      requiredShippingContactFields.push('postalAddress');
-    }
+    const { requiredBillingContactFields, requiredShippingContactFields } =
+      getRequiredContactFields(this.params);
 
     return applePayment.createPaymentRequest({
       total: {
         label: name,
         type: 'pending',
-        amount: capture_total.toString(),
+        amount: (capture_total || 0).toFixed(2),
       },
       countryCode: country,
       currencyCode: currency,
-      merchantCapabilities: MERCHANT_CAPABILITIES,
+      /**
+       * @see {@link https://developer.paypal.com/braintree/docs/guides/apple-pay/client-side/javascript/v3/#create-anapplepaysession}
+       *
+       * Braintree automatically fills in `supportedNetworks` and `merchantCapabilities`.
+       */
       requiredShippingContactFields,
       requiredBillingContactFields,
+      supportsCouponCode: true,
+      lineItems: getLineItems(cart),
     });
   }
 
   /**
-   * @param {object} applePayment
+   * @param {braintree.ApplePay} applePayment
    * @param {ApplePayJS.ApplePayPaymentRequest} paymentRequest
    */
   _createPaymentSession(applePayment, paymentRequest) {
@@ -173,11 +181,23 @@ export default class BraintreeApplePayment extends Payment {
       }
     };
 
+    session.onshippingcontactselected = onShippingContactSelected.bind(
+      this,
+      session,
+    );
+
+    session.onshippingmethodselected = onShippingMethodSelected.bind(
+      this,
+      session,
+    );
+
+    session.oncouponcodechanged = onCouponCodeChanged.bind(this, session);
+
     session.onpaymentauthorized = async (event) => {
       const {
         payment: { token, shippingContact, billingContact },
       } = event;
-      const { require: { shipping: requireShipping } = {} } = this.params;
+
       const payload = await applePayment
         .tokenize({ token })
         .catch(this.onError.bind(this));
@@ -186,22 +206,46 @@ export default class BraintreeApplePayment extends Payment {
         return session.completePayment(this.ApplePaySession.STATUS_FAILURE);
       }
 
-      await this.updateCart({
+      const cart = await this.updateCart({
         account: {
-          email: shippingContact.emailAddress,
+          email: shippingContact?.emailAddress || billingContact?.emailAddress,
         },
         billing: {
           method: 'apple',
+          account_card_id: null,
+          card: null,
           apple: {
             nonce: payload.nonce,
             gateway: 'braintree',
           },
           ...convertToSwellAddress(billingContact),
         },
-        ...(requireShipping && {
+        ...(shippingContact && {
           shipping: convertToSwellAddress(shippingContact),
         }),
       });
+
+      if (cart.subscription_delivery) {
+        try {
+          const card = await cardApi.createToken({
+            gateway: 'braintree',
+            account_id: cart.account_id,
+            nonce: payload.nonce,
+          });
+
+          delete card.nonce;
+
+          await this.updateCart({
+            billing: {
+              method: 'card',
+              card,
+              apple: null,
+            },
+          });
+        } catch (error) {
+          console.warn('Failed to extract card data from apple token', error);
+        }
+      }
 
       this.onSuccess();
 

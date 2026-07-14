@@ -111,6 +111,8 @@ export default class AbstractGooglePayment extends Payment {
    * @returns {google.payments.api.PaymentMethodSpecification}
    */
   _getCardPaymentMethod(submit = false) {
+    const { require: { phone } = {} } = this.params;
+
     return {
       type: 'CARD',
       parameters: {
@@ -119,7 +121,7 @@ export default class AbstractGooglePayment extends Payment {
         billingAddressRequired: true,
         billingAddressParameters: {
           format: 'FULL',
-          phoneNumberRequired: true,
+          phoneNumberRequired: Boolean(phone),
         },
       },
       ...(submit && {
@@ -152,29 +154,30 @@ export default class AbstractGooglePayment extends Payment {
     cart.shipment_price = 0;
     cart.shipping = {};
 
-    const { shipment_delivery } = cart;
     const { require: { email, shipping, phone } = {} } = this.params;
+
+    /** @type {google.payments.api.CallbackIntent[]} */
+    const callbackIntents = ['OFFER', 'PAYMENT_AUTHORIZATION'];
+
+    if (shipping) {
+      callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+    }
 
     return {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
-      transactionInfo: getTransactionInfo(cart),
+      transactionInfo: getTransactionInfo.call(this, cart),
       allowedPaymentMethods: this._getAllowedPaymentMethods(true),
       emailRequired: Boolean(email),
       shippingAddressRequired: Boolean(shipping),
       shippingAddressParameters: {
         phoneNumberRequired: Boolean(phone),
       },
-      shippingOptionRequired: Boolean(shipment_delivery),
+      shippingOptionRequired: Boolean(shipping),
       shippingOptionParameters: getShippingOptionParameters.call(this, cart),
       offerInfo: getOfferInfo(cart),
       merchantInfo,
-      callbackIntents: [
-        'OFFER',
-        'SHIPPING_ADDRESS',
-        'SHIPPING_OPTION',
-        'PAYMENT_AUTHORIZATION',
-      ],
+      callbackIntents,
     };
   }
 

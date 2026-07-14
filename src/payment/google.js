@@ -87,7 +87,7 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
             this,
             cart,
           ),
-          newTransactionInfo: getTransactionInfo(cart),
+          newTransactionInfo: getTransactionInfo.call(this, cart),
         };
       }
 
@@ -100,7 +100,7 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
             },
           });
 
-          return { newTransactionInfo: getTransactionInfo(cart) };
+          return { newTransactionInfo: getTransactionInfo.call(this, cart) };
         } catch (err) {
           return createError(
             intermediatePaymentData.callbackTrigger,
@@ -122,7 +122,7 @@ export async function onPaymentDataChanged(intermediatePaymentData) {
 
           return {
             newOfferInfo: getOfferInfo(cart),
-            newTransactionInfo: getTransactionInfo(cart),
+            newTransactionInfo: getTransactionInfo.call(this, cart),
           };
         } catch (err) {
           return createError(
@@ -222,12 +222,13 @@ export function getDisplayItems(cart) {
 
 /**
  * Converts cart data to Google Pay transaction information.
+ * @this {Payment}
  * @param {Cart} cart - The current cart data
  * @returns {google.payments.api.TransactionInfo} Transaction info for Google Pay
  */
 export function getTransactionInfo(cart) {
-  const { settings, capture_total, currency, shipment_delivery, shipping } =
-    cart;
+  const { require: { shipping: shipmentDelivery = false } = {} } = this.params;
+  const { settings, capture_total, currency, shipping } = cart;
 
   return {
     countryCode: settings?.country || 'US',
@@ -235,7 +236,7 @@ export function getTransactionInfo(cart) {
     totalPrice: String(capture_total ?? 0),
     // Set status to FINAL if shipping has been selected, otherwise ESTIMATED
     totalPriceStatus:
-      !shipment_delivery || shipping?.service ? 'FINAL' : 'ESTIMATED',
+      !shipmentDelivery || shipping?.service ? 'FINAL' : 'ESTIMATED',
     totalPriceLabel: 'Total',
     displayItems: getDisplayItems(cart),
   };
@@ -248,11 +249,13 @@ export function getTransactionInfo(cart) {
  * @returns {google.payments.api.ShippingOptionParameters | undefined} Shipping options for Google Pay
  */
 export function getShippingOptionParameters(cart) {
-  const { shipment_delivery, shipment_rating, shipping } = cart;
+  const { require: { shipping: shipmentDelivery = false } = {} } = this.params;
 
-  if (!shipment_delivery) {
+  if (!shipmentDelivery) {
     return undefined;
   }
+
+  const { shipment_rating, shipping } = cart;
 
   if (!shipment_rating?.services?.length) {
     // Return placeholder when no shipping services are available

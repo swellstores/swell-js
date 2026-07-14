@@ -1,11 +1,7 @@
 import cardApi from '../../card';
 import { isLiveMode } from '../../utils';
 
-import {
-  getBrowserInfo,
-  getBaseConvesioApiUrl,
-  getConvesioErrorMessage,
-} from '../convesiopay';
+import { getBrowserInfo, getConvesioErrorMessage } from '../convesiopay';
 
 import Payment from '../payment';
 
@@ -93,15 +89,20 @@ export default class ConvesioCardPayment extends Payment {
   }
 }
 
+export function getBaseConvesioVaultUrl(mode) {
+  return isLiveMode(mode)
+    ? 'https://vault.convesiopay.com'
+    : 'https://qa-vault.convesiopay.com';
+}
+
 function createConvesioCardPaymentToken(settings, data) {
-  const baseUrl = getBaseConvesioApiUrl(settings.mode);
+  const baseUrl = getBaseConvesioVaultUrl(settings.mode);
 
   return fetch(`${baseUrl}/v1/create-token`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'X-Requested-With': 'convesio-pay-dashboard',
       'X-Api-Key': settings.public_key,
     },
     body: JSON.stringify(data),

@@ -1,12 +1,14 @@
-import Payment from '../payment';
 import { getPaymentRequestData } from '../../utils/stripe';
 import {
   LibraryNotLoadedError,
   PaymentMethodDisabledError,
 } from '../../utils/errors';
 
+import Payment from '../payment';
+
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').PaymentRequestPaymentMethodEvent} PaymentRequestPaymentMethodEvent */
+/** @typedef {import('../../../types').Cart} Cart */
 
 export default class StripeGooglePayment extends Payment {
   constructor(api, options, params, methods) {
@@ -74,6 +76,7 @@ export default class StripeGooglePayment extends Payment {
     this.element.mount(`#${this.elementContainer.id}`);
   }
 
+  /** @param {Cart} cart */
   _createPaymentRequest(cart) {
     const { require: { name, email, shipping, phone } = {} } = this.params;
 
@@ -86,15 +89,10 @@ export default class StripeGooglePayment extends Payment {
       ...getPaymentRequestData(cart, this.params),
     });
 
-    paymentRequest.on(
-      'shippingaddresschange',
-      this._onShippingAddressChange.bind(this),
-    );
-    paymentRequest.on(
-      'shippingoptionchange',
-      this._onShippingOptionChange.bind(this),
-    );
-    paymentRequest.on('paymentmethod', this._onPaymentMethod.bind(this));
+    paymentRequest
+      .on('shippingaddresschange', this._onShippingAddressChange.bind(this))
+      .on('shippingoptionchange', this._onShippingOptionChange.bind(this))
+      .on('paymentmethod', this._onPaymentMethod.bind(this));
 
     return paymentRequest;
   }
@@ -102,9 +100,9 @@ export default class StripeGooglePayment extends Payment {
   /** @param {import('@stripe/stripe-js').PaymentRequestShippingAddressEvent} event */
   async _onShippingAddressChange(event) {
     const { shippingAddress, updateWith } = event;
-    const shipping = this._mapShippingAddress(shippingAddress);
+
     const cart = await this.updateCart({
-      shipping: { ...shipping, service: null },
+      shipping: this._mapShippingAddress(shippingAddress),
       shipment_rating: null,
     });
 
@@ -144,16 +142,15 @@ export default class StripeGooglePayment extends Payment {
       shippingOption,
       complete,
     } = event;
-    const { require: { shipping: requireShipping } = {} } = this.params;
 
     await this.updateCart({
       account: {
-        email: payerEmail,
+        email: payerEmail || billing_details?.email,
       },
-      ...(requireShipping && {
+      ...(shippingAddress && {
         shipping: {
           ...this._mapShippingAddress(shippingAddress),
-          service: shippingOption.id,
+          service: shippingOption?.id || undefined,
         },
       }),
       billing: {
@@ -167,9 +164,9 @@ export default class StripeGooglePayment extends Payment {
           exp_month: card.exp_month,
           exp_year: card.exp_year,
           last4: card.last4,
-          address_check: card.checks.address_line1_check,
-          zip_check: card.checks.address_postal_code_check,
-          cvc_check: card.checks.cvc_check,
+          address_check: card.checks?.address_line1_check,
+          zip_check: card.checks?.address_postal_code_check,
+          cvc_check: card.checks?.cvc_check,
         },
       },
     });
@@ -217,8 +214,8 @@ export default class StripeGooglePayment extends Payment {
   _mapShippingAddress(address = {}) {
     return {
       name: address.recipient,
-      address1: address.addressLine[0],
-      address2: address.addressLine[1],
+      address1: address.addressLine?.[0],
+      address2: address.addressLine?.[1],
       city: address.city,
       state: address.region,
       zip: address.postalCode,
@@ -232,12 +229,12 @@ export default class StripeGooglePayment extends Payment {
     return {
       name: address.name,
       phone: address.phone,
-      address1: address.address.line1,
-      address2: address.address.line2,
-      city: address.address.city,
-      state: address.address.state,
-      zip: address.address.postal_code,
-      country: address.address.country,
+      address1: address.address?.line1,
+      address2: address.address?.line2,
+      city: address.address?.city,
+      state: address.address?.state,
+      zip: address.address?.postal_code,
+      country: address.address?.country,
     };
   }
 }

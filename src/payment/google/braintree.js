@@ -1,24 +1,25 @@
-import Payment from '../payment';
-import { convertToSwellAddress } from '../google';
 import { isLiveMode } from '../../utils';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
+import cardApi from '../../card';
+
+import {
+  onPaymentDataChanged,
+  convertToSwellAddress,
+  getShippingOptionParameters,
+  getTransactionInfo,
+  getOfferInfo,
+} from '../google';
+
+import Payment from '../payment';
+
+/** @typedef {import('../../../types').Cart} Cart */
+
 const API_VERSION = 2;
 const API_MINOR_VERSION = 0;
-
-const ALLOWED_CARD_AUTH_METHODS = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
-
-const ALLOWED_CARD_NETWORKS = [
-  'AMEX',
-  'DISCOVER',
-  'INTERAC',
-  'JCB',
-  'MASTERCARD',
-  'VISA',
-];
 
 export default class BraintreeGooglePayment extends Payment {
   constructor(api, options, params, methods) {
@@ -55,6 +56,9 @@ export default class BraintreeGooglePayment extends Payment {
       if (this.google) {
         this.googleClient = new this.google.payments.api.PaymentsClient({
           environment: isLiveMode(this.method.mode) ? 'PRODUCTION' : 'TEST',
+          paymentDataCallbacks: {
+            onPaymentDataChanged: onPaymentDataChanged.bind(this),
+          },
         });
       }
 
@@ -70,31 +74,12 @@ export default class BraintreeGooglePayment extends Payment {
     BraintreeGooglePayment.googleClient = googleClient;
   }
 
-  /** @returns {google.payments.api.PaymentMethodSpecification} */
-  get cardPaymentMethod() {
-    return {
-      type: 'CARD',
-      parameters: {
-        allowedAuthMethods: ALLOWED_CARD_AUTH_METHODS,
-        allowedCardNetworks: ALLOWED_CARD_NETWORKS,
-        billingAddressRequired: true,
-        billingAddressParameters: {
-          format: 'FULL',
-          phoneNumberRequired: true,
-        },
-      },
-    };
-  }
-
-  /** @returns {google.payments.api.PaymentMethodSpecification[]} */
-  get allowedPaymentMethods() {
-    return [this.cardPaymentMethod];
-  }
-
+  /** @param {Cart} cart */
   async createElements(cart) {
     const {
       elementId = 'googlepay-button',
       locale = 'en',
+      require: { phone } = {},
       style: { color = 'black', type = 'plain', sizeMode = 'fill' } = {},
     } = this.params;
 
@@ -105,10 +90,35 @@ export default class BraintreeGooglePayment extends Payment {
     this.setElementContainer(elementId);
     await this.loadScripts(this.scripts);
 
+    const braintreeClient = await this._createBraintreeClient();
+
+    const googlePayment = await this.braintree.googlePayment.create({
+      client: braintreeClient,
+      googleMerchantId: this.method.merchant_id,
+      googlePayVersion: API_VERSION,
+    });
+
+    const paymentDataRequest = googlePayment.createPaymentDataRequest(
+      this._createPaymentRequestData(cart),
+    );
+
+    const cardPaymentMethod = paymentDataRequest.allowedPaymentMethods.find(
+      (method) => method.type === 'CARD',
+    );
+
+    if (cardPaymentMethod !== undefined) {
+      cardPaymentMethod.parameters.billingAddressRequired = true;
+
+      cardPaymentMethod.parameters.billingAddressParameters = {
+        format: 'FULL',
+        phoneNumberRequired: Boolean(phone),
+      };
+    }
+
     const isReadyToPay = await this.googleClient.isReadyToPay({
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
-      allowedPaymentMethods: this.allowedPaymentMethods,
+      allowedPaymentMethods: paymentDataRequest.allowedPaymentMethods,
       existingPaymentMethodRequired: true,
     });
 
@@ -117,16 +127,6 @@ export default class BraintreeGooglePayment extends Payment {
         'This device is not capable of making Google Pay payments',
       );
     }
-
-    const braintreeClient = await this._createBraintreeClient();
-    const googlePayment = await this.braintree.googlePayment.create({
-      client: braintreeClient,
-      googleMerchantId: this.method.merchant_id,
-      googlePayVersion: API_VERSION,
-    });
-    const paymentRequestData = this._createPaymentRequestData(cart);
-    const paymentDataRequest =
-      googlePayment.createPaymentDataRequest(paymentRequestData);
 
     this.element = this.googleClient.createButton({
       buttonColor: color,
@@ -154,6 +154,7 @@ export default class BraintreeGooglePayment extends Payment {
     }
   }
 
+  /** @returns {Promise<braintree.Client>} */
   async _createBraintreeClient() {
     const authorization = await this.authorizeGateway({
       gateway: 'braintree',
@@ -168,39 +169,51 @@ export default class BraintreeGooglePayment extends Payment {
     });
   }
 
-  /** @returns {google.payments.api.PaymentDataRequest} */
+  /**
+   * @param {Cart} cart
+   * @returns {google.payments.api.PaymentDataRequest}
+   */
   _createPaymentRequestData(cart) {
     const {
-      settings: { name, country },
-      capture_total,
-      currency,
+      settings: { name },
     } = cart;
+
     const { require: { email, shipping, phone } = {} } = this.params;
+
+    /** @type {google.payments.api.CallbackIntent[]} */
+    const callbackIntents = ['OFFER'];
+
+    if (shipping) {
+      callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+    }
 
     return {
       apiVersion: API_VERSION,
       apiVersionMinor: API_MINOR_VERSION,
-      transactionInfo: {
-        countryCode: country,
-        currencyCode: currency,
-        totalPrice: capture_total.toString(),
-        totalPriceStatus: 'ESTIMATED',
-      },
-      allowedPaymentMethods: this.allowedPaymentMethods,
+      transactionInfo: getTransactionInfo.call(this, cart),
+      /**
+       * @see {@link https://developer.paypal.com/braintree/docs/guides/google-pay/client-side/javascript/v3/#requesting-a-payment}
+       *
+       * Braintree automatically populates the `allowedPaymentMethods` property.
+       */
       emailRequired: Boolean(email),
       shippingAddressRequired: Boolean(shipping),
       shippingAddressParameters: {
         phoneNumberRequired: Boolean(phone),
       },
+      shippingOptionRequired: Boolean(shipping),
+      shippingOptionParameters: getShippingOptionParameters.call(this, cart),
+      offerInfo: getOfferInfo(cart),
       merchantInfo: {
         merchantName: name,
         merchantId: this.method.merchant_id,
       },
+      callbackIntents,
     };
   }
 
   /**
-   * @param {object} googlePayment
+   * @param {braintree.GooglePayment} googlePayment
    * @param {google.payments.api.PaymentDataRequest} paymentDataRequest
    */
   async _onClick(googlePayment, paymentDataRequest) {
@@ -217,33 +230,58 @@ export default class BraintreeGooglePayment extends Payment {
   }
 
   /**
-   * @param {object} googlePayment
+   * @param {braintree.GooglePayment} googlePayment
    * @param {google.payments.api.PaymentData} paymentData
    */
   async _submitPayment(googlePayment, paymentData) {
-    const { require: { shipping: requireShipping } = {} } = this.params;
     const { nonce } = await googlePayment.parseResponse(paymentData);
-    const { email, shippingAddress, paymentMethodData } = paymentData;
-    const {
-      info: { billingAddress },
-    } = paymentMethodData;
+    const { email, shippingAddress, shippingOptionData, paymentMethodData } =
+      paymentData;
+    const { info: { billingAddress } = {} } = paymentMethodData;
 
-    await this.updateCart({
+    const cart = await this.updateCart({
       account: {
         email,
       },
       billing: {
         method: 'google',
+        account_card_id: null,
+        card: null,
         google: {
           nonce,
           gateway: 'braintree',
         },
         ...convertToSwellAddress(billingAddress),
       },
-      ...(requireShipping && {
-        shipping: convertToSwellAddress(shippingAddress),
+      ...(shippingAddress && {
+        shipping: {
+          ...convertToSwellAddress(shippingAddress),
+          service: shippingOptionData?.id || undefined,
+        },
       }),
     });
+
+    if (cart.subscription_delivery) {
+      try {
+        const card = await cardApi.createToken({
+          gateway: 'braintree',
+          account_id: cart.account_id,
+          nonce,
+        });
+
+        delete card.nonce;
+
+        await this.updateCart({
+          billing: {
+            method: 'card',
+            card,
+            google: null,
+          },
+        });
+      } catch (error) {
+        console.warn('Failed to extract card data from google token', error);
+      }
+    }
 
     this.onSuccess();
   }
