@@ -1,6 +1,6 @@
-import Payment from '../payment';
-import { getKlarnaSessionData } from '../../utils/klarna';
 import { UnableAuthenticatePaymentMethodError } from '../../utils/errors';
+
+import Payment from '../payment';
 
 export default class KlarnaDirectPayment extends Payment {
   constructor(api, options, params, methods) {
@@ -10,6 +10,7 @@ export default class KlarnaDirectPayment extends Payment {
   async tokenize() {
     const cart = await this.getCart();
     const sessionData = getKlarnaSessionData(cart);
+
     const session = await this.createIntent({
       gateway: 'klarna',
       intent: sessionData,
@@ -40,4 +41,20 @@ export default class KlarnaDirectPayment extends Payment {
 
     this.onSuccess();
   }
+}
+
+function getKlarnaSessionData(cart) {
+  const returnUrl = `${window.location.origin}${window.location.pathname}?gateway=klarna_direct&sid={{session_id}}`;
+  const successUrl = `${returnUrl}&authorization_token={{authorization_token}}`;
+
+  return {
+    cart_id: cart.id,
+    merchant_urls: {
+      success: successUrl,
+      back: returnUrl,
+      cancel: returnUrl,
+      error: returnUrl,
+      failure: returnUrl,
+    },
+  };
 }
