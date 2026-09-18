@@ -102,6 +102,22 @@ export function getDiscountLabel(discount, cart) {
   return discount.id;
 }
 
+/**
+ * @param {Cart} cart
+ * @returns {boolean}
+ */
+export function hasTrialSubscriptionProduct(cart) {
+  if (!cart.subscription_delivery) {
+    return false;
+  }
+
+  return (cart.items || []).some(
+    (item) =>
+      item.purchase_option?.type === 'subscription' &&
+      Number(item.purchase_option?.billing_schedule?.trial_days) > 0,
+  );
+}
+
 /** @type {Map<string, number>} */
 const CURRENCIES_CENTS = new Map();
 

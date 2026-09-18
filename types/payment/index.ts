@@ -74,6 +74,12 @@ export interface InputPaymentElementApple extends InputPaymentElementBase {
     invalid?: string;
     webkitAutofill?: string;
   };
+  /**
+   * Link to the page where the customer can manage subscriptions (mainly cancel them).
+   *
+   * @see {@link https://developer.apple.com/documentation/applepayontheweb/applepayrecurringpaymentrequest/managementurl}
+   */
+  managementUrl?: string;
 }
 
 export interface InputPaymentElementGoogle extends InputPaymentElementBase {

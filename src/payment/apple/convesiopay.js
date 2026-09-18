@@ -74,7 +74,7 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
    * @param {ApplePayJS.ApplePayPaymentAuthorizedEvent} event
    * @returns {Promise<object>}
    */
-  async preparePaymentDataForCartUpdate(event) {
+  async processPaymentData(event) {
     const {
       payment: { token, shippingContact, billingContact },
     } = event;
@@ -98,7 +98,7 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
       },
     );
 
-    return {
+    return this.updateCart({
       account: {
         email: shippingContact?.emailAddress || billingContact?.emailAddress,
       },
@@ -118,7 +118,7 @@ export default class ConvesioPayApplePayment extends AbstractApplePayment {
       ...(shippingContact && {
         shipping: convertToSwellAddress(shippingContact),
       }),
-    };
+    });
   }
 }
 

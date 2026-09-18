@@ -79,7 +79,7 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
    * @param {google.payments.api.PaymentData} paymentData
    * @returns {Promise<object>}
    */
-  async preparePaymentDataForCartUpdate(paymentData) {
+  async processPaymentData(paymentData) {
     const { email, shippingAddress, shippingOptionData, paymentMethodData } =
       paymentData;
 
@@ -107,7 +107,7 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
       },
     );
 
-    return {
+    return this.updateCart({
       account: { email },
       billing: {
         method: 'google',
@@ -128,7 +128,7 @@ export default class ConvesioPayGooglePayment extends AbstractGooglePayment {
           service: shippingOptionData?.id || undefined,
         },
       }),
-    };
+    });
   }
 }
 
