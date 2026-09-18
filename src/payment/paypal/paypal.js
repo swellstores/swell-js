@@ -1,13 +1,28 @@
-import Payment from '../payment';
-import { get, isEmpty } from '../../utils';
+import { isEmpty } from '../../utils';
 import { LibraryNotLoadedError } from '../../utils/errors';
+
+import Payment from '../payment';
+
+/** @typedef {import('@paypal/paypal-js').PayPalNamespace} PayPal */
+/** @typedef {import('@paypal/paypal-js').ShippingAddress} ShippingAddress */
+/** @typedef {import('@paypal/paypal-js').CreateOrderData} CreateOrderData */
+/** @typedef {import('@paypal/paypal-js').CreateOrderActions} CreateOrderActions */
+/** @typedef {import('@paypal/paypal-js').OnShippingAddressChangeData} OnShippingAddressChangeData */
+/** @typedef {import('@paypal/paypal-js').OnShippingAddressChangeActions} OnShippingAddressChangeActions */
+/** @typedef {import('@paypal/paypal-js').OnShippingOptionsChangeData} OnShippingOptionsChangeData */
+/** @typedef {import('@paypal/paypal-js').OnShippingOptionsChangeActions} OnShippingOptionsChangeActions */
+/** @typedef {import('@paypal/paypal-js').OnApproveData} OnApproveData */
+/** @typedef {import('@paypal/paypal-js').OnApproveActions} OnApproveActions */
+/** @typedef {import('../../../types').Cart} Cart */
+/** @typedef {import('../../../types').Address} Address */
 
 export default class PaypalDirectPayment extends Payment {
   constructor(api, options, params, methods) {
     super(api, options, params, methods.paypal);
   }
 
-  get scripts() {
+  /** @param {Cart} cart */
+  getScripts(cart) {
     const { client_id } = this.method;
 
     return [
@@ -17,11 +32,13 @@ export default class PaypalDirectPayment extends Payment {
           client_id,
           merchant_id: this.merchantId,
           cart: ['currency'],
+          vault: cart.subscription_delivery,
         },
       },
     ];
   }
 
+  /** @returns {PayPal} */
   get paypal() {
     if (!window.paypal) {
       throw new LibraryNotLoadedError('PayPal');
@@ -45,7 +62,6 @@ export default class PaypalDirectPayment extends Payment {
   async createElements(cart) {
     const {
       elementId = 'paypal-button',
-      locale = 'en_US',
       style: {
         layout = 'horizontal',
         height = 45,
@@ -54,15 +70,16 @@ export default class PaypalDirectPayment extends Payment {
         label = 'paypal',
         tagline = false,
       } = {},
+      require: { shipping: requireShipping = true } = {},
     } = this.params;
 
     this.setElementContainer(elementId);
 
     this._validateCart(cart);
-    await this.loadScripts(this.scripts);
+    await this.loadScripts(this.getScripts(cart));
 
-    this.element = this.paypal.Buttons({
-      locale,
+    /** @type {import('@paypal/paypal-js').PayPalButtonsComponentOptions} */
+    const buttonsOptions = {
       style: {
         layout,
         height,
@@ -71,11 +88,27 @@ export default class PaypalDirectPayment extends Payment {
         label,
         tagline,
       },
+      fundingSource: this.paypal.FUNDING.PAYPAL,
       createOrder: this._onCreateOrder.bind(this, cart),
-      onShippingChange: this._onShippingChange.bind(this),
       onApprove: this._onApprove.bind(this),
       onError: this.onError.bind(this),
-    });
+    };
+
+    if (requireShipping) {
+      buttonsOptions.onShippingAddressChange =
+        this._onShippingAddressChange.bind(this);
+
+      buttonsOptions.onShippingOptionsChange =
+        this._onShippingOptionsChange.bind(this);
+    }
+
+    const component = this.paypal.Buttons(buttonsOptions);
+
+    if (!component.isEligible()) {
+      throw new Error('PayPal button with provided options is not eligible.');
+    }
+
+    this.element = component;
   }
 
   mountElements() {
@@ -89,6 +122,7 @@ export default class PaypalDirectPayment extends Payment {
     }
   }
 
+  /** @param {Cart} cart */
   _validateCart(cart) {
     const hasSubscriptionProduct = Boolean(cart.subscription_delivery);
 
@@ -98,27 +132,35 @@ export default class PaypalDirectPayment extends Payment {
       );
     }
 
-    if (!(cart.capture_total > 0)) {
+    if ((cart.capture_total || 0) <= 0) {
       throw new Error(
         'Invalid PayPal button amount. Value should be greater than zero.',
       );
     }
   }
 
+  /**
+   * @param {Cart} cart
+   * @param {CreateOrderData} _data
+   * @param {CreateOrderActions} _actions
+   * @returns {Promise<string>}
+   */
   async _onCreateOrder(cart, _data, _actions) {
-    const { require: { shipping: requireShipping = true } = {} } = this.params;
+    const {
+      locale = 'en-US',
+      require: { shipping: requireShipping = true } = {},
+    } = this.params;
+
     const { capture_total, currency, subscription_delivery } = cart;
     const hasSubscriptionProduct = Boolean(subscription_delivery);
     const merchantId = this.merchantId;
     const returnUrl = this.returnUrl;
-    const orderData = {
-      application_context: {
-        shipping_preference: requireShipping ? 'GET_FROM_FILE' : 'NO_SHIPPING',
-      },
-    };
+    /** @type {import('@paypal/paypal-js').CreateOrderRequestBody} */
+    const orderData = {};
+    /** @type {import('@paypal/paypal-js').PurchaseUnit} */
     const purchaseUnit = {
       amount: {
-        value: Number(capture_total.toFixed(2)),
+        value: Number(capture_total).toFixed(2),
         currency_code: currency,
       },
     };
@@ -126,29 +168,44 @@ export default class PaypalDirectPayment extends Payment {
     if (merchantId) {
       // express checkout and ppcp
       orderData.intent = 'AUTHORIZE';
+
+      orderData.payment_source = {
+        paypal: {
+          experience_context: {
+            locale,
+            shipping_preference: requireShipping
+              ? 'GET_FROM_FILE'
+              : 'NO_SHIPPING',
+          },
+        },
+      };
+
       purchaseUnit.payee = {
         merchant_id: merchantId,
       };
 
       if (hasSubscriptionProduct) {
-        orderData.payment_source = {
-          paypal: {
-            attributes: {
-              vault: {
-                store_in_vault: 'ON_SUCCESS',
-                usage_type: 'MERCHANT',
-              },
-            },
-            experience_context: {
-              return_url: `${returnUrl}&redirect_status=succeeded`,
-              cancel_url: `${returnUrl}&redirect_status=canceled`,
-            },
+        orderData.payment_source.paypal.attributes = {
+          vault: {
+            store_in_vault: 'ON_SUCCESS',
+            usage_type: 'MERCHANT',
           },
         };
+
+        Object.assign(orderData.payment_source.paypal.experience_context, {
+          return_url: `${returnUrl}&redirect_status=succeeded`,
+          cancel_url: `${returnUrl}&redirect_status=canceled`,
+        });
       }
     } else {
       // progressive checkout
       orderData.intent = 'CAPTURE';
+
+      orderData.application_context = {
+        locale,
+        shipping_preference: requireShipping ? 'GET_FROM_FILE' : 'NO_SHIPPING',
+      };
+
       purchaseUnit.payee = {
         email_address: this.method.store_owner_email,
       };
@@ -164,44 +221,37 @@ export default class PaypalDirectPayment extends Payment {
     return order.id;
   }
 
-  async _onShippingChange(data, actions) {
+  /**
+   * @param {OnShippingAddressChangeData} data
+   * @param {OnShippingAddressChangeActions} actions
+   */
+  async _onShippingAddressChange(data, actions) {
     try {
-      const { orderID, shipping_address, selected_shipping_option } = data;
-      const updateData = {
+      const { orderID, shippingAddress } = data;
+
+      const cart = await this.updateCart({
         shipping: {
-          state: shipping_address.state,
-          city: shipping_address.city,
-          zip: shipping_address.postal_code,
-          country: shipping_address.country_code,
+          state: shippingAddress.state,
+          city: shippingAddress.city,
+          zip: shippingAddress.postalCode,
+          country: shippingAddress.countryCode,
         },
         shipment_rating: null,
-      };
+      });
 
-      if (selected_shipping_option) {
-        updateData.shipping.service = selected_shipping_option.id;
-        updateData.$taxes = true;
-      }
+      const shippingServices = cart.shipment_rating?.services;
 
-      const cart = await this.updateCart(updateData);
-      const shippingServices = get(cart, 'shipment_rating.services');
-
-      // can't fulfill shipping to selected address
+      // Can't fulfill shipping to selected address
       if (isEmpty(shippingServices)) {
         return actions.reject();
       }
 
-      let selectedShippingService;
-
-      if (selected_shipping_option) {
-        selectedShippingService = shippingServices.find(
-          (shippingService) =>
-            shippingService.id === selected_shipping_option.id,
-        );
-      }
+      let selectedShippingService = cart.shipping?.service;
 
       // need to set first service for cart by default
       if (!selectedShippingService) {
         const [firstShippingService] = shippingServices;
+        selectedShippingService = firstShippingService.id;
 
         await this.updateCart({
           shipping: {
@@ -218,8 +268,6 @@ export default class PaypalDirectPayment extends Payment {
           paypal_order_id: orderID,
         },
       });
-
-      return orderID;
     } catch (error) {
       this.onError(error);
 
@@ -227,14 +275,44 @@ export default class PaypalDirectPayment extends Payment {
     }
   }
 
+  /**
+   * @param {OnShippingOptionsChangeData} data
+   * @param {OnShippingOptionsChangeActions} actions
+   */
+  async _onShippingOptionsChange(data, actions) {
+    try {
+      const { orderID, selectedShippingOption } = data;
+
+      const cart = await this.updateCart({
+        shipping: { service: selectedShippingOption.id },
+        $taxes: true,
+      });
+
+      await this.updateIntent({
+        gateway: 'paypal',
+        intent: {
+          cart_id: cart.id,
+          paypal_order_id: orderID,
+        },
+      });
+    } catch (error) {
+      this.onError(error);
+
+      return actions.reject();
+    }
+  }
+
+  /**
+   * @param {OnApproveData} data
+   * @param {OnApproveActions} actions
+   */
   async _onApprove(data, actions) {
-    const { require: { shipping: requireShipping = true } = {} } = this.params;
     const order = await actions.order.get();
     const orderId = order.id;
-    const payer = order.payer;
+    const payer = order.payment_source?.paypal || order.payer;
     const billing = payer.address;
-    const shipping = get(order, 'purchase_units[0].shipping');
-    const name = `${payer.name.given_name} ${payer.name.surname}`;
+    const shipping = order.purchase_units?.[0]?.shipping;
+    const name = `${payer.name?.given_name} ${payer.name?.surname}`;
 
     await this.updateCart({
       account: {
@@ -246,29 +324,33 @@ export default class PaypalDirectPayment extends Payment {
           order_id: orderId,
         },
         name,
-        ...this._mapAddress(billing),
+        ...convertToSwellAddress(billing),
       },
-      ...(requireShipping && {
+      ...(shipping?.address && {
         shipping: {
           first_name: payer.name.given_name,
           last_name: payer.name.surname,
           name: shipping.name.full_name,
-          ...this._mapAddress(shipping.address),
+          ...convertToSwellAddress(shipping.address),
         },
       }),
     });
 
     this.onSuccess();
   }
+}
 
-  _mapAddress(address) {
-    return {
-      address1: address.address_line_1,
-      address2: address.address_line_2,
-      state: address.admin_area_1,
-      city: address.admin_area_2,
-      zip: address.postal_code,
-      country: address.country_code,
-    };
-  }
+/**
+ * @param {ShippingAddress} address
+ * @returns {Address}
+ */
+function convertToSwellAddress(address) {
+  return {
+    address1: address.address_line_1,
+    address2: address.address_line_2,
+    state: address.admin_area_1,
+    city: address.admin_area_2,
+    zip: address.postal_code,
+    country: address.country_code,
+  };
 }

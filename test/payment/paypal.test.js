@@ -9,7 +9,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
   beforeEach(() => {
     params = {
       elementId: 'custom-paypal-element-id',
-      locale: 'de_DE',
+      locale: 'de-DE',
       style: {
         layout: 'vertical',
         height: 50,
@@ -48,7 +48,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           methods,
         );
 
-        expect(payment.scripts).toEqual([
+        expect(payment.getScripts({})).toEqual([
           {
             id: 'paypal-sdk',
             params: {
@@ -70,7 +70,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           methods,
         );
 
-        expect(payment.scripts).toEqual([
+        expect(payment.getScripts({})).toEqual([
           {
             id: 'paypal-sdk',
             params: {
@@ -93,7 +93,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           methods,
         );
 
-        expect(payment.scripts).toEqual([
+        expect(payment.getScripts({})).toEqual([
           {
             id: 'paypal-sdk',
             params: {
@@ -120,13 +120,15 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             buttonRenderMock = jest.fn();
 
             createOrder = params.createOrder;
-            onShippingChange = params.onShippingChange;
+            onShippingChange = params.onShippingAddressChange;
             onApprove = params.onApprove;
 
             return {
               render: buttonRenderMock,
+              isEligible: () => true,
             };
           }),
+          FUNDING: { PAYPAL: 'paypal' },
         };
 
         global.document = {
@@ -160,7 +162,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
-          locale: 'de_DE',
           style: {
             color: 'blue',
             height: 50,
@@ -169,8 +170,10 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             shape: 'pill',
             tagline: true,
           },
+          fundingSource: 'paypal',
           createOrder: expect.any(Function),
-          onShippingChange: expect.any(Function),
+          onShippingAddressChange: expect.any(Function),
+          onShippingOptionsChange: expect.any(Function),
           onApprove: expect.any(Function),
           onError: expect.any(Function),
         });
@@ -197,7 +200,6 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         payment.mountElements();
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
-          locale: 'en_US',
           style: {
             color: 'gold',
             height: 45,
@@ -206,8 +208,10 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             shape: 'rect',
             tagline: false,
           },
+          fundingSource: 'paypal',
           createOrder: expect.any(Function),
-          onShippingChange: expect.any(Function),
+          onShippingAddressChange: expect.any(Function),
+          onShippingOptionsChange: expect.any(Function),
           onApprove: expect.any(Function),
           onError: expect.any(Function),
         });
@@ -233,11 +237,18 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           expect(paymentMock.createIntent).toHaveBeenCalledWith({
             gateway: 'paypal',
             intent: {
-              application_context: { shipping_preference: 'GET_FROM_FILE' },
               intent: 'AUTHORIZE',
+              payment_source: {
+                paypal: {
+                  experience_context: {
+                    locale: 'de-DE',
+                    shipping_preference: 'GET_FROM_FILE',
+                  },
+                },
+              },
               purchase_units: [
                 {
-                  amount: { value: 10, currency_code: 'EUR' },
+                  amount: { value: '10.00', currency_code: 'EUR' },
                   payee: { merchant_id: 'paypal_merchant_id' },
                 },
               ],
@@ -263,10 +274,17 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             gateway: 'paypal',
             intent: {
               intent: 'AUTHORIZE',
-              application_context: { shipping_preference: 'NO_SHIPPING' },
+              payment_source: {
+                paypal: {
+                  experience_context: {
+                    locale: 'de-DE',
+                    shipping_preference: 'NO_SHIPPING',
+                  },
+                },
+              },
               purchase_units: [
                 {
-                  amount: { currency_code: 'EUR', value: 10 },
+                  amount: { currency_code: 'EUR', value: '10.00' },
                   payee: { merchant_id: 'paypal_merchant_id' },
                 },
               ],
@@ -292,10 +310,13 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             gateway: 'paypal',
             intent: {
               intent: 'CAPTURE',
-              application_context: { shipping_preference: 'GET_FROM_FILE' },
+              application_context: {
+                locale: 'de-DE',
+                shipping_preference: 'GET_FROM_FILE',
+              },
               purchase_units: [
                 {
-                  amount: { currency_code: 'EUR', value: 10 },
+                  amount: { currency_code: 'EUR', value: '10.00' },
                   payee: {
                     email_address: 'example@email.com',
                   },
@@ -324,10 +345,9 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
             gateway: 'paypal',
             intent: {
               intent: 'AUTHORIZE',
-              application_context: { shipping_preference: 'GET_FROM_FILE' },
               purchase_units: [
                 {
-                  amount: { currency_code: 'EUR', value: 10 },
+                  amount: { currency_code: 'EUR', value: '10.00' },
                   payee: {
                     merchant_id: 'test_ppcp_merchant_id',
                   },
@@ -342,6 +362,8 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
                     },
                   },
                   experience_context: {
+                    locale: 'de-DE',
+                    shipping_preference: 'GET_FROM_FILE',
                     cancel_url:
                       'http://test.swell.test/checkout?gateway=paypal&redirect_status=canceled',
                     return_url:
@@ -379,13 +401,13 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         beforeEach(() => {
           data = {
             orderID: 'paypal_order_id',
-            shipping_address: {
+            shippingAddress: {
               state: 'CA',
               city: 'San Jose',
-              postal_code: '95131',
-              country_code: 'US',
+              postalCode: '95131',
+              countryCode: 'US',
             },
-            selected_shipping_option: {
+            selectedShippingOption: {
               id: 'express',
             },
           };
@@ -440,16 +462,18 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
           await payment.createElements(cart);
           await onShippingChange(data, actions);
 
-          expect(paymentMock.updateCart).toHaveBeenCalledTimes(1);
-          expect(paymentMock.updateCart).toHaveBeenCalledWith({
+          expect(paymentMock.updateCart).toHaveBeenCalledTimes(2);
+          expect(paymentMock.updateCart).toHaveBeenNthCalledWith(1, {
             shipping: {
               city: 'San Jose',
               country: 'US',
-              service: 'express',
               state: 'CA',
               zip: '95131',
             },
             shipment_rating: null,
+          });
+          expect(paymentMock.updateCart).toHaveBeenNthCalledWith(2, {
+            shipping: { service: 'standard' },
             $taxes: true,
           });
           expect(paymentMock.updateIntent).toHaveBeenCalledWith({
@@ -462,7 +486,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         });
 
         it('should update cart and patch PayPal order with first shipping service when service is not selected', async () => {
-          data.selected_shipping_option = null;
+          data.selectedShippingOption = null;
 
           const payment = new PaypalDirectPayment(
             request,
@@ -500,7 +524,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
         });
 
         it('should reject PayPal order update when no shipping services are available', async () => {
-          data.shipping_address.country_code = 'CA';
+          data.shippingAddress.countryCode = 'CA';
 
           const payment = new PaypalDirectPayment(
             request,
@@ -518,42 +542,45 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
       describe('#_onApprove', () => {
         const data = null;
-        const actions = {
-          order: {
-            get: jest.fn(() => ({
-              id: '8XU46699TN101191A',
-              payer: {
+
+        const actionOrder = {
+          id: '8XU46699TN101191A',
+          payer: {
+            name: {
+              given_name: 'Jessie',
+              surname: 'Rose',
+            },
+            email_address: 'jessie@gmail.com',
+            payer_id: 'WAG9UEQLWA5ZY',
+            address: {
+              address_line_1: '499 Point Street',
+              admin_area_2: 'Grand Forks',
+              admin_area_1: 'ND',
+              postal_code: '58203',
+              country_code: 'US',
+            },
+          },
+          purchase_units: [
+            {
+              shipping: {
                 name: {
-                  given_name: 'Jessie',
-                  surname: 'Rose',
+                  full_name: 'Jessie Rose',
                 },
-                email_address: 'jessie@gmail.com',
-                payer_id: 'WAG9UEQLWA5ZY',
                 address: {
-                  address_line_1: '499 Point Street',
-                  admin_area_2: 'Grand Forks',
-                  admin_area_1: 'ND',
-                  postal_code: '58203',
+                  address_line_1: '1 Main St',
+                  admin_area_2: 'San Jose',
+                  admin_area_1: 'CA',
+                  postal_code: '95131',
                   country_code: 'US',
                 },
               },
-              purchase_units: [
-                {
-                  shipping: {
-                    name: {
-                      full_name: 'Jessie Rose',
-                    },
-                    address: {
-                      address_line_1: '1 Main St',
-                      admin_area_2: 'San Jose',
-                      admin_area_1: 'CA',
-                      postal_code: '95131',
-                      country_code: 'US',
-                    },
-                  },
-                },
-              ],
-            })),
+            },
+          ],
+        };
+
+        const actions = {
+          order: {
+            get: jest.fn(() => actionOrder),
           },
         };
 
@@ -598,6 +625,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
         it('should update cart with PayPal order details without shipping when shipping is not required', async () => {
           params.require.shipping = false;
+          actionOrder.purchase_units[0].shipping = null;
 
           const payment = new PaypalDirectPayment(
             request,
@@ -727,7 +755,7 @@ describePayment('payment/paypal', (request, options, paymentMock) => {
 
         expect(window.paypal.Buttons).toHaveBeenCalledWith({
           fundingSource: 'paypal',
-          locale: 'de_DE',
+          locale: 'de-DE',
           style: {
             color: 'blue',
             height: 50,

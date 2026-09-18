@@ -36,12 +36,17 @@ async function loadStripe() {
 
 async function loadPaypal(params) {
   if (!window.paypal) {
-    const { currency, client_id, merchant_id } = params;
+    const { vault, currency, client_id, merchant_id } = params;
+
     const paypalParams = {
       currency,
       'client-id': client_id,
       commit: false,
     };
+
+    if (vault) {
+      paypalParams.vault = vault;
+    }
 
     if (merchant_id) {
       // paypal express and ppcp onboarded
