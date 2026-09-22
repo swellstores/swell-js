@@ -186,7 +186,7 @@ export default class AbstractGooglePayment extends Payment {
    * @returns {Promise<object>}
    */
   // eslint-disable-next-line no-unused-vars
-  async preparePaymentDataForCartUpdate(paymentData) {
+  async processPaymentData(paymentData) {
     throw new Error('Implement this!');
   }
 
@@ -208,9 +208,7 @@ export default class AbstractGooglePayment extends Payment {
       throw new Error('Google Pay token is missing');
     }
 
-    await this.preparePaymentDataForCartUpdate(paymentData).then((data) =>
-      this.updateCart(data),
-    );
+    await this.processPaymentData(paymentData);
 
     this.onSuccess();
   }

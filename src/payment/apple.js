@@ -3,6 +3,7 @@
 /** @typedef {import('./payment').default} Payment */
 /** @typedef {import('../../types').Cart} Cart */
 /** @typedef {import('../../types').Address} Address */
+/** @typedef {import('../../types').CartItemBillingSchedule} CartItemBillingSchedule */
 
 /**
  * @this {Payment}
@@ -344,4 +345,100 @@ export function getRequiredContactFields(params) {
   const requiredBillingContactFields = [...requiredFields, 'postalAddress'];
 
   return { requiredBillingContactFields, requiredShippingContactFields };
+}
+
+/**
+ * @param {CartItemBillingSchedule} schedule
+ * @returns {{ intervalUnit: ApplePayJS.ApplePayRecurringPaymentDateUnit, intervalCount: number }}
+ */
+function convertSwellScheduleToAppleRecurringInterval(schedule) {
+  let intervalCount = schedule.interval_count || 1;
+  let intervalUnit = 'day';
+
+  switch (schedule.interval) {
+    case 'daily':
+      intervalUnit = 'day';
+      break;
+
+    case 'weekly':
+      intervalUnit = 'day';
+      intervalCount *= 7;
+      break;
+
+    case 'monthly':
+      intervalUnit = 'month';
+      break;
+
+    case 'yearly':
+      intervalUnit = 'year';
+      break;
+
+    default:
+      break;
+  }
+
+  return { intervalUnit, intervalCount };
+}
+
+/**
+ * @param {Cart} cart
+ * @param {string} managementUrl
+ * @returns {ApplePayJS.ApplePayRecurringPaymentRequest | undefined}
+ */
+export function getRecurringPaymentRequest(cart, managementUrl) {
+  if (!cart.subscription_delivery) {
+    return undefined;
+  }
+
+  const item = cart.items.find(
+    (item) =>
+      item.purchase_option?.type === 'subscription' &&
+      item.purchase_option.billing_schedule,
+  );
+
+  if (item === undefined) {
+    return undefined;
+  }
+
+  const { intervalUnit, intervalCount } =
+    convertSwellScheduleToAppleRecurringInterval(
+      item.purchase_option.billing_schedule,
+    );
+
+  /** @type {ApplePayJS.ApplePayRecurringPaymentRequest} */
+  const recurringPaymentRequest = {
+    paymentDescription:
+      item.purchase_option.plan_description ||
+      item.purchase_option.plan_name ||
+      item.product_name ||
+      item.product?.name,
+    regularBilling: {
+      type: 'final',
+      label: item.purchase_option.plan_name || 'Subscription',
+      // Calculate the subscription price manually if a trial period is specified.
+      // However, discounts are not included in the calculation due to the difficulty of taking into account all scenarios.
+      amount: (item.purchase_option.billing_schedule.trial_days
+        ? (item.price || 0) * (item.quantity || 1)
+        : item.price_total
+      ).toFixed(2),
+      paymentTiming: 'recurring',
+      recurringPaymentIntervalUnit: intervalUnit,
+      recurringPaymentIntervalCount: intervalCount,
+    },
+    trialBilling: item.purchase_option.billing_schedule.trial_days
+      ? {
+          type: 'final',
+          label: 'Trial',
+          // When a trial period is set, price_total is 0 (usually)
+          amount: Number(item.price_total || 0).toFixed(2),
+          paymentTiming: 'recurring',
+          recurringPaymentIntervalUnit: 'day',
+          recurringPaymentIntervalCount:
+            item.purchase_option.billing_schedule.trial_days,
+        }
+      : undefined,
+    managementURL: managementUrl,
+  };
+
+  return recurringPaymentRequest;
 }

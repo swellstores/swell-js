@@ -33,6 +33,7 @@ import {
   getTotal,
   getLineItems,
   getRequiredContactFields,
+  getRecurringPaymentRequest,
   onShippingMethodSelected,
   onShippingContactSelected,
   onCouponCodeChanged,
@@ -124,6 +125,10 @@ export default class AbstractApplePayment extends Payment {
       requiredShippingContactFields,
       requiredBillingContactFields,
       supportsCouponCode: true,
+      recurringPaymentRequest: getRecurringPaymentRequest(
+        cart,
+        this.params.managementUrl,
+      ),
       lineItems: getLineItems(cart),
     };
   }
@@ -146,7 +151,7 @@ export default class AbstractApplePayment extends Payment {
    * @returns {Promise<object>}
    */
   // eslint-disable-next-line no-unused-vars
-  async preparePaymentDataForCartUpdate(event) {
+  async processPaymentData(event) {
     throw new Error('Implement this!');
   }
 
@@ -204,9 +209,7 @@ export default class AbstractApplePayment extends Payment {
         //
         // We store the payment token but DO NOT process the order yet.
         // The user must manually click "Place Order" to complete the transaction.
-        await this.preparePaymentDataForCartUpdate(event).then((data) =>
-          this.updateCart(data),
-        );
+        await this.processPaymentData(event);
 
         // Complete Apple Pay session successfully
         // This closes the Apple Pay sheet and shows success to the user
