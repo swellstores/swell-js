@@ -1,4 +1,3 @@
-import cardApi from '../../card';
 import { isLiveMode } from '../../utils';
 
 import { getBrowserInfo, getConvesioErrorMessage } from '../convesiopay';
@@ -21,7 +20,7 @@ export default class ConvesioCardPayment extends Payment {
       ''
     ).replace(/[^0-9]+/g, '');
 
-    const cardExpiry = cardApi.expiry(
+    const cardExpiry = this.api.card.expiry(
       this.params.exp ||
         document.getElementById(
           this.params.cardExpiry?.elementId || 'cardExpiry-element',
@@ -45,7 +44,7 @@ export default class ConvesioCardPayment extends Payment {
       ''
     ).trim();
 
-    const cardBrand = cardApi.type(cardNumber).toLowerCase();
+    const cardBrand = this.api.card.type(cardNumber).toLowerCase();
 
     const payment = await createConvesioCardPaymentToken(this.method, {
       paymentMethod: {
