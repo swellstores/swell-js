@@ -2,14 +2,14 @@ import type {
   ConvertSnakeToCamelCase,
   ResultsResponseCamel,
   ImageCamel,
-} from '..';
-import type { Replace } from '../utils';
+} from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { AttributeCamel } from '../attribute/camel';
+import type { AttributeCamel } from '../attribute/camel.js';
 import type {
   SubscriptionBillingScheduleCamel,
   SubscriptionOrderScheduleCamel,
-} from '../subscription/camel';
+} from '../subscription/camel.js';
 
 import type {
   Product,
@@ -23,7 +23,7 @@ import type {
   StandardPurchaseOption,
   SubscriptionPlan,
   SubscriptionPurchaseOption,
-} from './snake';
+} from './snake.js';
 
 export type BundleCamel = ConvertSnakeToCamelCase<
   Replace<

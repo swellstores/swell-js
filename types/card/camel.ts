@@ -1,10 +1,10 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { AccountCamel } from '../account/camel';
-import type { BillingCamel } from '../billing/camel';
+import type { AccountCamel } from '../account/camel.js';
+import type { BillingCamel } from '../billing/camel.js';
 
-import type { InputCreateToken, TokenResponse, Card } from './snake';
+import type { InputCreateToken, TokenResponse, Card } from './snake.js';
 
 export type CardCamel = ConvertSnakeToCamelCase<
   Replace<

@@ -1,5 +1,5 @@
-import type { ResultsResponse, ResultsResponseCamel } from '../index';
-import type { MakeCase } from '../utils';
+import type { ResultsResponse, ResultsResponseCamel } from '../index.js';
+import type { MakeCase } from '../utils.js';
 
 import type {
   ContentObject,
@@ -16,7 +16,7 @@ import type {
   SubscriptionPlan,
   SubscriptionPurchaseOption,
   SubscriptionInterval,
-} from './snake';
+} from './snake.js';
 
 import type {
   ProductCamel,
@@ -31,7 +31,7 @@ import type {
   StandardPurchaseOptionCamel,
   SubscriptionPlanCamel,
   SubscriptionPurchaseOptionCamel,
-} from './camel';
+} from './camel.js';
 
 export interface PriceRange {
   interval: number;

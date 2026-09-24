@@ -1,5 +1,5 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
 import type {
   Billing,
@@ -10,9 +10,9 @@ import type {
   BillingBancontact,
   BillingGoogle,
   BillingApple,
-} from './snake';
+} from './snake.js';
 
-import type { CardCamel } from '../card/camel';
+import type { CardCamel } from '../card/camel.js';
 
 export type BillingAffirmCamel = ConvertSnakeToCamelCase<BillingAffirm>;
 export type BillingResolveCamel = ConvertSnakeToCamelCase<BillingResolve>;

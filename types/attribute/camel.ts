@@ -1,9 +1,12 @@
-import type { ConvertSnakeToCamelCase, ResultsResponseCamel } from '..';
-import type { Replace } from '../utils';
+import type {
+  ConvertSnakeToCamelCase,
+  ResultsResponseCamel,
+} from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { ProductCamel } from '../product/camel';
+import type { ProductCamel } from '../product/camel.js';
 
-import type { Attribute } from './snake';
+import type { Attribute } from './snake.js';
 
 export type AttributeCamel = ConvertSnakeToCamelCase<
   Replace<

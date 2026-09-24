@@ -1,12 +1,12 @@
-import type { BaseModel, ItemDiscount, Tax } from '../index';
+import type { BaseModel, ItemDiscount, Tax } from '../index.js';
 
-import type { Order, OrderShipping } from '../order';
-import type { Subscription } from '../subscription';
-import type { Discount } from '../discount';
-import type { Account } from '../account';
-import type { Product } from '../product';
-import type { Billing } from '../billing';
-import type { Coupon } from '../coupon';
+import type { Order, OrderShipping } from '../order/index.js';
+import type { Subscription } from '../subscription/index.js';
+import type { Discount } from '../discount/index.js';
+import type { Account } from '../account/index.js';
+import type { Product } from '../product/index.js';
+import type { Billing } from '../billing/index.js';
+import type { Coupon } from '../coupon/index.js';
 
 export interface InvoiceItem {
   id?: string;

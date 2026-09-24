@@ -1,17 +1,22 @@
-import type { BaseModel, ItemDiscount, ResultsResponse, Tax } from '../index';
+import type {
+  BaseModel,
+  ItemDiscount,
+  ResultsResponse,
+  Tax,
+} from '../index.js';
 
-import type { Cart, CartItemPurchaseOption } from '../cart';
-import type { Product, Variant } from '../product';
-import type { Account, Address } from '../account';
-import type { Giftcard } from '../giftcard';
-import type { Payment } from '../payment';
-import type { Billing } from '../billing';
-import type { Coupon } from '../coupon';
-import type { Discount } from '../discount';
-import type { Promotion } from '../promotion';
-import type { Subscription } from '../subscription';
-import type { PurchaseLink } from '../purchase_link';
-import type { ShipmentRating } from '../shipment_rating';
+import type { Cart, CartItemPurchaseOption } from '../cart/index.js';
+import type { Product, Variant } from '../product/index.js';
+import type { Account, Address } from '../account/index.js';
+import type { Giftcard } from '../giftcard/index.js';
+import type { Payment } from '../payment/index.js';
+import type { Billing } from '../billing/index.js';
+import type { Coupon } from '../coupon/index.js';
+import type { Discount } from '../discount/index.js';
+import type { Promotion } from '../promotion/index.js';
+import type { Subscription } from '../subscription/index.js';
+import type { PurchaseLink } from '../purchase_link/index.js';
+import type { ShipmentRating } from '../shipment_rating/index.js';
 
 export interface OrderOption {
   id?: string;

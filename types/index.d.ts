@@ -8,25 +8,29 @@ import type {
   AccountCase,
   AddressCase,
   PasswordTokenInputCase,
-} from './account';
-import type { AttributeCase } from './attribute';
-import type { CardCase, InputCreateTokenCase, TokenResponseCase } from './card';
-import type { CartCase, CartItemCase } from './cart';
-import type { CategoryCase } from './category';
-import type { ContentCase } from './content';
+} from './account/index.js';
+import type { AttributeCase } from './attribute/index.js';
+import type {
+  CardCase,
+  InputCreateTokenCase,
+  TokenResponseCase,
+} from './card/index.js';
+import type { CartCase, CartItemCase } from './cart/index.js';
+import type { CategoryCase } from './category/index.js';
+import type { ContentCase } from './content/index.js';
 import type {
   SelectCurrencyReturnCase,
   EnabledCurrencyCase,
   FormatInputCase,
-} from './currency';
-import type { InvoiceCase } from './invoice';
-import type { Locale } from './locale';
-import type { OrderCase } from './order';
+} from './currency/index.js';
+import type { InvoiceCase } from './invoice/index.js';
+import type { Locale } from './locale/index.js';
+import type { OrderCase } from './order/index.js';
 import type {
   ProductCase,
   FlexibleProductInputCase,
   PriceRange,
-} from './product';
+} from './product/index.js';
 
 import type {
   InputPaymentElementCard,
@@ -37,34 +41,34 @@ import type {
   InputPaymentElementSezzle,
   InputPaymentRedirect,
   PaymentCase,
-} from './payment';
+} from './payment/index.js';
 
-import type { Settings } from './settings';
-import type { SubscriptionCase } from './subscription';
-import type { MakeCase } from './utils';
+import type { Settings } from './settings/index.js';
+import type { SubscriptionCase } from './subscription/index.js';
+import type { MakeCase } from './utils.js';
 
-export type * from './account';
-export type * from './attribute';
-export type * from './billing';
-export type * from './card';
-export type * from './cart';
-export type * from './category';
-export type * from './content';
-export type * from './coupon';
-export type * from './currency';
-export type * from './discount';
-export type * from './giftcard';
-export type * from './invoice';
-export type * from './locale';
-export type * from './order';
-export type * from './payment';
-export type * from './product';
-export type * from './promotion';
-export type * from './purchase_link';
-export type * from './refund';
-export type * from './settings';
-export type * from './shipment_rating';
-export type * from './subscription';
+export type * from './account/index.js';
+export type * from './attribute/index.js';
+export type * from './billing/index.js';
+export type * from './card/index.js';
+export type * from './cart/index.js';
+export type * from './category/index.js';
+export type * from './content/index.js';
+export type * from './coupon/index.js';
+export type * from './currency/index.js';
+export type * from './discount/index.js';
+export type * from './giftcard/index.js';
+export type * from './invoice/index.js';
+export type * from './locale/index.js';
+export type * from './order/index.js';
+export type * from './payment/index.js';
+export type * from './product/index.js';
+export type * from './promotion/index.js';
+export type * from './purchase_link/index.js';
+export type * from './refund/index.js';
+export type * from './settings/index.js';
+export type * from './shipment_rating/index.js';
+export type * from './subscription/index.js';
 
 export type SnakeToCamelCase<S> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
@@ -320,7 +324,7 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
   };
 
   currency: {
-    format(amount: number, format: FormatInputCase[C]): string;
+    format(amount: number, format?: FormatInputCase[C]): string;
     set(code?: string): EnabledCurrencyCase[C];
     get(): EnabledCurrencyCase[C];
     list(): EnabledCurrencyCase[C][] | Promise<EnabledCurrencyCase[C][]>;
@@ -504,21 +508,28 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
       data?: unknown,
       options?: unknown,
     ): Promise<object>;
+
+    delete(
+      appId: string,
+      functionName: string,
+      data?: unknown,
+      options?: unknown,
+    ): Promise<object>;
   };
 
   utils: {
-    get: typeof import('lodash-es/get').default;
-    set: typeof import('lodash-es/set').default;
-    uniq: typeof import('lodash-es/uniq').default;
-    find: typeof import('lodash-es/find').default;
-    round: typeof import('lodash-es/round').default;
-    pick: typeof import('lodash-es/pick').default;
-    findIndex: typeof import('lodash-es/findIndex').default;
-    cloneDeep: typeof import('lodash-es/cloneDeep').default;
-    toNumber: typeof import('lodash-es/toNumber').default;
-    toLower: typeof import('lodash-es/toLower').default;
-    isEqual: typeof import('lodash-es/isEqual').default;
-    isEmpty: typeof import('lodash-es/isEmpty').default;
+    get: typeof import('lodash-es').get;
+    set: typeof import('lodash-es').set;
+    uniq: typeof import('lodash-es').uniq;
+    find: typeof import('lodash-es').find;
+    round: typeof import('lodash-es').round;
+    pick: typeof import('lodash-es').pick;
+    findIndex: typeof import('lodash-es').findIndex;
+    cloneDeep: typeof import('lodash-es').cloneDeep;
+    toNumber: typeof import('lodash-es').toNumber;
+    toLower: typeof import('lodash-es').toLower;
+    isEqual: typeof import('lodash-es').isEqual;
+    isEmpty: typeof import('lodash-es').isEmpty;
     merge: typeof import('deepmerge');
 
     map<T, R>(arr: T[], mapper: (item: T) => R): R[];
@@ -581,5 +592,4 @@ export interface SwellClientDefault<C extends 'snake' | 'camel'>
 
 declare const swell: SwellClientDefault<'snake'>;
 
-export as namespace swell;
-export = swell;
+export default swell;

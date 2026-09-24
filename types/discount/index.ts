@@ -4,10 +4,10 @@ export type {
   DiscountRuleBuyGetItem,
   DiscountRuleBuyGetProduct,
   DiscountRuleBuyGetCategory,
-} from './snake';
+} from './snake.js';
 
 export type {
   DiscountCamel,
   DiscountRuleCamel,
   DiscountRuleBuyGetItemCamel,
-} from './camel';
+} from './camel.js';

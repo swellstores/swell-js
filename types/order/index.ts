@@ -1,4 +1,4 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
 import type {
   Order,
@@ -6,7 +6,7 @@ import type {
   OrderItem,
   OrderShipping,
   OrderGiftCard,
-} from './snake';
+} from './snake.js';
 
 import type {
   OrderCamel,
@@ -14,7 +14,7 @@ import type {
   OrderItemCamel,
   OrderOptionCamel,
   OrderShippingCamel,
-} from './camel';
+} from './camel.js';
 
 export type OrderCase = MakeCase<Order, OrderCamel>;
 

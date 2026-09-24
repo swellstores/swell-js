@@ -1,9 +1,9 @@
-import type { BaseModel, ResultsResponse } from '..';
+import type { BaseModel, ResultsResponse } from '../index.js';
 
-import type { Coupon } from '../coupon';
-import type { CartItem } from '../cart';
-import type { Promotion } from '../promotion';
-import type { Discount } from '../discount';
+import type { Coupon } from '../coupon/index.js';
+import type { CartItem } from '../cart/index.js';
+import type { Promotion } from '../promotion/index.js';
+import type { Discount } from '../discount/index.js';
 
 export interface PurchaseLink extends BaseModel {
   name?: string;

@@ -1,10 +1,10 @@
-import type { BaseModel, ResultsResponse, Image } from '../index';
+import type { BaseModel, ResultsResponse, Image } from '../index.js';
 
-import type { Attribute } from '../attribute';
+import type { Attribute } from '../attribute/index.js';
 import type {
   SubscriptionBillingSchedule,
   SubscriptionOrderSchedule,
-} from '../subscription';
+} from '../subscription/index.js';
 
 export type SubscriptionInterval = 'monthly' | 'daily' | 'weekly' | 'yearly';
 

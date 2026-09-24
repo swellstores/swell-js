@@ -1,12 +1,12 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
 import type {
   DiscountRuleBuyGetProduct,
   DiscountRuleBuyGetCategory,
   DiscountRule,
   Discount,
-} from './snake';
+} from './snake.js';
 
 export type DiscountRuleBuyGetItemCamel =
   | ConvertSnakeToCamelCase<DiscountRuleBuyGetProduct>

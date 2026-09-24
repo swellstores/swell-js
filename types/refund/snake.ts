@@ -1,8 +1,8 @@
-import type { BaseModel } from '..';
+import type { BaseModel } from '../index.js';
 
-import type { Order } from '../order';
-import type { Payment } from '../payment';
-import type { Subscription } from '../subscription';
+import type { Order } from '../order/index.js';
+import type { Payment } from '../payment/index.js';
+import type { Subscription } from '../subscription/index.js';
 
 export interface Refund extends BaseModel {
   amount?: number;

@@ -1,8 +1,8 @@
-import type { ConvertSnakeToCamelCase, ImageCamel } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase, ImageCamel } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { CategoryCamel } from '../category';
-import type { UserCamel } from '../user';
+import type { CategoryCamel } from '../category/index.js';
+import type { UserCamel } from '../user/index.js';
 
 import type {
   Content,
@@ -10,7 +10,7 @@ import type {
   ContentPage,
   ContentBlog,
   ContentBlogCategory,
-} from './snake';
+} from './snake.js';
 
 export type ContentCamel = ConvertSnakeToCamelCase<Content>;
 export type ContentSectionCamel = ConvertSnakeToCamelCase<ContentSection>;
