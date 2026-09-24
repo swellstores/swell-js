@@ -1,7 +1,7 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
-import type { Category } from './snake';
-import type { CategoryCamel } from './camel';
+import type { Category } from './snake.js';
+import type { CategoryCamel } from './camel.js';
 
 export type CategoryCase = MakeCase<Category, CategoryCamel>;
 

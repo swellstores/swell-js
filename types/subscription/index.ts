@@ -1,18 +1,18 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
 import type {
   SubscriptionBillingSchedule,
   SubscriptionOrderSchedule,
   SubscriptionItem,
   Subscription,
-} from './snake';
+} from './snake.js';
 
 import type {
   SubscriptionBillingScheduleCamel,
   SubscriptionOrderScheduleCamel,
   SubscriptionItemCamel,
   SubscriptionCamel,
-} from './camel';
+} from './camel.js';
 
 export type SubscriptionCase = MakeCase<Subscription, SubscriptionCamel>;
 

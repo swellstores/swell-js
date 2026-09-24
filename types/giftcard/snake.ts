@@ -1,9 +1,9 @@
-import type { BaseModel, ResultsResponse } from '../index';
+import type { BaseModel, ResultsResponse } from '../index.js';
 
-import type { Account } from '../account';
-import type { Payment } from '../payment';
-import type { Refund } from '../refund';
-import type { Order } from '../order';
+import type { Account } from '../account/index.js';
+import type { Payment } from '../payment/index.js';
+import type { Refund } from '../refund/index.js';
+import type { Order } from '../order/index.js';
 
 export interface GiftcardDebit extends BaseModel {
   amount?: number;

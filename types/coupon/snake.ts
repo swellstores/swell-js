@@ -1,6 +1,6 @@
-import type { BaseModel } from '../index';
+import type { BaseModel } from '../index.js';
 
-import type { Discount } from '../discount';
+import type { Discount } from '../discount/index.js';
 
 export interface Coupon extends BaseModel {
   name?: string;

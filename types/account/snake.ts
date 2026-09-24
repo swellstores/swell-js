@@ -1,9 +1,9 @@
-import type { BaseModel, ResultsResponse } from '..';
+import type { BaseModel, ResultsResponse } from '../index.js';
 
-import type { Subscription } from '../subscription';
-import type { Card } from '../card';
-import type { Order } from '../order';
-import type { Billing } from '../billing';
+import type { Subscription } from '../subscription/index.js';
+import type { Card } from '../card/index.js';
+import type { Order } from '../order/index.js';
+import type { Billing } from '../billing/index.js';
 
 export interface PasswordTokenInput {
   password_token?: string;

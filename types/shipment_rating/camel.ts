@@ -1,7 +1,7 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { ShipmentRating, ShipmentService } from './snake';
+import type { ShipmentRating, ShipmentService } from './snake.js';
 
 export type ShipmentRatingCamel = ConvertSnakeToCamelCase<
   Replace<

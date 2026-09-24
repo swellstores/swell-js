@@ -1,12 +1,12 @@
-import type { BaseModel, ResultsResponse } from '../index';
+import type { BaseModel, ResultsResponse } from '../index.js';
 
-import type { Account } from '../account';
-import type { Subscription } from '../subscription';
-import type { Giftcard } from '../giftcard';
-import type { Invoice } from '../invoice';
-import type { Refund } from '../refund';
-import type { Order } from '../order';
-import type { Card } from '../card';
+import type { Account } from '../account/index.js';
+import type { Subscription } from '../subscription/index.js';
+import type { Giftcard } from '../giftcard/index.js';
+import type { Invoice } from '../invoice/index.js';
+import type { Refund } from '../refund/index.js';
+import type { Order } from '../order/index.js';
+import type { Card } from '../card/index.js';
 
 export interface Payment extends BaseModel {
   account?: Account;

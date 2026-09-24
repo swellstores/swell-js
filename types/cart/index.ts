@@ -1,4 +1,4 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
 import type {
   Cart,
@@ -9,7 +9,7 @@ import type {
   CartItemOrderSchedule,
   CartGiftCardItem,
   CartShipping,
-} from './snake';
+} from './snake.js';
 
 import type {
   CartCamel,
@@ -20,7 +20,7 @@ import type {
   CartItemOrderScheduleCamel,
   CartGiftCardItemCamel,
   CartShippingCamel,
-} from './camel';
+} from './camel.js';
 
 export type CartCase = MakeCase<Cart, CartCamel>;
 export type CartItemCase = MakeCase<CartItem, CartItemCamel>;

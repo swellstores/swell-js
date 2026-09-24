@@ -1,26 +1,29 @@
-import type { ConvertSnakeToCamelCase, ResultsResponseCamel } from '..';
-import type { Replace } from '../utils';
+import type {
+  ConvertSnakeToCamelCase,
+  ResultsResponseCamel,
+} from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { AccountCamel } from '../account/camel';
+import type { AccountCamel } from '../account/camel.js';
 import type {
   CartItemOptionsCamel,
   CartItemPurchaseOptionCamel,
-} from '../cart/camel';
-import type { ProductCamel, VariantCamel } from '../product/camel';
-import type { DiscountCamel } from '../discount/camel';
-import type { PaymentCamel } from '../payment/camel';
-import type { InvoiceCamel } from '../invoice/camel';
-import type { BillingCamel } from '../billing/camel';
-import type { CouponCamel } from '../coupon/camel';
-import type { RefundCamel } from '../refund/camel';
-import type { OrderCamel } from '../order/camel';
+} from '../cart/camel.js';
+import type { ProductCamel, VariantCamel } from '../product/camel.js';
+import type { DiscountCamel } from '../discount/camel.js';
+import type { PaymentCamel } from '../payment/camel.js';
+import type { InvoiceCamel } from '../invoice/camel.js';
+import type { BillingCamel } from '../billing/camel.js';
+import type { CouponCamel } from '../coupon/camel.js';
+import type { RefundCamel } from '../refund/camel.js';
+import type { OrderCamel } from '../order/camel.js';
 
 import type {
   SubscriptionBillingSchedule,
   SubscriptionOrderSchedule,
   SubscriptionItem,
   Subscription,
-} from './snake';
+} from './snake.js';
 
 export type SubscriptionItemCamel = ConvertSnakeToCamelCase<
   Replace<
