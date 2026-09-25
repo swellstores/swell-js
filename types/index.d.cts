@@ -11,6 +11,7 @@ declare namespace swell {
   export type IncludeQuery = import('./index.js', { with: { 'resolution-mode': 'import' } }).IncludeQuery;
   export type InitOptions<C extends 'snake' | 'camel' = 'snake'> = import('./index.js', { with: { 'resolution-mode': 'import' } }).InitOptions<C>;
   export type InitOptionsCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).InitOptionsCamel;
+  export type PublicConfig<C extends 'snake' | 'camel' = 'snake'> = import('./index.js', { with: { 'resolution-mode': 'import' } }).PublicConfig<C>;
   export type ResultsResponse<T> = import('./index.js', { with: { 'resolution-mode': 'import' } }).ResultsResponse<T>;
   export type ResultsResponseCamel<T> = import('./index.js', { with: { 'resolution-mode': 'import' } }).ResultsResponseCamel<T>;
   export type Tax = import('./index.js', { with: { 'resolution-mode': 'import' } }).Tax;
