@@ -145,7 +145,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async createIntent(data) {
-    return vaultRequest('post', '/intent', data);
+    return vaultRequest('post', '/intent', data, this.options);
   }
 
   /**
@@ -155,7 +155,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async updateIntent(data) {
-    return vaultRequest('put', '/intent', data);
+    return vaultRequest('put', '/intent', data, this.options);
   }
 
   /**
@@ -165,7 +165,7 @@ export default class Payment {
    * @returns {Promise<object>}
    */
   async authorizeGateway(data) {
-    return vaultRequest('post', '/authorization', data);
+    return vaultRequest('post', '/authorization', data, this.options);
   }
 
   /**

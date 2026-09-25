@@ -1,4 +1,4 @@
-import { loadScript, vaultRequest, setOptions } from './index';
+import { loadScript, vaultRequest } from './index';
 
 describe('utils/index', () => {
   describe('#loadScript', () => {
@@ -64,17 +64,13 @@ describe('utils/index', () => {
   });
 
   describe('#vaultRequest', () => {
-    let vaultUrl;
-    let timeout;
-    let key;
+    const options = {
+      vaultUrl: 'https://vault.schema.io',
+      timeout: 10000,
+      key: 'pk_test',
+    };
 
     beforeEach(() => {
-      vaultUrl = 'https://vault.schema.io';
-      timeout = 10000;
-      key = 'pk_test';
-
-      setOptions({ vaultUrl, timeout, key });
-
       fetch.mockResponse(
         JSON.stringify({
           $data: { test: 'test-field' },
@@ -84,10 +80,15 @@ describe('utils/index', () => {
     });
 
     it('should send vault request', async () => {
-      const result = await vaultRequest('post', '/intent', {
-        gateway: 'stripe',
-        intent: { amount: 100, payment_method: 'pm_test' },
-      });
+      const result = await vaultRequest(
+        'post',
+        '/intent',
+        {
+          gateway: 'stripe',
+          intent: { amount: 100, payment_method: 'pm_test' },
+        },
+        options,
+      );
 
       expect(result).toEqual({ test: 'test-field' });
       expect(fetch).toHaveBeenCalledWith(
@@ -102,10 +103,15 @@ describe('utils/index', () => {
       fetch.mockResponse(JSON.stringify(''));
 
       await expect(() =>
-        vaultRequest('post', '/intent', {
-          gateway: 'stripe',
-          intent: { amount: 100, payment_method: 'pm_test' },
-        }),
+        vaultRequest(
+          'post',
+          '/intent',
+          {
+            gateway: 'stripe',
+            intent: { amount: 100, payment_method: 'pm_test' },
+          },
+          options,
+        ),
       ).rejects.toThrow('A connection error occurred while making the request');
     });
 
@@ -117,10 +123,15 @@ describe('utils/index', () => {
       );
 
       await expect(() =>
-        vaultRequest('post', '/intent', {
-          gateway: 'stripe',
-          intent: { amount: 100, payment_method: 'pm_test' },
-        }),
+        vaultRequest(
+          'post',
+          '/intent',
+          {
+            gateway: 'stripe',
+            intent: { amount: 100, payment_method: 'pm_test' },
+          },
+          options,
+        ),
       ).rejects.toThrow('A connection error occurred while making the request');
     });
 
@@ -133,10 +144,15 @@ describe('utils/index', () => {
       );
 
       await expect(() =>
-        vaultRequest('post', '/intent', {
-          gateway: 'stripe',
-          intent: { amount: 100, payment_method: 'pm_test' },
-        }),
+        vaultRequest(
+          'post',
+          '/intent',
+          {
+            gateway: 'stripe',
+            intent: { amount: 100, payment_method: 'pm_test' },
+          },
+          options,
+        ),
       ).rejects.toThrow('Test Error');
     });
   });
