@@ -14,12 +14,17 @@
   "main": "./dist/swell.cjs",
   "module": "./dist/index.mjs",
   "browser": "./dist/swell.umd.min.js",
-  "types": "./types/index.d.ts",
+  "types": "./types/index.d.cts",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/swell.cjs"
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./types/index.d.cts",
+        "default": "./dist/swell.cjs"
+      }
     }
   },
   "files": [
@@ -27,6 +32,7 @@
     "types"
   ],
   "dependencies": {
+    "@types/lodash-es": "^4.17.12",
     "deepmerge": "^4.3.1",
     "fast-case": "^1.7.0",
     "qs": "^6.12.1"
@@ -52,7 +58,6 @@
     "@types/braintree-web": "^3.96.17",
     "@types/googlepay": "^0.7.7",
     "@types/jest": "^29.5.11",
-    "@types/lodash-es": "^4.17.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "babel-jest": "^29.7.0",
@@ -93,6 +98,8 @@
   "scripts": {
     "test": "jest --config=jest.config.json --detectOpenHandles",
     "test:watch": "jest --config=jest.config.json --watch",
+    "build:types": "node scripts/build-types-cjs.mjs",
+    "test:types": "node scripts/build-types-cjs.mjs --check && node test/types/check.mjs",
     "test:page": "webpack-dev-server --open --config test/page/webpack.config.cjs",
     "watch": "nodemon --watch src --exec 'npm run build'",
     "prebuild": "rimraf dist",

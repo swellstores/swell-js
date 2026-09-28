@@ -1,7 +1,7 @@
-import type { BaseModel } from '..';
+import type { BaseModel } from '../index.js';
 
-import type { Account } from '../account';
-import type { Billing } from '../billing';
+import type { Account } from '../account/index.js';
+import type { Billing } from '../billing/index.js';
 
 export interface InputCreateToken {
   account_id?: string;

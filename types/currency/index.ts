@@ -1,16 +1,16 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
 import type {
   SelectCurrencyReturn,
   EnabledCurrency,
   FormatInput,
-} from './snake';
+} from './snake.js';
 
 import type {
   SelectCurrencyReturnCamel,
   EnabledCurrencyCamel,
   FormatInputCamel,
-} from './camel';
+} from './camel.js';
 
 export type SelectCurrencyReturnCase = MakeCase<
   SelectCurrencyReturn,

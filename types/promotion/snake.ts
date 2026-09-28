@@ -1,8 +1,8 @@
-import type { BaseModel } from '..';
+import type { BaseModel } from '../index.js';
 
-import type { Product } from '../product';
-import type { Discount } from '../discount';
-import type { Category } from '../category';
+import type { Product } from '../product/index.js';
+import type { Discount } from '../discount/index.js';
+import type { Category } from '../category/index.js';
 
 export interface PromotionExclusion {
   id: string;

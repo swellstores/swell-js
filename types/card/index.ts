@@ -1,12 +1,12 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
-import type { InputCreateToken, TokenResponse, Card } from './snake';
+import type { InputCreateToken, TokenResponse, Card } from './snake.js';
 
 import type {
   InputCreateTokenCamel,
   TokenResponseCamel,
   CardCamel,
-} from './camel';
+} from './camel.js';
 
 export type InputCreateTokenCase = MakeCase<
   InputCreateToken,

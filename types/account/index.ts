@@ -1,12 +1,12 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
-import type { Account, Address, PasswordTokenInput } from './snake';
+import type { Account, Address, PasswordTokenInput } from './snake.js';
 
 import type {
   AccountCamel,
   AddressCamel,
   PasswordTokenInputCamel,
-} from './camel';
+} from './camel.js';
 
 export type PasswordTokenInputCase = MakeCase<
   PasswordTokenInput,

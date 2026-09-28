@@ -7,7 +7,7 @@ export type {
   BillingBancontact,
   BillingGoogle,
   BillingApple,
-} from './snake';
+} from './snake.js';
 
 export type {
   BillingCamel,
@@ -18,4 +18,4 @@ export type {
   BillingBancontactCamel,
   BillingGoogleCamel,
   BillingAppleCamel,
-} from './camel';
+} from './camel.js';

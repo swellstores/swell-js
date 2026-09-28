@@ -1,11 +1,11 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { ProductCamel } from '../product/camel';
-import type { DiscountCamel } from '../discount/camel';
-import type { CategoryCamel } from '../category/camel';
+import type { ProductCamel } from '../product/camel.js';
+import type { DiscountCamel } from '../discount/camel.js';
+import type { CategoryCamel } from '../category/camel.js';
 
-import type { Promotion, PromotionExclusion } from './snake';
+import type { Promotion, PromotionExclusion } from './snake.js';
 
 export type PromotionExclusionCamel = ConvertSnakeToCamelCase<
   Replace<

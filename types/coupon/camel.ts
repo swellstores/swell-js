@@ -1,9 +1,9 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { DiscountCamel } from '../discount/camel';
+import type { DiscountCamel } from '../discount/camel.js';
 
-import type { Coupon } from './snake';
+import type { Coupon } from './snake.js';
 
 export type CouponCamel = ConvertSnakeToCamelCase<
   Replace<

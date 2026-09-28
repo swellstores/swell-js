@@ -1,2 +1,2 @@
-export type { Refund } from './snake';
-export type { RefundCamel } from './camel';
+export type { Refund } from './snake.js';
+export type { RefundCamel } from './camel.js';

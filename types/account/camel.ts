@@ -1,10 +1,13 @@
-import type { ConvertSnakeToCamelCase, ResultsResponseCamel } from '..';
-import type { Replace } from '../utils';
-import type { PasswordTokenInput, Account, Address } from './snake';
-import type { BillingCamel } from '../billing/camel';
-import type { CardCamel } from '../card/camel';
-import type { OrderCamel } from '../order/camel';
-import type { SubscriptionCamel } from '../subscription/camel';
+import type {
+  ConvertSnakeToCamelCase,
+  ResultsResponseCamel,
+} from '../index.js';
+import type { Replace } from '../utils.js';
+import type { PasswordTokenInput, Account, Address } from './snake.js';
+import type { BillingCamel } from '../billing/camel.js';
+import type { CardCamel } from '../card/camel.js';
+import type { OrderCamel } from '../order/camel.js';
+import type { SubscriptionCamel } from '../subscription/camel.js';
 
 export type PasswordTokenInputCamel =
   ConvertSnakeToCamelCase<PasswordTokenInput>;

@@ -1,5 +1,5 @@
-import type { BaseModel, ResultsResponse } from '..';
-import type { Product } from '../product';
+import type { BaseModel, ResultsResponse } from '../index.js';
+import type { Product } from '../product/index.js';
 
 export interface Attribute extends BaseModel {
   default?: string | null | number | boolean | object;

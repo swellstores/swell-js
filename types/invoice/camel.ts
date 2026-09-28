@@ -1,15 +1,15 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { OrderCamel, OrderShippingCamel } from '../order/camel';
-import type { SubscriptionCamel } from '../subscription/camel';
-import type { DiscountCamel } from '../discount/camel';
-import type { AccountCamel } from '../account/camel';
-import type { ProductCamel } from '../product/camel';
-import type { BillingCamel } from '../billing/camel';
-import type { CouponCamel } from '../coupon/camel';
+import type { OrderCamel, OrderShippingCamel } from '../order/camel.js';
+import type { SubscriptionCamel } from '../subscription/camel.js';
+import type { DiscountCamel } from '../discount/camel.js';
+import type { AccountCamel } from '../account/camel.js';
+import type { ProductCamel } from '../product/camel.js';
+import type { BillingCamel } from '../billing/camel.js';
+import type { CouponCamel } from '../coupon/camel.js';
 
-import type { Invoice, InvoiceItem } from './snake';
+import type { Invoice, InvoiceItem } from './snake.js';
 
 export type InvoiceItemCamel = ConvertSnakeToCamelCase<
   Replace<

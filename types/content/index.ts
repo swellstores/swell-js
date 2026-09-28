@@ -1,4 +1,4 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
 import type {
   Content,
@@ -6,14 +6,14 @@ import type {
   ContentPage,
   ContentBlog,
   ContentBlogCategory,
-} from './snake';
+} from './snake.js';
 import type {
   ContentCamel,
   ContentSectionCamel,
   ContentPageCamel,
   ContentBlogCamel,
   ContentBlogCategoryCamel,
-} from './camel';
+} from './camel.js';
 
 export type ContentCase = MakeCase<Content, ContentCamel>;
 export type ContentSectionCase = MakeCase<ContentSection, ContentSectionCamel>;

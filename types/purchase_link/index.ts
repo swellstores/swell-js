@@ -1,2 +1,2 @@
-export type { PurchaseLink } from './snake';
-export type { PurchaseLinkCamel } from './camel';
+export type { PurchaseLink } from './snake.js';
+export type { PurchaseLinkCamel } from './camel.js';

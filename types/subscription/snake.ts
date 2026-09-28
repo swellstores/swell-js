@@ -1,15 +1,20 @@
-import type { BaseModel, ItemDiscount, ResultsResponse, Tax } from '../index';
+import type {
+  BaseModel,
+  ItemDiscount,
+  ResultsResponse,
+  Tax,
+} from '../index.js';
 
-import type { Account } from '../account';
-import type { CartItemOptions, CartItemPurchaseOption } from '../cart';
-import type { Product, Variant } from '../product';
-import type { Discount } from '../discount';
-import type { Payment } from '../payment';
-import type { Invoice } from '../invoice';
-import type { Billing } from '../billing';
-import type { Coupon } from '../coupon';
-import type { Refund } from '../refund';
-import type { Order } from '../order';
+import type { Account } from '../account/index.js';
+import type { CartItemOptions, CartItemPurchaseOption } from '../cart/index.js';
+import type { Product, Variant } from '../product/index.js';
+import type { Discount } from '../discount/index.js';
+import type { Payment } from '../payment/index.js';
+import type { Invoice } from '../invoice/index.js';
+import type { Billing } from '../billing/index.js';
+import type { Coupon } from '../coupon/index.js';
+import type { Refund } from '../refund/index.js';
+import type { Order } from '../order/index.js';
 
 export interface SubscriptionItem {
   id: string;

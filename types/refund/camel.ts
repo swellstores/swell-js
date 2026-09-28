@@ -1,11 +1,11 @@
-import type { ConvertSnakeToCamelCase } from '..';
-import type { Replace } from '../utils';
+import type { ConvertSnakeToCamelCase } from '../index.js';
+import type { Replace } from '../utils.js';
 
-import type { OrderCamel } from '../order/camel';
-import type { PaymentCamel } from '../payment/camel';
-import type { SubscriptionCamel } from '../subscription/camel';
+import type { OrderCamel } from '../order/camel.js';
+import type { PaymentCamel } from '../payment/camel.js';
+import type { SubscriptionCamel } from '../subscription/camel.js';
 
-import type { Refund } from './snake';
+import type { Refund } from './snake.js';
 
 export type RefundCamel = ConvertSnakeToCamelCase<
   Replace<

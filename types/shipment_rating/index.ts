@@ -1,2 +1,2 @@
-export type { ShipmentRating, ShipmentService } from './snake';
-export type { ShipmentRatingCamel, ShipmentServiceCamel } from './camel';
+export type { ShipmentRating, ShipmentService } from './snake.js';
+export type { ShipmentRatingCamel, ShipmentServiceCamel } from './camel.js';

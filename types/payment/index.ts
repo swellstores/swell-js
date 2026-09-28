@@ -1,7 +1,7 @@
-import type { MakeCase } from '../utils';
+import type { MakeCase } from '../utils.js';
 
-import type { Payment } from './snake';
-import type { PaymentCamel } from './camel';
+import type { Payment } from './snake.js';
+import type { PaymentCamel } from './camel.js';
 
 export type PaymentCase = MakeCase<Payment, PaymentCamel>;
 

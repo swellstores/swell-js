@@ -1,7 +1,7 @@
-import type { BaseModel, Image } from '..';
+import type { BaseModel, Image } from '../index.js';
 
-import type { Category } from '../category';
-import type { User } from '../user';
+import type { Category } from '../category/index.js';
+import type { User } from '../user/index.js';
 
 export interface ContentSection {
   id: string;
