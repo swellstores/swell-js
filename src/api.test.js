@@ -384,4 +384,33 @@ describe('api', () => {
       expect(data).toEqual({ query_test: true });
     });
   });
+
+  describe('getCookie/setCookie', () => {
+    it('should use the configured cookie handlers', () => {
+      const cookies = { 'swell-session': 'session-a' };
+      const setCookie = jest.fn();
+      const client = api.create('test', 'pk_test', {
+        getCookie: (name) => cookies[name],
+        setCookie,
+      });
+
+      expect(client.getCookie('swell-session')).toBe('session-a');
+      expect(client.getCookie('swell-session')).toBe(
+        client.session.getCookie(),
+      );
+
+      client.setCookie('swell-locale', 'en-US', { path: '/shop' });
+
+      expect(setCookie).toHaveBeenCalledWith('swell-locale', 'en-US', {
+        path: '/shop',
+      });
+    });
+
+    it('should fall back to the default cookie handlers before init', () => {
+      const client = api.create();
+
+      expect(client.getCookie('swell-session')).toBeUndefined();
+      expect(() => client.setCookie('swell-session', 'x')).not.toThrow();
+    });
+  });
 });

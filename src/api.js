@@ -138,9 +138,13 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
 
     utils,
 
-    getCookie,
+    getCookie(name) {
+      return (options.getCookie || getCookie)(name);
+    },
 
-    setCookie,
+    setCookie(name, value, cookieOptions) {
+      return (options.setCookie || setCookie)(name, value, cookieOptions);
+    },
   });
 
   async function request(

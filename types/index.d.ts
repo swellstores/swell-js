@@ -112,7 +112,11 @@ export interface InitOptions<C extends 'snake' | 'camel' = 'snake'> {
   useCamelCase?: boolean;
   url?: string;
   vaultUrl?: string;
-  setCookie?: (key: string, value: string) => void;
+  setCookie?: (
+    key: string,
+    value: string,
+    options?: Record<string, string | number | boolean | Date>,
+  ) => void;
   getCookie?: (key: string) => string | undefined;
   headers?: Record<string, string>;
   getCart?: () => Promise<CartCase[C] | null>;
@@ -128,6 +132,15 @@ export interface InitOptions<C extends 'snake' | 'camel' = 'snake'> {
 export interface InitOptionsCamel extends InitOptions<'camel'> {
   useCamelCase: true;
 }
+
+/** Serializable initialization options; applications expose only public values. */
+export type PublicConfig<C extends 'snake' | 'camel' = 'snake'> = Omit<
+  InitOptions<C>,
+  'setCookie' | 'getCookie' | 'getCart' | 'updateCart'
+> & {
+  storeId: string;
+  publicKey: string;
+};
 
 export interface ResultsResponse<T> {
   count: number;
@@ -570,7 +583,11 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
   delete<T>(url: string, data?: unknown): Promise<T>;
 
   getCookie(key: string): string | undefined;
-  setCookie(key: string, value: string, options?: Record<string, string>): void;
+  setCookie(
+    key: string,
+    value: string,
+    options?: Record<string, string | number | boolean | Date>,
+  ): void;
 }
 
 export interface SwellClientDefault<C extends 'snake' | 'camel'>
