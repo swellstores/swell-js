@@ -24,18 +24,28 @@ export default class AppPaymentComponent extends AppComponent {
   }
 
   #getIntent(data) {
-    return vaultRequest('GET', '/intent', {
-      gateway: this.#gateway,
-      account_id: this.#accountId,
-      intent: data,
-    });
+    return vaultRequest(
+      'GET',
+      '/intent',
+      {
+        gateway: this.#gateway,
+        account_id: this.#accountId,
+        intent: data,
+      },
+      this.options,
+    );
   }
 
   #createIntent(data) {
-    return vaultRequest('POST', '/intent', {
-      gateway: this.#gateway,
-      account_id: this.#accountId,
-      intent: data,
-    });
+    return vaultRequest(
+      'POST',
+      '/intent',
+      {
+        gateway: this.#gateway,
+        account_id: this.#accountId,
+        intent: data,
+      },
+      this.options,
+    );
   }
 }

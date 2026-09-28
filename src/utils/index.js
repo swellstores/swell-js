@@ -18,8 +18,6 @@ import { camelize, decamelize, camelizeKeys, decamelizeKeys } from 'fast-case';
 
 const LOADING_SCRIPTS = {};
 
-let options = {};
-
 function arrayMerge(target, source, options) {
   const destination = target.slice();
   source.forEach((item, index) => {
@@ -55,14 +53,6 @@ function merge(x, y, opt) {
   }
 
   return deepmerge(x, y, opt);
-}
-
-function setOptions(optns) {
-  options = optns;
-}
-
-function getOptions() {
-  return options;
 }
 
 function isObject(val) {
@@ -146,7 +136,7 @@ function defaultMethods(api, uri, methods) {
   };
 }
 
-async function vaultRequest(method, url, data) {
+async function vaultRequest(method, url, data, options) {
   const { vaultUrl, timeout, key } = options;
   const requestData = {
     $jsonp: {
@@ -332,8 +322,6 @@ export {
   camelCase,
   cloneDeep,
   merge,
-  setOptions,
-  getOptions,
   toCamel,
   toCamelPath,
   toSnake,

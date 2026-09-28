@@ -1,12 +1,11 @@
 import { cleanProductOptions } from './products';
 import { defaultMethods } from './utils';
-import cache from './cache';
 
 function methods(api) {
   const { get, list } = defaultMethods(api, '/subscriptions', ['list', 'get']);
   return {
     get: (id, ...args) => {
-      return cache.getFetch('subscriptions', id, () => get(id, ...args));
+      return api.cache.getFetch('subscriptions', id, () => get(id, ...args));
     },
 
     list,

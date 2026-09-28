@@ -181,7 +181,7 @@ export default class PaymentController {
   }
 
   async _vaultRequest(method, url, data) {
-    const response = await vaultRequest(method, url, data);
+    const response = await vaultRequest(method, url, data, this.options);
 
     if (this.options.useCamelCase) {
       return toCamel(response);

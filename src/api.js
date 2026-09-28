@@ -79,8 +79,6 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
       options.getCart = opt.getCart;
       options.updateCart = opt.updateCart;
       options.headers = opt.headers || {};
-
-      utils.setOptions(options);
     },
 
     // Backward compatibility
@@ -104,9 +102,9 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
       return api.request('delete', url, data);
     },
 
-    cache,
+    cache: cache(options),
 
-    card,
+    card: card(options),
 
     cart: cart(api, options),
 

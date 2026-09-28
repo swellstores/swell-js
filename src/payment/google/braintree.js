@@ -4,8 +4,6 @@ import {
   LibraryNotLoadedError,
 } from '../../utils/errors';
 
-import cardApi from '../../card';
-
 import {
   onPaymentDataChanged,
   convertToSwellAddress,
@@ -263,7 +261,7 @@ export default class BraintreeGooglePayment extends Payment {
 
     if (cart.subscription_delivery) {
       try {
-        const card = await cardApi.createToken({
+        const card = await this.api.card.createToken({
           gateway: 'braintree',
           account_id: cart.account_id,
           nonce,

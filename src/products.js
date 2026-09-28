@@ -9,22 +9,19 @@ import {
   isEqual,
   snakeCase,
 } from './utils';
-import cache from './cache';
 import attributesApi from './attributes';
 
-let OPTIONS;
-
 function methods(api, opt) {
-  OPTIONS = opt;
   const { get, list } = defaultMethods(api, '/products', ['list', 'get']);
   return {
     get: (id, ...args) => {
-      return cache.getFetch('products', id, () => get(id, ...args));
+      return api.cache.getFetch('products', id, () => get(id, ...args));
     },
 
     list,
 
-    variation: calculateVariation,
+    variation: (input, options, purchaseOption) =>
+      calculateVariation(input, options, purchaseOption, opt),
 
     categories: getCategories,
 
@@ -121,8 +118,8 @@ function findVariantWithOptions(product, options) {
   return findVariantWithOptionValueIds(product, optionValueIds);
 }
 
-function calculateVariation(input, options, purchaseOption) {
-  const product = OPTIONS.useCamelCase ? toSnake(input) : input;
+function calculateVariation(input, options, purchaseOption, opt) {
+  const product = opt.useCamelCase ? toSnake(input) : input;
   const purchaseOp = findPurchaseOption(product, purchaseOption);
   const variation = {
     ...product,
@@ -185,7 +182,7 @@ function calculateVariation(input, options, purchaseOption) {
   if (variation.orig_price === undefined) {
     delete variation.orig_price;
   }
-  return OPTIONS.useCamelCase ? toCamel(variation) : variation;
+  return opt.useCamelCase ? toCamel(variation) : variation;
 }
 
 function findPurchaseOption(product, purchaseOption) {
@@ -240,10 +237,7 @@ function findPurchaseOption(product, purchaseOption) {
 }
 
 async function getFilterableAttributeFilters(api, products, options) {
-  const { results: filterableAttributes } = await attributesApi(
-    api,
-    OPTIONS,
-  ).list({
+  const { results: filterableAttributes } = await attributesApi(api).list({
     filterable: true,
   });
 
