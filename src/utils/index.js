@@ -1,4 +1,4 @@
-import { stringify } from 'qs';
+import stringifyQuery from './stringify-query';
 import set from 'lodash-es/set';
 import get from 'lodash-es/get';
 import uniq from 'lodash-es/uniq';
@@ -96,10 +96,6 @@ function trimStart(str) {
 
 function trimEnd(str) {
   return typeof str === 'string' ? str.replace(/[/]+$/, '') : '';
-}
-
-function stringifyQuery(str) {
-  return stringify(str);
 }
 
 function map(arr, cb) {

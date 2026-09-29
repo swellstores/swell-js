@@ -34,8 +34,7 @@
   "dependencies": {
     "@types/lodash-es": "^4.17.12",
     "deepmerge": "^4.3.1",
-    "fast-case": "^1.7.0",
-    "qs": "^6.12.1"
+    "fast-case": "^1.7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.23.4",
@@ -78,6 +77,7 @@
     "lodash-es": "^4.17.21",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.4",
+    "qs": "6.16.0",
     "react": "16.12.0",
     "react-dev-utils": "12.0.1",
     "react-dom": "16.12.0",
