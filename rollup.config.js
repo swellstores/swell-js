@@ -90,7 +90,7 @@ export default [
     ],
     plugins: [
       replace,
-      nodePolyfills({ exclude: ['node_modules/object-inspect/**'] }),
+      nodePolyfills(),
       resolve(),
       commonjs(),
       filesize(),
