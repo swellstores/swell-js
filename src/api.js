@@ -14,7 +14,7 @@ import settings from './settings';
 import session from './session';
 import Payment from './payment';
 import locale from './locale';
-import currency from './currency';
+import currency, { isCurrencyCode } from './currency';
 import functions from './functions';
 import * as utils from './utils';
 
@@ -165,8 +165,10 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
 
     const session = allOptions.session || allOptions.getCookie('swell-session');
     const locale = allOptions.locale || allOptions.getCookie('swell-locale');
+    const cookieCurrency = allOptions.getCookie('swell-currency');
     const currency =
-      allOptions.currency || allOptions.getCookie('swell-currency');
+      allOptions.currency ||
+      (isCurrencyCode(cookieCurrency) ? cookieCurrency : undefined);
     const path = allOptions.path || '/api';
 
     const baseUrl = `${allOptions.url}${allOptions.base || ''}${path}`;

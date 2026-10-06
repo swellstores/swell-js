@@ -2,7 +2,30 @@ import { get, find, round } from './utils';
 
 const FORMATTERS = {};
 
+// A currency code is three letters. Anything else, such as a pending settings
+// Promise that was stringified to "[object Promise]", is not a currency.
+export function isCurrencyCode(value) {
+  return typeof value === 'string' && /^[a-z]{3}$/i.test(value);
+}
+
+function defaultLocale() {
+  return typeof navigator === 'object' ? navigator.language : 'en-US';
+}
+
 function methods(api, opt) {
+  // Reads a store setting without ever returning a Promise. Until settings
+  // load, this starts the request and reports `loaded: false`.
+  function readSetting(path, def) {
+    const value = opt.api.settings.get(path, def);
+
+    if (value && typeof value.then === 'function') {
+      value.catch(() => {}); // callers that await settings report the error
+      return { loaded: false, value: def };
+    }
+
+    return { loaded: true, value };
+  }
+
   return {
     code: null,
     state: null,
@@ -20,52 +43,72 @@ function methods(api, opt) {
 
     selected() {
       if (!this.code) {
-        this.set(
-          opt.getCookie('swell-currency') ||
-            opt.api.settings.get('store.currency'),
-        );
+        const cookieCode = opt.getCookie('swell-currency');
+
+        if (isCurrencyCode(cookieCode)) {
+          this.set(cookieCode);
+        } else {
+          const storeCode = readSetting('store.currency');
+
+          if (!storeCode.loaded) {
+            // Settings are still loading: use a stand-in without saving it,
+            // so the store currency is picked up once they arrive.
+            return 'USD';
+          }
+
+          this.set(isCurrencyCode(storeCode.value) ? storeCode.value : 'USD');
+        }
       }
 
       return this.code;
     },
 
     get() {
-      if (!this.code) {
-        this.code = this.selected();
+      const code = this.selected();
+
+      if (this.state) {
+        return this.state;
       }
-      if (!this.state) {
-        this.state = this.set(this.code);
+
+      if (!readSetting('store.currencies').loaded) {
+        // Not cached, so the currency's rate and decimals apply once
+        // settings load.
+        return { code };
       }
-      return this.state;
+
+      return this.set(code);
     },
 
     set(code = 'USD') {
-      this.code = code;
-      this.state = find(this.list(), { code }) || { code };
+      if (!isCurrencyCode(code)) {
+        // Never store or persist something that isn't a currency code.
+        return this.state || { code: this.code || 'USD' };
+      }
 
-      this.locale = String(
-        opt.api.settings.get(
-          'store.locale',
-          typeof navigator === 'object' ? navigator.language : 'en-US',
-        ),
-      );
+      const list = readSetting('store.currencies', []);
+      const state = (list.loaded && find(list.value, { code })) || { code };
+
+      this.code = code;
+      // Only cache a state built from the loaded currency list.
+      this.state = list.loaded ? state : null;
+      this.locale = String(readSetting('store.locale', defaultLocale()).value);
 
       opt.setCookie('swell-currency', code);
 
-      return this.state;
+      return state;
     },
 
     format(amount, params = {}) {
       let state = this.get();
       if (params.code && params.code !== state.code) {
-        const list = this.list();
+        const list = readSetting('store.currencies', []).value;
         state = find(list, { code: params.code }) || { code: params.code };
       }
 
       const { code = 'USD', type, decimals, rate } = state;
       const formatCode = params.code || code;
       const formatRate = params.rate || rate;
-      const formatLocale = params.locale || this.locale;
+      const formatLocale = params.locale || this.locale || defaultLocale();
       const formatDecimals = 'decimals' in params ? params.decimals : decimals;
       const { convert = true } = params;
 
