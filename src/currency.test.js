@@ -60,6 +60,74 @@ describe('currency', () => {
     api.currency.state = null;
   });
 
+  describe('before settings load', () => {
+    let cookies;
+    let resolveSettings;
+
+    beforeEach(() => {
+      cookies = {};
+      api.init('test', 'pk_test', {
+        getCookie: (name) => cookies[name],
+        setCookie: (name, value) => {
+          cookies[name] = value;
+        },
+      });
+      api.settings.state = null;
+      api.settings.localizedState = {};
+      api.currency.locale = null;
+
+      const settings = new Promise((resolve) => {
+        resolveSettings = resolve;
+      });
+      fetch.mockResponseOnce(() => settings.then((s) => JSON.stringify(s)));
+    });
+
+    async function loadSettings() {
+      resolveSettings(mockSettingState);
+      await api.settings.get();
+    }
+
+    it('should not store or persist a pending settings value', () => {
+      const formatted = api.currency.format(10);
+
+      expect(formatted).toEqual('$10.00');
+      expect(api.currency.code).toBeNull();
+      expect(api.currency.locale).not.toEqual('[object Promise]');
+      expect(cookies['swell-currency']).toBeUndefined();
+    });
+
+    it('should use the store currency once settings load', async () => {
+      api.currency.format(10);
+      await loadSettings();
+
+      expect(api.currency.selected()).toEqual('AUD');
+      expect(api.currency.format(10)).toEqual('A$10.00');
+      expect(cookies['swell-currency']).toEqual('AUD');
+    });
+
+    it('should ignore and replace an invalid currency cookie', async () => {
+      cookies['swell-currency'] = '[object Promise]';
+
+      expect(api.currency.format(10)).toEqual('$10.00');
+
+      await loadSettings();
+
+      expect(api.currency.selected()).toEqual('AUD');
+      expect(cookies['swell-currency']).toEqual('AUD');
+    });
+
+    it('should apply the rate of a currency chosen before settings load', async () => {
+      cookies['swell-currency'] = 'USD';
+
+      expect(api.currency.format(1)).toEqual('$1.00');
+
+      await loadSettings();
+
+      expect(api.currency.get()).toEqual(mockSettingState.store.currencies[1]);
+      expect(api.currency.format(1)).toEqual('$0.77');
+    });
+  });
+
   describe('methods', () => {
     it('should return methods list, select, selected, format', () => {
       expect(api.currency.list).toBeDefined();

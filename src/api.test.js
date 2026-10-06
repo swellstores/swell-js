@@ -217,6 +217,25 @@ describe('api', () => {
       expect(setCookieSpy).toHaveBeenCalledWith('swell-session', 'new-session');
     });
 
+    it('should send the currency cookie as X-Currency', async () => {
+      const cookies = { 'swell-currency': 'EUR' };
+      api.init('test', 'pk_test', { getCookie: (name) => cookies[name] });
+
+      await api.request('get', '/test');
+      expect(fetch.mock.calls[0][1].headers).toHaveProperty(
+        'X-Currency',
+        'EUR',
+      );
+    });
+
+    it('should not send an invalid currency cookie as X-Currency', async () => {
+      const cookies = { 'swell-currency': '[object Promise]' };
+      api.init('test', 'pk_test', { getCookie: (name) => cookies[name] });
+
+      await api.request('get', '/test');
+      expect(fetch.mock.calls[0][1].headers).not.toHaveProperty('X-Currency');
+    });
+
     it('should throw on response error', async () => {
       // Error as string
       await expect(async () => {
