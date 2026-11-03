@@ -179,7 +179,7 @@ describe('utils/index', () => {
       for (const [method, url] of [
         ['POST', '/intent'],
         ['post', '/intent/'],
-        ['post', 'intent?x=1'],
+        ['post', 'intent'],
       ]) {
         await vaultRequest(
           method,

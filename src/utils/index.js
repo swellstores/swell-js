@@ -137,9 +137,7 @@ function isCreateIntentRequest(method, url) {
     return false;
   }
 
-  const path = trimStart(url).split(/[?#]/)[0].replace(/[/]+$/, '');
-
-  return path === 'intent';
+  return trimEnd(trimStart(url)) === 'intent';
 }
 
 // Attach a captcha token to create-intent requests. The host supplies it via
