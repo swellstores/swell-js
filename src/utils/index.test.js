@@ -173,6 +173,25 @@ describe('utils/index', () => {
       );
     });
 
+    it('attaches a captcha token regardless of method case and path form', async () => {
+      const getCaptchaToken = jest.fn().mockResolvedValue('tok-123');
+
+      for (const [method, url] of [
+        ['POST', '/intent'],
+        ['post', '/intent/'],
+        ['post', 'intent?x=1'],
+      ]) {
+        await vaultRequest(
+          method,
+          url,
+          { gateway: 'stripe' },
+          { ...options, getCaptchaToken },
+        );
+      }
+
+      expect(getCaptchaToken).toHaveBeenCalledTimes(3);
+    });
+
     it('does not request a captcha token for non-create-intent requests', async () => {
       const getCaptchaToken = jest.fn().mockResolvedValue('tok-123');
 
@@ -185,6 +204,12 @@ describe('utils/index', () => {
       await vaultRequest(
         'post',
         '/authorization',
+        { gateway: 'stripe' },
+        { ...options, getCaptchaToken },
+      );
+      await vaultRequest(
+        'post',
+        '/intent/pi_123',
         { gateway: 'stripe' },
         { ...options, getCaptchaToken },
       );

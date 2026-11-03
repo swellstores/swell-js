@@ -132,6 +132,16 @@ function defaultMethods(api, uri, methods) {
   };
 }
 
+function isCreateIntentRequest(method, url) {
+  if (String(method).toLowerCase() !== 'post') {
+    return false;
+  }
+
+  const path = trimStart(url).split(/[?#]/)[0].replace(/[/]+$/, '');
+
+  return path === 'intent';
+}
+
 // Attach a captcha token to create-intent requests. The host supplies it via
 // the getCaptchaToken option and owns the widget and token lifecycle; here we
 // only forward it, so every intent-based payment method is covered. A rejection
@@ -139,8 +149,7 @@ function defaultMethods(api, uri, methods) {
 async function addCaptchaToken(method, url, data, options) {
   if (
     typeof options.getCaptchaToken !== 'function' ||
-    method !== 'post' ||
-    trimStart(url) !== 'intent'
+    !isCreateIntentRequest(method, url)
   ) {
     return data;
   }
