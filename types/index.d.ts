@@ -127,6 +127,13 @@ export interface InitOptions<C extends 'snake' | 'camel' = 'snake'> {
    * and payment integrations such as Google Pay and Apple Pay.
    */
   updateCart?: (input: object) => Promise<CartCase[C] | null>;
+  /**
+   * Returns a captcha token to attach to create-intent requests. The host
+   * owns the captcha widget and the token's lifecycle; swell-js only forwards
+   * the resolved token. Reject (or throw) to abort the intent, e.g. when the
+   * challenge times out or fails.
+   */
+  getCaptchaToken?: () => Promise<string | null | undefined>;
 }
 
 export interface InitOptionsCamel extends InitOptions<'camel'> {
