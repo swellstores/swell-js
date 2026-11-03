@@ -132,8 +132,29 @@ function defaultMethods(api, uri, methods) {
   };
 }
 
+// Attach a captcha token to create-intent requests. The host supplies it via
+// the getCaptchaToken option and owns the widget and token lifecycle; here we
+// only forward it, so every intent-based payment method is covered. A rejection
+// from the host (timeout / failed challenge) propagates and aborts the request.
+async function addCaptchaToken(method, url, data, options) {
+  if (
+    typeof options.getCaptchaToken !== 'function' ||
+    method !== 'post' ||
+    trimStart(url) !== 'intent'
+  ) {
+    return data;
+  }
+
+  const token = await options.getCaptchaToken();
+
+  return token ? { ...data, captcha_token: token } : data;
+}
+
 async function vaultRequest(method, url, data, options) {
   const { vaultUrl, timeout, key } = options;
+
+  data = await addCaptchaToken(method, url, data, options);
+
   const requestData = {
     $jsonp: {
       method,

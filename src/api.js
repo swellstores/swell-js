@@ -79,6 +79,7 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
       options.getCart = opt.getCart;
       options.updateCart = opt.updateCart;
       options.headers = opt.headers || {};
+      options.getCaptchaToken = opt.getCaptchaToken;
     },
 
     // Backward compatibility

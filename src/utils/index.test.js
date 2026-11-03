@@ -155,5 +155,58 @@ describe('utils/index', () => {
         ),
       ).rejects.toThrow('Test Error');
     });
+
+    it('attaches a captcha token to create-intent requests', async () => {
+      const getCaptchaToken = jest.fn().mockResolvedValue('tok-123');
+
+      await vaultRequest(
+        'post',
+        '/intent',
+        { gateway: 'stripe' },
+        { ...options, getCaptchaToken },
+      );
+
+      expect(getCaptchaToken).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('%24data%5Bcaptcha_token%5D=tok-123'),
+        expect.anything(),
+      );
+    });
+
+    it('does not request a captcha token for non-create-intent requests', async () => {
+      const getCaptchaToken = jest.fn().mockResolvedValue('tok-123');
+
+      await vaultRequest(
+        'put',
+        '/intent',
+        { gateway: 'stripe' },
+        { ...options, getCaptchaToken },
+      );
+      await vaultRequest(
+        'post',
+        '/authorization',
+        { gateway: 'stripe' },
+        { ...options, getCaptchaToken },
+      );
+
+      expect(getCaptchaToken).not.toHaveBeenCalled();
+    });
+
+    it('aborts the request when the captcha provider rejects', async () => {
+      const getCaptchaToken = jest
+        .fn()
+        .mockRejectedValue(new Error('Captcha failed'));
+
+      await expect(() =>
+        vaultRequest(
+          'post',
+          '/intent',
+          { gateway: 'stripe' },
+          { ...options, getCaptchaToken },
+        ),
+      ).rejects.toThrow('Captcha failed');
+
+      expect(fetch).not.toHaveBeenCalled();
+    });
   });
 });
