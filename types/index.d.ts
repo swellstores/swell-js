@@ -499,6 +499,31 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     setCookie(value: string): void;
   };
 
+  consent: {
+    /**
+     * Records the shopper's consent for attribution. Call it from the
+     * storefront's consent banner; purposes left out stay as they are.
+     * Browser only: it calls the storefront's own origin.
+     */
+    set(consent: {
+      analytics?: boolean;
+      marketing?: boolean;
+      sale_of_data?: boolean;
+      saleOfData?: boolean;
+    }): Promise<{
+      analytics: boolean | null;
+      marketing: boolean | null;
+      sale_of_data: boolean | null;
+      gpc: boolean;
+      rule: 'opt_in' | 'opt_out' | null;
+      effective: {
+        analytics: boolean;
+        marketing: boolean;
+        sale_of_data: boolean;
+      };
+    }>;
+  };
+
   functions: {
     request<T>(
       method: string,
