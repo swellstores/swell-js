@@ -23,6 +23,7 @@ import PaypalDirectPayment from './paypal/paypal';
 import AmazonDirectPayment from './amazon/amazon';
 import SezzleDirectPayment from './sezzle/sezzle';
 import { adjustParams, adjustMethodParams } from './utils';
+import { availableMethods, defaultMethod, needsPayment } from './methods';
 import {
   PaymentMethodDisabledError,
   UnsupportedPaymentMethodError,
@@ -45,6 +46,65 @@ export default class PaymentController {
 
   get(id) {
     return this.api.request('get', '/payments', id);
+  }
+
+  /**
+   * The methods of a list a cart can pay with (pure, no request).
+   *
+   * @param {object} cart
+   * @param {Array<object> | object} methods
+   * @returns {Array<object>}
+   */
+  availableMethods(cart, methods) {
+    return availableMethods(cart, methods);
+  }
+
+  /**
+   * The method to preselect for a cart, or `null` (pure, no request).
+   *
+   * @param {object} cart
+   * @param {Array<object> | object} methods
+   * @returns {string | null}
+   */
+  defaultMethod(cart, methods) {
+    return defaultMethod(cart, methods);
+  }
+
+  /**
+   * Whether the cart still needs a payment method (pure, no request).
+   *
+   * @param {object} cart
+   * @returns {boolean}
+   */
+  needsPayment(cart) {
+    return needsPayment(cart);
+  }
+
+  /**
+   * Sends the shopper to the gateway when a submitted order waits for an
+   * asynchronous payment; resolves `true` after starting the redirect.
+   *
+   * @param {object} order the result of `cart.submitOrder()`
+   * @returns {Promise<boolean>}
+   */
+  async handleAsyncRedirect(order) {
+    const paymentId =
+      order?.authorized_payment_id ?? order?.authorizedPaymentId;
+
+    if (order?.status !== 'payment_pending' || !paymentId) {
+      return false;
+    }
+
+    const payment = await this.get(paymentId);
+    const url = payment?.async_data?.url ?? payment?.asyncData?.url;
+
+    if (!payment || payment.captured || !url) {
+      return false;
+    }
+
+    window.location.replace(url);
+
+    return true;
   }
 
   async methods() {
