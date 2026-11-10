@@ -48,6 +48,34 @@ describe('consent', () => {
     });
   });
 
+  it('should give a camelCase client the result in camelCase', async () => {
+    api.init('test', 'pk_test', { useCamelCase: true });
+    fetch.mockResponseOnce(
+      JSON.stringify({
+        analytics: null,
+        marketing: true,
+        sale_of_data: null,
+        gpc: false,
+        rule: 'opt_in',
+        effective: { analytics: false, marketing: true, sale_of_data: true },
+      }),
+    );
+
+    const result = await api.consent.set({ saleOfData: true });
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toMatchObject({
+      sale_of_data: true,
+    });
+    expect(result).toEqual({
+      analytics: null,
+      marketing: true,
+      saleOfData: null,
+      gpc: false,
+      rule: 'opt_in',
+      effective: { analytics: false, marketing: true, saleOfData: true },
+    });
+  });
+
   it('should send calls one after another', async () => {
     let finishFirst;
     fetch.mockResponseOnce(

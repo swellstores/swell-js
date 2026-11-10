@@ -17,6 +17,7 @@ import type {
 } from './card/index.js';
 import type { CartCase, CartItemCase } from './cart/index.js';
 import type { CategoryCase } from './category/index.js';
+import type { ConsentCase, ConsentInputCase } from './consent/index.js';
 import type { ContentCase } from './content/index.js';
 import type {
   SelectCurrencyReturnCase,
@@ -53,6 +54,7 @@ export type * from './billing/index.js';
 export type * from './card/index.js';
 export type * from './cart/index.js';
 export type * from './category/index.js';
+export type * from './consent/index.js';
 export type * from './content/index.js';
 export type * from './coupon/index.js';
 export type * from './currency/index.js';
@@ -505,23 +507,7 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
      * storefront's consent banner; purposes left out stay as they are.
      * Browser only: it calls the storefront's own origin.
      */
-    set(consent: {
-      analytics?: boolean;
-      marketing?: boolean;
-      sale_of_data?: boolean;
-      saleOfData?: boolean;
-    }): Promise<{
-      analytics: boolean | null;
-      marketing: boolean | null;
-      sale_of_data: boolean | null;
-      gpc: boolean;
-      rule: 'opt_in' | 'opt_out' | null;
-      effective: {
-        analytics: boolean;
-        marketing: boolean;
-        sale_of_data: boolean;
-      };
-    }>;
+    set(consent?: ConsentInputCase[C]): Promise<ConsentCase[C]>;
   };
 
   functions: {
