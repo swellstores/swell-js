@@ -7,6 +7,7 @@ import {
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
+  UnableAuthenticatePaymentMethodError,
 } from '../../utils/errors';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
@@ -88,6 +89,38 @@ export default class StripeIDealPayment extends Payment {
     await this.stripe.handleCardAction(intent.client_secret);
   }
 
+  async handleRedirect(queryParams) {
+    const { redirect_status, payment_intent_client_secret } = queryParams;
+
+    if (redirect_status !== 'succeeded') {
+      throw new UnableAuthenticatePaymentMethodError();
+    }
+
+    await this.loadScripts(this.scripts);
+
+    const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
+      payment_intent_client_secret,
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (
+      !['succeeded', 'requires_capture', 'processing'].includes(
+        paymentIntent.status,
+      )
+    ) {
+      throw new Error(
+        paymentIntent.last_payment_error?.message ||
+          `Unsupported intent status (${paymentIntent.status})`,
+      );
+    }
+
+    // the cart's billing was written in `tokenize`
+    this.onSuccess();
+  }
+
   /**
    * @param {object} cart
    * @param {import('@stripe/stripe-js').PaymentMethod} paymentMethod
@@ -105,7 +138,8 @@ export default class StripeIDealPayment extends Payment {
         payment_method_types: 'ideal',
         confirmation_method: 'manual',
         confirm: true,
-        return_url: window.location.href,
+        // `gateway` lets `handleRedirect` run on return; Stripe appends the intent and `redirect_status`
+        return_url: getReturnUrl(),
       },
     });
 
@@ -135,4 +169,12 @@ export default class StripeIDealPayment extends Payment {
 
     return intent;
   }
+}
+
+function getReturnUrl() {
+  const url = new URL(window.location.href);
+
+  url.searchParams.set('gateway', 'stripe');
+
+  return url.toString();
 }
