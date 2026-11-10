@@ -124,7 +124,7 @@ export default class PaymentController {
       throw new Error('Payment element parameters are not provided');
     }
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
     const cart = await this.payment.getCart();
 
     await this._performPaymentAction(
@@ -143,7 +143,7 @@ export default class PaymentController {
       throw new Error('Tokenization parameters are not provided');
     }
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
 
     await this._performPaymentAction(paymentInstances, 'tokenize');
   }
@@ -163,7 +163,7 @@ export default class PaymentController {
 
     removeUrlParams();
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
 
     await this._performPaymentAction(
       paymentInstances,
@@ -260,9 +260,10 @@ export default class PaymentController {
   /**
    * @returns {Promise<Payment[]>}
    */
-  async _createPaymentInstances() {
+  // Takes the caller's params: this.params can change while the methods load (two createElements at once)
+  async _createPaymentInstances(callParams) {
     const paymentMethods = await this._getPaymentMethods();
-    const params = adjustParams(this.params);
+    const params = adjustParams(callParams);
 
     return Object.entries(params).reduce((acc, [method, params]) => {
       const methodSettings = paymentMethods[method];
