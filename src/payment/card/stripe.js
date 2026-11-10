@@ -2,8 +2,11 @@ import { isLiveMode } from '../../utils';
 import { LibraryNotLoadedError } from '../../utils/errors';
 
 import {
+  createCardPaymentMethodFromElements,
   createElement,
+  createPaymentElements,
   createPaymentMethod,
+  getCardElementsOptions,
   isStripeChargeableAmount,
   stripeAmountByCurrency,
 } from '../../utils/stripe';
@@ -53,8 +56,29 @@ export default class StripeCardPayment extends Payment {
     StripeCardPayment.stripeElement = stripeElement;
   }
 
-  async createElements() {
+  /** @returns {import('@stripe/stripe-js').StripeElements} */
+  get stripeElements() {
+    return StripeCardPayment.stripeElements;
+  }
+
+  /** @param {import('@stripe/stripe-js').StripeElements} stripeElements */
+  set stripeElements(stripeElements) {
+    StripeCardPayment.stripeElements = stripeElements;
+  }
+
+  /** @param {import('../../../types').Cart} cart */
+  async createElements(cart) {
     await this.loadScripts(this.scripts);
+
+    if (this.params.paymentElement) {
+      this.stripeElements = createPaymentElements(
+        this.stripe,
+        getCardElementsOptions(cart),
+        this.params,
+      );
+
+      return;
+    }
 
     const elements = this.stripe.elements(this.params.config);
 
@@ -68,18 +92,22 @@ export default class StripeCardPayment extends Payment {
   }
 
   async tokenize() {
-    if (!this.stripeElement) {
+    const { paymentElement } = this.params;
+
+    if (!(paymentElement ? this.stripeElements : this.stripeElement)) {
       throw new Error('Stripe payment element is not defined');
     }
 
     await this.loadScripts(this.scripts);
 
     const cart = await this.getCart();
-    const paymentMethod = await createPaymentMethod(
-      this.stripe,
-      this.stripeElement,
-      cart,
-    );
+    const paymentMethod = paymentElement
+      ? await createCardPaymentMethodFromElements(
+          this.stripe,
+          this.stripeElements,
+          cart,
+        )
+      : await createPaymentMethod(this.stripe, this.stripeElement, cart);
 
     if (paymentMethod.error) {
       throw new Error(paymentMethod.error.message);
