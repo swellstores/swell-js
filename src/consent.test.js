@@ -48,6 +48,42 @@ describe('consent', () => {
     });
   });
 
+  it('should send calls one after another', async () => {
+    let finishFirst;
+    fetch.mockResponseOnce(
+      () =>
+        new Promise((resolve) => {
+          finishFirst = () => resolve(JSON.stringify({}));
+        }),
+    );
+
+    const first = api.consent.set({ marketing: true });
+    const second = api.consent.set({ analytics: true });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // The second waits for the first, which may set the visitor cookie
+    expect(fetch.mock.calls.length).toBe(1);
+
+    finishFirst();
+    await Promise.all([first, second]);
+
+    expect(fetch.mock.calls.length).toBe(2);
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({
+      analytics: true,
+    });
+  });
+
+  it('should send the next call after a failed one', async () => {
+    fetch.mockRejectOnce(new Error('offline'));
+
+    await expect(api.consent.set({ marketing: true })).rejects.toThrow(
+      'offline',
+    );
+    await api.consent.set({ marketing: true });
+
+    expect(fetch.mock.calls.length).toBe(2);
+  });
+
   it('should only run in the browser', async () => {
     delete global.window;
 

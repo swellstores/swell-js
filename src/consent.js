@@ -29,6 +29,11 @@ function getLanding() {
 }
 
 function methods(api) {
+  // Calls run one after another. Consent tools fire several events for one
+  // answer, and the first call may set the visitor cookie that the next one
+  // has to send: in parallel, each would start a visitor of its own.
+  let queue = Promise.resolve();
+
   return {
     /**
      * Records the shopper's consent for attribution, from the storefront's
@@ -56,13 +61,20 @@ function methods(api) {
         }
       }
 
-      return api.request(
-        'put',
-        '/session/consent',
-        { ...data, landing: getLanding() },
-        undefined,
-        { fullUrl: `${window.location.origin}/api/session/consent` },
+      const result = queue.then(() =>
+        api.request(
+          'put',
+          '/session/consent',
+          { ...data, landing: getLanding() },
+          undefined,
+          { fullUrl: `${window.location.origin}/api/session/consent` },
+        ),
       );
+
+      // A failed call doesn't hold back the next one
+      queue = result.catch(() => undefined);
+
+      return result;
     },
   };
 }
