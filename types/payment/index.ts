@@ -127,6 +127,11 @@ export interface InputPaymentElementSezzle extends InputPaymentElementBase {
   };
 }
 
+export interface InputPaymentTokenizeCard extends InputPaymentRedirect {
+  /** Saferpay: register a new card even when the cart already has one */
+  replace?: boolean;
+}
+
 export interface InputPaymentRedirect {
   /** @optional called on card payment success */
   onSuccess?: (event: unknown) => void;

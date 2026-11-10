@@ -11,6 +11,8 @@ import BraintreeApplePayment from './apple/braintree';
 import AuthorizeNetGooglePayment from './google/authorizenet';
 import AuthorizeNetApplePayment from './apple/authorizenet';
 import QuickpayCardPayment from './card/quickpay';
+import SaferpayCardPayment from './card/saferpay';
+import SaferpayTwintPayment from './twint/saferpay';
 import ConvesioCardPayment from './card/convesiopay';
 import ConvesioPayApplePayment from './apple/convesiopay';
 import ConvesioPayGooglePayment from './google/convesiopay';
@@ -293,6 +295,8 @@ export default class PaymentController {
         return this._getAmazonPaymentClass(gateway);
       case 'sezzle':
         return this._getSezzlePaymentClass(gateway);
+      case 'twint':
+        return this._getTwintPaymentClass(gateway);
       default:
         return null;
     }
@@ -306,6 +310,17 @@ export default class PaymentController {
         return QuickpayCardPayment;
       case 'convesiopay':
         return ConvesioCardPayment;
+      case 'saferpay':
+        return SaferpayCardPayment;
+      default:
+        return null;
+    }
+  }
+
+  _getTwintPaymentClass(gateway) {
+    switch (gateway) {
+      case 'saferpay':
+        return SaferpayTwintPayment;
       default:
         return null;
     }
