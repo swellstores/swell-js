@@ -1,6 +1,13 @@
 import App from './app';
 import { isEmpty } from '../utils';
 
+let deprecationWarned = false;
+
+/**
+ * @deprecated App components are rendered by `@swell/apps-sdk/components`
+ * (`createComponents().mount()`); this module will be removed in the next
+ * major version.
+ */
 export default class AppController {
   #apps = new Map();
 
@@ -9,7 +16,15 @@ export default class AppController {
     this.options = options;
   }
 
+  /** @deprecated Use `@swell/apps-sdk/components` instead. */
   async load(appId) {
+    if (!deprecationWarned) {
+      deprecationWarned = true;
+      console.warn(
+        'swell.app is deprecated: render app components with @swell/apps-sdk/components',
+      );
+    }
+
     const loadedApp = this.#apps.get(appId);
 
     if (loadedApp) {
