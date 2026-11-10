@@ -89,8 +89,12 @@ export default class StripeCardPayment extends Payment {
       paymentMethod.test = true;
     }
 
-    // should save payment method data when payment amount is not chargeable
-    if (!isStripeChargeableAmount(cart.capture_total, cart.currency)) {
+    // should save payment method data when payment amount is not chargeable,
+    // or when the host collects the card without authorizing it now
+    if (
+      !isStripeChargeableAmount(cart.capture_total, cart.currency) ||
+      this.params.createIntent === false
+    ) {
       await this.updateCart({
         billing: {
           method: 'card',

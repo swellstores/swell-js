@@ -67,3 +67,40 @@ describePayment('payment/card/stripe', (_request, options, _paymentMock) => {
     });
   });
 });
+
+jest.mock('../../src/utils/stripe', () => ({
+  ...jest.requireActual('../../src/utils/stripe'),
+  createPaymentMethod: jest.fn(async () => ({ token: 'pm_test' })),
+}));
+
+describePayment(
+  'payment/card/stripe tokenize',
+  (request, options, paymentMock) => {
+    it('should store the card without an intent when createIntent is false', async () => {
+      const StripeCardPayment =
+        require('../../src/payment/card/stripe').default;
+
+      paymentMock.getCart.mockResolvedValueOnce({
+        currency: 'USD',
+        capture_total: 100,
+      });
+      global.window.Stripe = jest.fn(() => ({}));
+
+      const payment = new StripeCardPayment(
+        request,
+        options,
+        { createIntent: false },
+        { card: { publishable_key: 'pk', mode: 'live' } },
+      );
+      payment.stripeElement = {};
+
+      await payment.tokenize();
+
+      expect(paymentMock.createIntent).not.toHaveBeenCalled();
+      expect(paymentMock.updateCart).toHaveBeenCalledWith({
+        billing: { method: 'card', card: { token: 'pm_test' } },
+      });
+      expect(paymentMock.onSuccess).toHaveBeenCalled();
+    });
+  },
+);
