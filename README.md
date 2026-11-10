@@ -13,7 +13,7 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 
 **About Swell**
 
-[Swell](https://www.swell.is) is a customizable, API-first platform for powering modern B2C/B2B shopping experiences and marketplaces. Build and connect anything using your favorite technologies, and provide admins with an easy to use dashboard.
+[Swell](https://www.swell.is) is an ecommerce platform with subscriptions and B2B pricing built in. Run your store on a Swell theme, or [go headless](https://www.swell.is/headless-commerce) with its APIs.
 
 ## Documentation
 
