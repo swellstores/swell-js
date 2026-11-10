@@ -14,6 +14,7 @@ import QuickpayCardPayment from './card/quickpay';
 import SaferpayCardPayment from './card/saferpay';
 import SaferpayTwintPayment from './twint/saferpay';
 import ConvesioCardPayment from './card/convesiopay';
+import VaultCardPayment from './card/vault';
 import ConvesioPayApplePayment from './apple/convesiopay';
 import ConvesioPayGooglePayment from './google/convesiopay';
 import PaysafecardDirectPayment from './paysafecard/paysafecard';
@@ -139,6 +140,10 @@ export default class PaymentController {
         null,
         paymentMethods,
       );
+
+      if (!paymentInstance.authenticate) {
+        throw new UnsupportedPaymentMethodError(method, gateway);
+      }
 
       await paymentInstance.loadScripts(paymentInstance.scripts);
 
@@ -313,7 +318,7 @@ export default class PaymentController {
       case 'saferpay':
         return SaferpayCardPayment;
       default:
-        return null;
+        return VaultCardPayment;
     }
   }
 
