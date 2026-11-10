@@ -145,6 +145,7 @@ declare namespace swell {
   export type InputPaymentElementApple = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementApple;
   export type InputPaymentElementGoogle = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementGoogle;
   export type InputPaymentElementSezzle = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementSezzle;
+  export type InputPaymentTokenizeCard = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentTokenizeCard;
   export type InputPaymentRedirect = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentRedirect;
   export type Payment = import('./index.js', { with: { 'resolution-mode': 'import' } }).Payment;
   export type PaymentCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).PaymentCamel;
