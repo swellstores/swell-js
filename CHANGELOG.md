@@ -10,6 +10,7 @@
 - Card gateways without an element (Braintree, Authorize.Net, test): `tokenize({ card: { data, billing } })` tokenizes the host's card through the vault and stores it on the cart.
 - `payment.availableMethods(cart, methods)`, `payment.defaultMethod(cart, methods)`, `payment.needsPayment(cart)`: pure helpers for the methods a cart can use.
 - `payment.handleAsyncRedirect(order)`: redirects to the gateway when a submitted order waits for an asynchronous payment.
+- Stripe card and iDEAL: `createElements({ card: { paymentElement: true, appearance } })` / `{ ideal: ... }` render the Stripe Payment Element styled through the Appearance API; `tokenize` with the same flag submits it and runs the existing intent flow. The split elements stay the default.
 
 ### Deprecated
 

@@ -23,6 +23,35 @@ Besides `createElements`, `tokenize` and `handleRedirect` (see the documentation
 - `tokenize({ card: { data, billing } })` tokenizes a card the page collected itself on gateways without an element (Braintree, Authorize.Net, test); `tokenize({ card: { createIntent: false } })` stores a Stripe card without authorizing it now.
 - Saferpay card and TWINT (`twint`) redirect to the Saferpay payment page from `tokenize` and come back through `handleRedirect`; iDEAL returns through `handleRedirect({ ideal })` too.
 - `handleAsyncRedirect(order)` sends the shopper to the gateway when a submitted order waits for an asynchronous payment.
+- Stripe card and iDEAL can render through the Stripe [Payment Element](https://docs.stripe.com/payments/payment-element) instead of the split elements: pass `paymentElement: true` to both `createElements` and `tokenize`. Stripe draws the whole form (fields, labels, errors) and takes its look from `appearance` ([Appearance API](https://docs.stripe.com/elements/appearance-api)). The element mounts into `#payment-element` unless `elementId` is set; `options` go to `elements.create('payment')` over the defaults `layout: 'tabs'`, `fields.billingDetails: 'never'` (billing details come from the cart) and no Apple Pay / Google Pay. `tokenize` re-reads the cart and updates the amount before `elements.submit()`, so a changed cart total needs no extra call.
+
+```js
+const card = {
+  paymentElement: true,
+  appearance: {
+    theme: 'stripe',
+    labels: 'floating',
+    variables: { colorPrimary: '#111' },
+  },
+  elementId: 'card-payment-element',
+  onChange: (event) => setComplete(event.complete),
+  onSuccess: () => submitOrder(),
+  onError: (error) => showError(error.message),
+};
+
+await swell.payment.createElements({ card });
+// on "Pay": validates, creates the PaymentMethod and the intent, stores them on the cart
+await swell.payment.tokenize({ card });
+
+// iDEAL: the same flag; tokenize redirects to the bank and returns through handleRedirect({ ideal })
+await swell.payment.createElements({
+  ideal: {
+    paymentElement: true,
+    appearance,
+    elementId: 'ideal-payment-element',
+  },
+});
+```
 
 ## Deprecated
 
