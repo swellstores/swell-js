@@ -134,6 +134,8 @@ function mockStripe() {
       paymentMethod: stripeCardPaymentMethod,
     })),
     confirmCardPayment: jest.fn(),
+    handleCardAction: jest.fn(),
+    retrievePaymentIntent: jest.fn(),
   };
 
   global.window.Stripe = jest.fn(() => stripe);
@@ -308,7 +310,9 @@ describePayment(
               cvc_check: 'pass',
               zip_check: 'pass',
             },
-            intent: { stripe: { id: 'pi_1', auth_amount: 0.5 } },
+            intent: {
+              stripe: { id: 'pi_1', client_secret: 'cs_1', auth_amount: 0.5 },
+            },
           },
         });
         expect(paymentMock.onSuccess).toHaveBeenCalled();
@@ -360,25 +364,24 @@ describePayment(
         expect(paymentMock.updateCart).not.toHaveBeenCalled();
       });
 
-      it('should authorize the card on the cart with an intent and 3-D Secure', async () => {
+      it('should authorize the given payment method with an intent and 3-D Secure', async () => {
         const { stripe } = mockStripe();
         stripe.confirmCardPayment.mockResolvedValueOnce({
           paymentIntent: { status: 'requires_capture' },
         });
-        paymentMock.getCart.mockResolvedValueOnce({
-          ...cart,
-          billing: { card: { gateway: 'stripe', token: 'pm_wallet' } },
-        });
+        paymentMock.getCart.mockResolvedValueOnce(cart);
         paymentMock.createIntent.mockResolvedValueOnce({
           id: 'pi_2',
           client_secret: 'cs_2',
+          amount: 1050,
+          currency: 'usd',
           status: 'requires_confirmation',
         });
 
         const payment = new StripeCardPayment(
           request,
           options,
-          { cartCard: true },
+          { paymentMethod: 'pm_wallet' },
           methods,
         );
 
@@ -392,21 +395,26 @@ describePayment(
         expect(paymentMock.updateCart).toHaveBeenCalledWith({
           billing: {
             method: 'card',
-            intent: { stripe: { id: 'pi_2', auth_amount: 0.5 } },
+            intent: {
+              stripe: {
+                id: 'pi_2',
+                client_secret: 'cs_2',
+                amount: 1050,
+                currency: 'usd',
+                auth_amount: 0.5,
+              },
+            },
           },
         });
         expect(paymentMock.onSuccess).toHaveBeenCalled();
       });
 
-      it('should throw the 3-D Secure error of the card on the cart', async () => {
+      it('should throw the 3-D Secure error of the given payment method', async () => {
         const { stripe } = mockStripe();
         stripe.confirmCardPayment.mockResolvedValueOnce({
           error: { message: 'Authentication failed.' },
         });
-        paymentMock.getCart.mockResolvedValueOnce({
-          ...cart,
-          billing: { card: { token: 'pm_wallet' } },
-        });
+        paymentMock.getCart.mockResolvedValueOnce(cart);
         paymentMock.createIntent.mockResolvedValueOnce({
           id: 'pi_3',
           client_secret: 'cs_3',
@@ -416,7 +424,7 @@ describePayment(
         const payment = new StripeCardPayment(
           request,
           options,
-          { cartCard: true },
+          { paymentMethod: 'pm_wallet' },
           methods,
         );
 
@@ -426,28 +434,181 @@ describePayment(
         expect(paymentMock.updateCart).not.toHaveBeenCalled();
       });
 
+      it('should reuse the cart intent that still matches the card and amount', async () => {
+        const { stripe } = mockStripe();
+        stripe.retrievePaymentIntent.mockResolvedValueOnce({
+          paymentIntent: {
+            id: 'pi_4',
+            client_secret: 'cs_4',
+            amount: 1050,
+            currency: 'usd',
+            payment_method: 'pm_wallet',
+            status: 'requires_capture',
+          },
+        });
+        paymentMock.getCart.mockResolvedValueOnce({
+          ...cart,
+          billing: {
+            intent: { stripe: { id: 'pi_4', client_secret: 'cs_4' } },
+          },
+        });
+
+        const payment = new StripeCardPayment(
+          request,
+          options,
+          { paymentMethod: 'pm_wallet' },
+          methods,
+        );
+
+        await payment.tokenize();
+
+        expect(stripe.retrievePaymentIntent).toHaveBeenCalledWith('cs_4');
+        expect(paymentMock.createIntent).not.toHaveBeenCalled();
+        expect(stripe.confirmCardPayment).not.toHaveBeenCalled();
+        expect(paymentMock.updateCart).not.toHaveBeenCalled();
+        expect(paymentMock.onSuccess).toHaveBeenCalled();
+      });
+
+      it('should handle the pending 3-D Secure of a reused intent', async () => {
+        const { stripe } = mockStripe();
+        stripe.retrievePaymentIntent.mockResolvedValueOnce({
+          paymentIntent: {
+            id: 'pi_4',
+            client_secret: 'cs_4',
+            amount: 1050,
+            currency: 'usd',
+            payment_method: 'pm_wallet',
+            status: 'requires_action',
+          },
+        });
+        stripe.handleCardAction.mockResolvedValueOnce({
+          paymentIntent: { status: 'requires_capture' },
+        });
+        paymentMock.getCart.mockResolvedValueOnce({
+          ...cart,
+          billing: {
+            intent: { stripe: { id: 'pi_4', client_secret: 'cs_4' } },
+          },
+        });
+
+        const payment = new StripeCardPayment(
+          request,
+          options,
+          { paymentMethod: 'pm_wallet' },
+          methods,
+        );
+
+        await payment.tokenize();
+
+        expect(stripe.handleCardAction).toHaveBeenCalledWith('cs_4');
+        expect(paymentMock.createIntent).not.toHaveBeenCalled();
+      });
+
       it.each([
-        ['a card that is not a payment method', { token: 'card_1' }, {}],
-        [
-          'an amount Stripe cannot charge',
-          { token: 'pm_1' },
-          { capture_total: 0 },
-        ],
-        ['createIntent false', { token: 'pm_1' }, {}, { createIntent: false }],
+        ['amount', { amount: 999 }],
+        ['card', { payment_method: 'pm_other' }],
+        ['status', { status: 'requires_payment_method' }],
       ])(
-        'should leave the card on the cart for %s',
-        async (_name, card, totals, params = {}) => {
-          mockStripe();
+        'should replace the cart intent of another %s and record it as canceled',
+        async (_name, changed) => {
+          const { stripe } = mockStripe();
+          stripe.retrievePaymentIntent.mockResolvedValueOnce({
+            paymentIntent: {
+              id: 'pi_old',
+              amount: 1050,
+              currency: 'usd',
+              payment_method: 'pm_wallet',
+              status: 'requires_capture',
+              ...changed,
+            },
+          });
           paymentMock.getCart.mockResolvedValueOnce({
             ...cart,
-            ...totals,
-            billing: { card },
+            billing: {
+              intent: {
+                stripe: {
+                  id: 'pi_old',
+                  client_secret: 'cs_old',
+                  canceled: ['pi_older'],
+                },
+              },
+            },
+          });
+          paymentMock.createIntent.mockResolvedValueOnce({
+            id: 'pi_new',
+            client_secret: 'cs_new',
+            status: 'requires_capture',
           });
 
           const payment = new StripeCardPayment(
             request,
             options,
-            { cartCard: true, ...params },
+            { paymentMethod: 'pm_wallet' },
+            methods,
+          );
+
+          await payment.tokenize();
+
+          expect(
+            paymentMock.updateCart.mock.calls[0][0].billing.intent,
+          ).toEqual({
+            stripe: expect.objectContaining({
+              id: 'pi_new',
+              canceled: ['pi_older', 'pi_old'],
+            }),
+          });
+        },
+      );
+
+      it('should reuse the matching cart intent for a new card too', async () => {
+        const { stripe, elements } = mockStripe();
+        stripe.retrievePaymentIntent.mockResolvedValueOnce({
+          paymentIntent: {
+            id: 'pi_5',
+            amount: 1050,
+            currency: 'usd',
+            payment_method: 'pm_card',
+            status: 'requires_capture',
+          },
+        });
+        paymentMock.getCart.mockResolvedValueOnce({
+          ...cart,
+          billing: {
+            ...cart.billing,
+            intent: { stripe: { id: 'pi_5', client_secret: 'cs_5' } },
+          },
+        });
+
+        const payment = new StripeCardPayment(
+          request,
+          options,
+          { paymentElement: true },
+          methods,
+        );
+        payment.stripeElements = elements;
+
+        await payment.tokenize();
+
+        expect(paymentMock.createIntent).not.toHaveBeenCalled();
+        expect(
+          paymentMock.updateCart.mock.calls[0][0].billing.intent.stripe,
+        ).not.toHaveProperty('canceled');
+      });
+
+      it.each([
+        ['a card that is not a payment method', 'card_1', {}],
+        ['an amount Stripe cannot charge', 'pm_1', { capture_total: 0 }],
+        ['createIntent false', 'pm_1', {}, { createIntent: false }],
+      ])(
+        'should leave the given card for the order for %s',
+        async (_name, paymentMethod, totals, params = {}) => {
+          mockStripe();
+          paymentMock.getCart.mockResolvedValueOnce({ ...cart, ...totals });
+
+          const payment = new StripeCardPayment(
+            request,
+            options,
+            { paymentMethod, ...params },
             methods,
           );
 

@@ -13,10 +13,28 @@ import {
 
 import Payment from '../payment';
 
-const cartIntent = (cart, intent) => ({
-  id: intent.id,
-  ...(Boolean(cart.auth_total) && { auth_amount: cart.auth_total }),
-});
+// The cart keeps what checkout v1 keeps, so the next tokenize can retrieve and reuse
+// the intent; the vault cancels the replaced ones when the order is paid
+const cartIntent = (cart, intent) => {
+  const exIntent = cart.billing?.intent?.stripe;
+
+  return {
+    id: intent.id,
+    client_secret: intent.client_secret,
+    amount: intent.amount,
+    currency: intent.currency,
+    ...(Boolean(cart.auth_total) && { auth_amount: cart.auth_total }),
+    ...(exIntent?.id &&
+      exIntent.id !== intent.id && {
+        canceled: [...(exIntent.canceled || []), exIntent.id],
+      }),
+  };
+};
+
+const intentAmount = ({ currency, capture_total, auth_total }) =>
+  stripeAmountByCurrency(currency, capture_total + auth_total);
+
+const intentCurrency = ({ currency }) => (currency || 'USD').toLowerCase();
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -97,10 +115,10 @@ export default class StripeCardPayment extends Payment {
   }
 
   async tokenize() {
-    const { paymentElement, cartCard } = this.params;
+    const { paymentElement, paymentMethod: token } = this.params;
 
-    if (cartCard) {
-      return this._authorizeCartCard();
+    if (token) {
+      return this._authorizePaymentMethod(token);
     }
 
     if (!(paymentElement ? this.stripeElements : this.stripeElement)) {
@@ -142,7 +160,7 @@ export default class StripeCardPayment extends Payment {
       return this.onSuccess();
     }
 
-    const intent = await this._createIntent(cart, paymentMethod);
+    const intent = await this._authorizeIntent(cart, paymentMethod.token);
 
     await this.updateCart({
       billing: {
@@ -155,30 +173,83 @@ export default class StripeCardPayment extends Payment {
     this.onSuccess();
   }
 
-  // The card already on the cart (a saved card, a wallet's Stripe payment method)
-  // gets the intent and 3-D Secure of a new one; other cards are authorized with the order
-  async _authorizeCartCard() {
+  // A card the shopper already has (a saved card, a wallet's payment method) gets
+  // the intent and 3-D Secure of a new one; other cards are authorized with the order
+  async _authorizePaymentMethod(token) {
     const cart = await this.getCart();
-    const card = cart.billing?.card;
 
     if (
-      card?.token?.startsWith('pm_') &&
+      token.startsWith('pm_') &&
       isStripeChargeableAmount(cart.capture_total, cart.currency) &&
       this.params.createIntent !== false
     ) {
       await this.loadScripts(this.scripts);
 
-      const intent = await this._createIntent(cart, card);
+      const intent = await this._authorizeIntent(cart, token);
 
-      await this.updateCart({
-        billing: {
-          method: 'card',
-          intent: { stripe: cartIntent(cart, intent) },
-        },
-      });
+      if (intent.id !== cart.billing?.intent?.stripe?.id) {
+        await this.updateCart({
+          billing: {
+            method: 'card',
+            intent: { stripe: cartIntent(cart, intent) },
+          },
+        });
+      }
     }
 
     this.onSuccess();
+  }
+
+  // Reuses the cart's intent while Stripe still has it for this card and amount
+  async _authorizeIntent(cart, token) {
+    const exIntent = cart.billing?.intent?.stripe;
+    const intent =
+      (exIntent?.client_secret &&
+        (await this._retrieveIntent(cart, exIntent, token))) ||
+      (await this._createIntent(cart, token));
+
+    switch (intent.status) {
+      case 'requires_capture':
+        break;
+
+      case 'requires_confirmation':
+        await this._confirmCardPayment(intent);
+        break;
+
+      case 'requires_action':
+      case 'requires_source_action': {
+        const actionResult = await this.stripe.handleCardAction(
+          intent.client_secret,
+        );
+
+        if (actionResult.error) {
+          throw new Error(actionResult.error.message);
+        }
+
+        break;
+      }
+
+      default:
+        throw new Error(`Unsupported intent status: ${intent.status}`);
+    }
+
+    return intent;
+  }
+
+  async _retrieveIntent(cart, exIntent, token) {
+    const { paymentIntent: intent, error } =
+      await this.stripe.retrievePaymentIntent(exIntent.client_secret);
+
+    const matches =
+      !error &&
+      intent.amount === intentAmount(cart) &&
+      intent.currency === intentCurrency(cart) &&
+      intent.payment_method === token &&
+      !['canceled', 'requires_source', 'requires_payment_method'].includes(
+        intent.status,
+      );
+
+    return matches ? intent : null;
   }
 
   async authenticate(payment) {
@@ -204,17 +275,14 @@ export default class StripeCardPayment extends Payment {
     }
   }
 
-  async _createIntent(cart, paymentMethod) {
-    const { account, currency, capture_total, auth_total } = cart;
-    const stripeCustomer = account && account.stripe_customer;
-    const stripeCurrency = (currency || 'USD').toLowerCase();
-    const amount = stripeAmountByCurrency(currency, capture_total + auth_total);
+  async _createIntent(cart, token) {
+    const stripeCustomer = cart.account && cart.account.stripe_customer;
     const intent = await this.createIntent({
       gateway: 'stripe',
       intent: {
-        amount,
-        currency: stripeCurrency,
-        payment_method: paymentMethod.token,
+        amount: intentAmount(cart),
+        currency: intentCurrency(cart),
+        payment_method: token,
         capture_method: 'manual',
         setup_future_usage: 'off_session',
         ...(stripeCustomer ? { customer: stripeCustomer } : {}),
@@ -223,20 +291,6 @@ export default class StripeCardPayment extends Payment {
 
     if (!intent) {
       throw new Error('Stripe payment intent is not defined');
-    }
-
-    switch (intent.status) {
-      case 'requires_capture':
-      case 'requires_confirmation':
-        break;
-
-      default:
-        throw new Error(`Unsupported intent status: ${intent.status}`);
-    }
-
-    // Confirm the payment intent
-    if (intent.status === 'requires_confirmation') {
-      await this._confirmCardPayment(intent);
     }
 
     return intent;
