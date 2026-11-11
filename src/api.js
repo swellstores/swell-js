@@ -16,6 +16,7 @@ import Payment from './payment';
 import locale from './locale';
 import currency, { isCurrencyCode } from './currency';
 import functions from './functions';
+import consent from './consent';
 import * as utils from './utils';
 
 /**
@@ -137,6 +138,8 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
 
     functions: functions(api, options),
 
+    consent: consent(api, options),
+
     utils,
 
     getCookie(name) {
@@ -207,6 +210,13 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
 
     if (session) {
       reqHeaders['X-Session'] = session;
+    }
+
+    // The storefront's visitor, for attribution: the cookie is on the
+    // storefront's domain and doesn't reach the store's API host
+    const visitor = allOptions.getCookie('swell-visitor');
+    if (visitor) {
+      reqHeaders['X-Visitor'] = visitor;
     }
 
     if (locale) {
