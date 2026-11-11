@@ -1,11 +1,14 @@
 import { describePayment } from './utils';
 import { UnableAuthenticatePaymentMethodError } from '../../src/utils/errors';
 import StripeIDealPayment from '../../src/payment/ideal/stripe';
+import { createIDealPaymentMethod } from '../../src/utils/stripe';
+
+const actualStripeUtils = jest.requireActual('../../src/utils/stripe');
 
 jest.mock('../../src/utils/stripe', () => ({
   ...jest.requireActual('../../src/utils/stripe'),
   createElement: jest.fn(),
-  createIDealPaymentMethod: () => ({ paymentMethod: { id: 'pm_ideal' } }),
+  createIDealPaymentMethod: jest.fn(),
   stripeAmountByCurrency: (_currency, amount) => amount * 100,
 }));
 
@@ -13,13 +16,21 @@ describePayment('payment/ideal/stripe', (request, options, paymentMock) => {
   let methods;
   const retrievePaymentIntentMock = jest.fn();
   const handleCardActionMock = jest.fn();
+  const createPaymentMethodMock = jest.fn();
 
   beforeEach(() => {
     methods = { card: { publishable_key: 'pk' }, ideal: {} };
     global.window.location.href = 'http://test.swell.test/checkout?step=pay';
+    createIDealPaymentMethod.mockImplementation(() => ({
+      paymentMethod: { id: 'pm_ideal' },
+    }));
+    createPaymentMethodMock.mockResolvedValue({
+      paymentMethod: { id: 'pm_ideal' },
+    });
     global.window.Stripe = jest.fn(() => ({
       retrievePaymentIntent: retrievePaymentIntentMock,
       handleCardAction: handleCardActionMock,
+      createPaymentMethod: createPaymentMethodMock,
     }));
     StripeIDealPayment.stripe = null;
     StripeIDealPayment.stripeElement = null;
@@ -168,6 +179,111 @@ describePayment('payment/ideal/stripe', (request, options, paymentMock) => {
         'http://test.swell.test/checkout?step=pay&gateway=stripe',
       );
       expect(handleCardActionMock).toHaveBeenCalledWith('cs_1');
+    });
+
+    it('should create the payment method from the idealBank element', async () => {
+      createIDealPaymentMethod.mockImplementation(
+        actualStripeUtils.createIDealPaymentMethod,
+      );
+      const idealBank = { type: 'idealBank' };
+      paymentMock.getCart.mockResolvedValueOnce({
+        currency: 'EUR',
+        capture_total: 10,
+        billing: { name: 'Jan Jansen' },
+      });
+      paymentMock.createIntent.mockResolvedValueOnce({
+        id: 'pi_1',
+        client_secret: 'cs_1',
+        status: 'requires_action',
+      });
+
+      const payment = new StripeIDealPayment(request, options, {}, methods);
+      payment.stripeElement = idealBank;
+
+      await payment.tokenize();
+
+      expect(createPaymentMethodMock).toHaveBeenCalledWith({
+        type: 'ideal',
+        ideal: idealBank,
+        billing_details: { name: 'Jan Jansen' },
+      });
+    });
+
+    it('should throw when the Payment Element was requested but not created', async () => {
+      const payment = new StripeIDealPayment(
+        request,
+        options,
+        { paymentElement: true },
+        methods,
+      );
+
+      await expect(payment.tokenize()).rejects.toThrow(
+        'Stripe payment element is not defined',
+      );
+      expect(paymentMock.createIntent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('without an element', () => {
+    const cart = {
+      currency: 'EUR',
+      capture_total: 10,
+      account: { email: 'jan@example.com' },
+      billing: { name: 'Jan Jansen', country: 'NL' },
+    };
+
+    beforeEach(() => {
+      createIDealPaymentMethod.mockImplementation(
+        actualStripeUtils.createIDealPaymentMethod,
+      );
+    });
+
+    it('should create the payment method without an element and redirect', async () => {
+      paymentMock.getCart.mockResolvedValueOnce(cart);
+      paymentMock.createIntent.mockResolvedValueOnce({
+        id: 'pi_1',
+        client_secret: 'cs_1',
+        status: 'requires_action',
+      });
+
+      const payment = new StripeIDealPayment(request, options, {}, methods);
+
+      await payment.tokenize();
+
+      expect(createPaymentMethodMock).toHaveBeenCalledWith({
+        type: 'ideal',
+        ideal: {},
+        billing_details: {
+          name: 'Jan Jansen',
+          email: 'jan@example.com',
+          address: { country: 'NL' },
+        },
+      });
+      expect(paymentMock.createIntent.mock.calls[0][0].intent).toMatchObject({
+        payment_method: 'pm_ideal',
+        payment_method_types: 'ideal',
+        return_url: 'http://test.swell.test/checkout?step=pay&gateway=stripe',
+      });
+      expect(paymentMock.updateCart).toHaveBeenCalledWith({
+        billing: {
+          method: 'ideal',
+          ideal: { token: 'pm_ideal' },
+          intent: { stripe: { id: 'pi_1' } },
+        },
+      });
+      expect(handleCardActionMock).toHaveBeenCalledWith('cs_1');
+    });
+
+    it('should throw the payment method error', async () => {
+      paymentMock.getCart.mockResolvedValueOnce(cart);
+      createPaymentMethodMock.mockResolvedValueOnce({
+        error: { message: 'iDEAL is unavailable.' },
+      });
+
+      const payment = new StripeIDealPayment(request, options, {}, methods);
+
+      await expect(payment.tokenize()).rejects.toThrow('iDEAL is unavailable.');
+      expect(paymentMock.createIntent).not.toHaveBeenCalled();
     });
   });
 

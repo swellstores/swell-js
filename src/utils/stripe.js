@@ -296,7 +296,7 @@ function mapCardPaymentMethod(paymentMethod) {
 
 /**
  * @param {Stripe} stripe
- * @param {import('@stripe/stripe-js').StripeIdealBankElement} element
+ * @param {import('@stripe/stripe-js').StripeIdealBankElement | {}} element `{}` when there is no idealBank element
  * @param {Cart} cart
  */
 export async function createIDealPaymentMethod(stripe, element, cart) {

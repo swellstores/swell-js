@@ -96,7 +96,7 @@ export default class StripeIDealPayment extends Payment {
   async tokenize() {
     const { paymentElement } = this.params;
 
-    if (!(paymentElement ? this.stripeElements : this.stripeElement)) {
+    if (paymentElement && !this.stripeElements) {
       throw new Error('Stripe payment element is not defined');
     }
 
@@ -110,7 +110,12 @@ export default class StripeIDealPayment extends Payment {
           getIDealElementsOptions(cart),
           cart,
         )
-      : await createIDealPaymentMethod(this.stripe, this.stripeElement, cart);
+      : // without an idealBank element the shopper picks the bank on the iDEAL page
+        await createIDealPaymentMethod(
+          this.stripe,
+          this.stripeElement || {},
+          cart,
+        );
 
     if (paymentMethodError) {
       throw new Error(paymentMethodError.message);

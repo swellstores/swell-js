@@ -376,6 +376,7 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
 
     tokenize(input?: {
       card?: InputPaymentTokenizeCard;
+      /** Without `createElements` iDEAL needs no element: the shopper picks the bank on the iDEAL page */
       ideal?: object;
       klarna?: object;
       bancontact?: object;
