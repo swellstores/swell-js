@@ -13,6 +13,11 @@ import {
 
 import Payment from '../payment';
 
+const cartIntent = (cart, intent) => ({
+  id: intent.id,
+  ...(Boolean(cart.auth_total) && { auth_amount: cart.auth_total }),
+});
+
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
 /** @typedef {import('@stripe/stripe-js').StripeCardNumberElement} StripeCardNumberElement */
@@ -92,7 +97,11 @@ export default class StripeCardPayment extends Payment {
   }
 
   async tokenize() {
-    const { paymentElement } = this.params;
+    const { paymentElement, cartCard } = this.params;
+
+    if (cartCard) {
+      return this._authorizeCartCard();
+    }
 
     if (!(paymentElement ? this.stripeElements : this.stripeElement)) {
       throw new Error('Stripe payment element is not defined');
@@ -139,16 +148,35 @@ export default class StripeCardPayment extends Payment {
       billing: {
         method: 'card',
         card: paymentMethod,
-        intent: {
-          stripe: {
-            id: intent.id,
-            ...(Boolean(cart.auth_total) && {
-              auth_amount: cart.auth_total,
-            }),
-          },
-        },
+        intent: { stripe: cartIntent(cart, intent) },
       },
     });
+
+    this.onSuccess();
+  }
+
+  // The card already on the cart (a saved card, a wallet's Stripe payment method)
+  // gets the intent and 3-D Secure of a new one; other cards are authorized with the order
+  async _authorizeCartCard() {
+    const cart = await this.getCart();
+    const card = cart.billing?.card;
+
+    if (
+      card?.token?.startsWith('pm_') &&
+      isStripeChargeableAmount(cart.capture_total, cart.currency) &&
+      this.params.createIntent !== false
+    ) {
+      await this.loadScripts(this.scripts);
+
+      const intent = await this._createIntent(cart, card);
+
+      await this.updateCart({
+        billing: {
+          method: 'card',
+          intent: { stripe: cartIntent(cart, intent) },
+        },
+      });
+    }
 
     this.onSuccess();
   }

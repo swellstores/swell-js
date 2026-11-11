@@ -20,7 +20,7 @@ Universal JavaScript client for Swell's Frontend API, providing client-safe acce
 Besides `createElements`, `tokenize` and `handleRedirect` (see the documentation), `swell.payment` offers helpers a checkout page needs:
 
 - `availableMethods(cart, methods)`, `defaultMethod(cart, methods)` and `needsPayment(cart)` pick the methods a cart can pay with; pure functions over the store's payment method list.
-- `tokenize({ card: { data, billing } })` tokenizes a card the page collected itself on gateways without an element (Braintree, Authorize.Net, test); `tokenize({ card: { createIntent: false } })` stores a Stripe card without authorizing it now.
+- `tokenize({ card: { data, billing } })` tokenizes a card the page collected itself on gateways without an element (Braintree, Authorize.Net, test); `tokenize({ card: { createIntent: false } })` stores a Stripe card without authorizing it now. `tokenize({ card: { cartCard: true } })` authorizes the Stripe card already on the cart (a saved card, a wallet's payment method) with an intent and 3-D Secure, like a new card, before the order is submitted.
 - Saferpay card and TWINT (`twint`) redirect to the Saferpay payment page from `tokenize` and come back through `handleRedirect`; iDEAL returns through `handleRedirect({ ideal })` too.
 - Stripe iDEAL needs no element: `tokenize({ ideal: {} })` without `createElements` redirects to the iDEAL page, where the shopper picks the bank, and returns through `handleRedirect({ ideal })`.
 - `handleAsyncRedirect(order)` sends the shopper to the gateway when a submitted order waits for an asynchronous payment.

@@ -158,6 +158,12 @@ export interface InputPaymentTokenizeCard
     Pick<InputPaymentStripePaymentElement, 'paymentElement'> {
   /** Stripe: `false` stores the card without a payment intent (default `true`) */
   createIntent?: boolean;
+  /**
+   * Stripe: authorize the card already on the cart (a saved card, a wallet's
+   * payment method) instead of an element's: a `pm_` card gets the intent and
+   * 3-D Secure of a new one, other cards are left for the order
+   */
+  cartCard?: boolean;
   /** Saferpay: register a new card even when the cart already has one */
   replace?: boolean;
   /**
