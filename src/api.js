@@ -48,6 +48,7 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
   };
 
   const api = {};
+  const attribution = consent(api, options);
 
   Object.assign(api, {
     version: '__VERSION__',
@@ -81,6 +82,8 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
       options.updateCart = opt.updateCart;
       options.headers = opt.headers || {};
       options.getCaptchaToken = opt.getCaptchaToken;
+
+      attribution.init();
     },
 
     // Backward compatibility
@@ -138,7 +141,7 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
 
     functions: functions(api, options),
 
-    consent: consent(api, options),
+    consent: { set: attribution.set },
 
     utils,
 
@@ -270,6 +273,7 @@ function swell(initStore = undefined, initKey, initOptions = {}) {
         'A connection error occurred while making the request',
       );
       err.code = 'connection_error';
+      err.status = response.status;
       throw err;
     }
 
