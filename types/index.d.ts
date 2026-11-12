@@ -518,7 +518,8 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     /**
      * Records the shopper's consent for attribution. Call it from the
      * storefront's consent banner; purposes left out stay as they are.
-     * Browser only: it calls the storefront's own origin.
+     * Browser only: it calls the storefront's own origin, or the store's API
+     * host on a headless storefront, whose origin Swell doesn't serve.
      */
     set(consent?: ConsentInputCase[C]): Promise<ConsentCase[C]>;
   };

@@ -19,4 +19,6 @@ export interface Consent {
   gpc: boolean;
   rule: 'opt_in' | 'opt_out' | null;
   effective: ConsentEffective;
+  /** false when the store records no ad attribution */
+  capture?: false;
 }
