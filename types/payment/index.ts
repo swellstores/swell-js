@@ -1,6 +1,4 @@
 import type { MakeCase } from '../utils.js';
-import type { Billing } from '../billing/index.js';
-import type { InputCreateToken } from '../card/index.js';
 
 import type { Payment } from './snake.js';
 import type { PaymentCamel } from './camel.js';
@@ -166,13 +164,6 @@ export interface InputPaymentTokenizeCard
   paymentMethod?: string;
   /** Saferpay: register a new card even when the cart already has one */
   replace?: boolean;
-  /**
-   * Card gateways without an element (Braintree, Authorize.Net, test):
-   * the card the host collected, tokenized through the vault
-   */
-  data?: InputCreateToken;
-  /** The billing address sent with `data` */
-  billing?: Billing;
 }
 
 export interface InputPaymentRedirect {
