@@ -17,6 +17,7 @@ import type {
 } from './card/index.js';
 import type { CartCase, CartItemCase } from './cart/index.js';
 import type { CategoryCase } from './category/index.js';
+import type { ConsentCase, ConsentInputCase } from './consent/index.js';
 import type { ContentCase } from './content/index.js';
 import type {
   SelectCurrencyReturnCase,
@@ -54,6 +55,7 @@ export type * from './billing/index.js';
 export type * from './card/index.js';
 export type * from './cart/index.js';
 export type * from './category/index.js';
+export type * from './consent/index.js';
 export type * from './content/index.js';
 export type * from './coupon/index.js';
 export type * from './currency/index.js';
@@ -522,6 +524,15 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     get(): Promise<Record<string, unknown>>;
     getCookie(): string | undefined;
     setCookie(value: string): void;
+  };
+
+  consent: {
+    /**
+     * Records the shopper's consent for attribution. Call it from the
+     * storefront's consent banner; purposes left out stay as they are.
+     * Browser only: it calls the storefront's own origin.
+     */
+    set(consent?: ConsentInputCase[C]): Promise<ConsentCase[C]>;
   };
 
   functions: {

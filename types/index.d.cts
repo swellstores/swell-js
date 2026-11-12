@@ -82,6 +82,14 @@ declare namespace swell {
   export type CategoryCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).CategoryCase;
   export type Category = import('./index.js', { with: { 'resolution-mode': 'import' } }).Category;
   export type CategoryCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).CategoryCamel;
+  export type ConsentCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentCase;
+  export type ConsentInputCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentInputCase;
+  export type Consent = import('./index.js', { with: { 'resolution-mode': 'import' } }).Consent;
+  export type ConsentEffective = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentEffective;
+  export type ConsentInput = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentInput;
+  export type ConsentCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentCamel;
+  export type ConsentEffectiveCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentEffectiveCamel;
+  export type ConsentInputCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).ConsentInputCamel;
   export type ContentCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).ContentCase;
   export type ContentSectionCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).ContentSectionCase;
   export type ContentPageCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).ContentPageCase;
