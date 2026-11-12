@@ -98,6 +98,7 @@ function isConsentAnswer(result) {
   return (
     Boolean(result) &&
     typeof result === 'object' &&
+    Boolean(result.effective) &&
     typeof result.effective === 'object'
   );
 }
@@ -105,13 +106,17 @@ function isConsentAnswer(result) {
 /**
  * Whether the storefront's origin answered a consent call, but not for
  * Swell: not found, a page that is no answer of Swell's, or Swell's refusal
- * of a call its proxy forwarded, which has its own code. A network failure or
- * a server error says nothing of the origin.
+ * of a call its proxy forwarded, which has its own code. A network failure, a
+ * rate limit or a server error says nothing of the origin, whatever the code.
  *
  * @param {Error & {status?: number, code?: string}} err
  * @returns {boolean}
  */
 function isNotSwellOrigin(err) {
+  if (err.status === 429 || err.status >= 500) {
+    return false;
+  }
+
   return (
     err.code === 'not_swell' ||
     err.code === ORIGIN_REQUIRED ||
@@ -173,6 +178,19 @@ function methods(api, options) {
   }
 
   /**
+   * @returns {boolean} whether the page is on Swell's own domain, whose
+   *   origin Swell serves: an answer that seems not to be Swell's there is a
+   *   failure, such as a body cut off, not a headless storefront
+   */
+  function isSwellPage() {
+    try {
+      return new URL(window.location.href).hostname.endsWith(SWELL_API_DOMAIN);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * @param {'direct' | 'off'} flag
    * @returns {boolean} whether the tab keeps the flag for the API host
    */
@@ -189,14 +207,23 @@ function methods(api, options) {
   }
 
   /**
+   * Keeps a flag for the API host a call went to. The client may have been
+   * initialized for another store since: then only the tab keeps it.
+   *
    * @param {'direct' | 'off'} flag
+   * @param {string} origin the API host of the call
    */
-  function keepTab(flag) {
+  function keepFlag(flag, origin) {
+    if (origin === getApiOrigin()) {
+      if (flag === 'direct') {
+        direct = true;
+      } else {
+        off = true;
+      }
+    }
+
     try {
-      window.sessionStorage.setItem(
-        `${TAB_KEY_PREFIX}${flag}:${getApiOrigin()}`,
-        '1',
-      );
+      window.sessionStorage.setItem(`${TAB_KEY_PREFIX}${flag}:${origin}`, '1');
     } catch {
       // Storage is not available: the next page asks again
     }
@@ -252,17 +279,16 @@ function methods(api, options) {
     return result;
   }
 
-  async function call(body) {
+  async function call(body, origin) {
     if (!direct) {
       try {
         return await callOrigin(body);
       } catch (err) {
-        if (!isNotSwellOrigin(err) || !canCallDirect()) {
+        if (!isNotSwellOrigin(err) || !canCallDirect() || isSwellPage()) {
           throw err;
         }
 
-        direct = true;
-        keepTab('direct');
+        keepFlag('direct', origin);
       }
     }
 
@@ -270,11 +296,11 @@ function methods(api, options) {
   }
 
   async function send(data) {
-    const result = await call({ ...data, landing: getLanding() });
+    const origin = getApiOrigin();
+    const result = await call({ ...data, landing: getLanding() }, origin);
 
-    if (result?.capture === false && !off) {
-      off = true;
-      keepTab('off');
+    if (result?.capture === false) {
+      keepFlag('off', origin);
     }
 
     return result;
@@ -282,6 +308,11 @@ function methods(api, options) {
 
   function recordLanding() {
     try {
+      // A later init may have pointed the client at the page's own origin
+      if (!canCallDirect()) {
+        return;
+      }
+
       const landing = getLanding();
       const key = `${options.url} ${landing.url}`;
 
@@ -290,7 +321,8 @@ function methods(api, options) {
       }
 
       recordedLandings.add(key);
-      enqueue(() => send({})).catch(() => undefined);
+      // A call before it in the queue may answer that nothing is recorded
+      enqueue(() => (off ? undefined : send({}))).catch(() => undefined);
     } catch {
       // Attribution never breaks the storefront
     }

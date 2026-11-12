@@ -234,6 +234,70 @@ describe('consent on a headless storefront', () => {
     expect(fetch.mock.calls.map(([url]) => url)).toEqual([ORIGIN]);
   });
 
+  it('should not call the API host on a rate limit, whatever its code', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify({ error: { code: 'storefront_origin_required' } }),
+      { status: 429 },
+    );
+
+    await expect(api.consent.set({ marketing: true })).rejects.toThrow();
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual([ORIGIN]);
+  });
+
+  it('should call the API host when the answer has no effect', async () => {
+    fetch.mockResponseOnce(JSON.stringify({ effective: null }));
+
+    await api.consent.set({ marketing: true });
+
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual([ORIGIN, API]);
+  });
+
+  it("should not call the API host from a page on Swell's domain", async () => {
+    setPage({ origin: 'https://test--sf1.swell.store' });
+    // A body cut off reads as no answer
+    fetch.mockResponseOnce('');
+
+    await expect(api.consent.set({ marketing: true })).rejects.toThrow(
+      'not served by Swell',
+    );
+    expect(fetch.mock.calls.length).toBe(1);
+  });
+
+  it('should keep a late answer for the store that was asked', async () => {
+    fetch.mockResponseOnce('Not found', { status: 404 });
+    let answer;
+    fetch.mockResponseOnce(
+      () =>
+        new Promise((resolve) => {
+          answer = () =>
+            resolve(JSON.stringify({ ...JSON.parse(ANSWER), capture: false }));
+        }),
+    );
+
+    const pending = api.consent.set({ marketing: true });
+    await flush();
+    await flush();
+    // The client is now for another store
+    leaveLanding();
+    api.init('other', 'pk_other');
+    answer();
+    await pending;
+
+    const storage = global.window.sessionStorage;
+    expect(storage.getItem('swell-consent-off:https://test.swell.store')).toBe(
+      '1',
+    );
+    expect(
+      storage.getItem('swell-consent-direct:https://test.swell.store'),
+    ).toBe('1');
+    expect(storage.getItem('swell-consent-off:https://other.swell.store')).toBe(
+      null,
+    );
+    expect(
+      storage.getItem('swell-consent-direct:https://other.swell.store'),
+    ).toBe(null);
+  });
+
   it('should keep the switch for each API host of the tab', async () => {
     const OTHER = 'https://other.swell.store/api/session/consent';
     fetch.mockResponseOnce('Not found', { status: 404 });
@@ -424,6 +488,50 @@ describe('ad landing', () => {
     const result = await api.consent.set({ marketing: true });
     expect(result.capture).toBe(false);
     expect(fetch.mock.calls.length).toBe(2);
+  });
+
+  it('should send no landing queued behind an answer that nothing is recorded', async () => {
+    setPage();
+    const listeners = {};
+    global.document.readyState = 'interactive';
+    global.window.addEventListener = (type, listener) => {
+      listeners[type] = listener;
+    };
+    let answer;
+    fetch.mockResponseOnce(
+      () =>
+        new Promise((resolve) => {
+          answer = () =>
+            resolve(JSON.stringify({ ...JSON.parse(ANSWER), capture: false }));
+        }),
+    );
+
+    api.init('test', 'pk_test');
+    const pending = api.consent.set({ marketing: true });
+    await flush();
+    listeners.load();
+    answer();
+    await pending;
+    await flush();
+
+    expect(fetch.mock.calls.length).toBe(1);
+  });
+
+  it('should send no landing once a later init points at the page origin', async () => {
+    setPage();
+    const listeners = {};
+    global.document.readyState = 'loading';
+    global.window.addEventListener = (type, listener) => {
+      listeners[type] = listener;
+    };
+    fetch.mockResponse(ANSWER);
+
+    api.init('test', 'pk_test');
+    api.init('test', 'pk_test', { url: 'https://shop.example.com' });
+    listeners.load();
+    await flush();
+
+    expect(fetch.mock.calls.length).toBe(0);
   });
 
   it('should record the landing for each store of the page', async () => {
