@@ -401,18 +401,6 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     authenticate(id: string): Promise<object | { error: Error }>;
     resetAsyncPayment(id: string): Promise<object>;
 
-    /** The methods of the list a cart can pay with; pure, no request */
-    availableMethods<T extends { id: string }>(
-      cart: object,
-      methods: T[] | Record<string, object>,
-    ): T[];
-    /** The method to preselect for a cart, or `null` when nothing is collected */
-    defaultMethod(
-      cart: object,
-      methods: object[] | Record<string, object>,
-    ): string | null;
-    /** Whether the cart still needs a payment method */
-    needsPayment(cart: object): boolean;
     /**
      * Redirects to the gateway when a submitted order waits for an
      * asynchronous payment; resolves `true` after starting the redirect

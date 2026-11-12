@@ -12,7 +12,6 @@
 - Stripe card `tokenize` reuses the cart's payment intent while Stripe still has it for the same card, amount and currency, handles a pending 3-D Secure action, and records a replaced intent in `billing.intent.stripe.canceled`; the cart intent keeps `client_secret`, `amount` and `currency`.
 - Card gateways without an element (Braintree, Authorize.Net, test): `tokenize({ card: { data, billing } })` tokenizes the host's card through the vault and stores it on the cart.
 - Stripe Google Pay and Apple Pay fill the billing name with the payer's name when the card's address has none and the host asks for the name (`require: { name: true }`).
-- `payment.availableMethods(cart, methods)`, `payment.defaultMethod(cart, methods)`, `payment.needsPayment(cart)`: pure helpers for the methods a cart can use.
 - `payment.handleAsyncRedirect(order)`: redirects to the gateway when a submitted order waits for an asynchronous payment.
 - Stripe card and iDEAL: `createElements({ card: { paymentElement: true, appearance } })` / `{ ideal: ... }` render the Stripe Payment Element styled through the Appearance API; `tokenize` with the same flag submits it and runs the existing intent flow. The split elements stay the default.
 

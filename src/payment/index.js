@@ -23,7 +23,6 @@ import PaypalDirectPayment from './paypal/paypal';
 import AmazonDirectPayment from './amazon/amazon';
 import SezzleDirectPayment from './sezzle/sezzle';
 import { adjustParams, adjustMethodParams } from './utils';
-import { availableMethods, defaultMethod, needsPayment } from './methods';
 import {
   PaymentMethodDisabledError,
   UnsupportedPaymentMethodError,
@@ -46,38 +45,6 @@ export default class PaymentController {
 
   get(id) {
     return this.api.request('get', '/payments', id);
-  }
-
-  /**
-   * The methods of a list a cart can pay with (pure, no request).
-   *
-   * @param {object} cart
-   * @param {Array<object> | object} methods
-   * @returns {Array<object>}
-   */
-  availableMethods(cart, methods) {
-    return availableMethods(cart, methods);
-  }
-
-  /**
-   * The method to preselect for a cart, or `null` (pure, no request).
-   *
-   * @param {object} cart
-   * @param {Array<object> | object} methods
-   * @returns {string | null}
-   */
-  defaultMethod(cart, methods) {
-    return defaultMethod(cart, methods);
-  }
-
-  /**
-   * Whether the cart still needs a payment method (pure, no request).
-   *
-   * @param {object} cart
-   * @returns {boolean}
-   */
-  needsPayment(cart) {
-    return needsPayment(cart);
   }
 
   /**
