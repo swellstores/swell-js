@@ -147,12 +147,14 @@ declare namespace swell {
   export type OrderShippingCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).OrderShippingCamel;
   export type PaymentCase = import('./index.js', { with: { 'resolution-mode': 'import' } }).PaymentCase;
   export type InputPaymentElementBase = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementBase;
+  export type InputPaymentStripePaymentElement = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentStripePaymentElement;
   export type InputPaymentElementCard = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementCard;
   export type InputPaymentElementIdeal = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementIdeal;
   export type InputPaymentElementPaypal = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementPaypal;
   export type InputPaymentElementApple = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementApple;
   export type InputPaymentElementGoogle = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementGoogle;
   export type InputPaymentElementSezzle = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentElementSezzle;
+  export type InputPaymentTokenizeCard = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentTokenizeCard;
   export type InputPaymentRedirect = import('./index.js', { with: { 'resolution-mode': 'import' } }).InputPaymentRedirect;
   export type Payment = import('./index.js', { with: { 'resolution-mode': 'import' } }).Payment;
   export type PaymentCamel = import('./index.js', { with: { 'resolution-mode': 'import' } }).PaymentCamel;

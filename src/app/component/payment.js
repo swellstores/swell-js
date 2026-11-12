@@ -1,6 +1,10 @@
 import AppComponent from './component';
 import { vaultRequest } from '../../utils';
 
+/**
+ * @deprecated Payment components are mounted by `@swell/apps-sdk/components`
+ * at the host place `checkout.payment.methods`.
+ */
 export default class AppPaymentComponent extends AppComponent {
   constructor(app, component, api, options) {
     super(app, component, api, options);

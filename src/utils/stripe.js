@@ -119,25 +119,184 @@ export async function createPaymentMethod(stripe, cardElement, cart) {
     billing_details: billingDetails,
   });
 
-  return error
-    ? { error }
-    : {
-        gateway: 'stripe',
-        token: paymentMethod.id,
-        last4: paymentMethod.card.last4,
-        exp_month: paymentMethod.card.exp_month,
-        exp_year: paymentMethod.card.exp_year,
-        brand: paymentMethod.card.brand,
-        display_brand: paymentMethod.card.display_brand,
-        address_check: paymentMethod.card.checks.address_line1_check,
-        cvc_check: paymentMethod.card.checks.cvc_check,
-        zip_check: paymentMethod.card.checks.address_postal_code_check,
-      };
+  return error ? { error } : mapCardPaymentMethod(paymentMethod);
+}
+
+/**
+ * Elements group options of the card Payment Element for the cart amount,
+ * matching the intent StripeCardPayment#_createIntent creates.
+ *
+ * @param {Cart} cart
+ * @returns {import('@stripe/stripe-js').StripeElementsOptionsMode}
+ */
+export function getCardElementsOptions(cart) {
+  const { capture_total, auth_total } = cart;
+  const currency = cart.currency || 'USD';
+  const stripeCurrency = currency.toLowerCase();
+
+  // the card is only stored when the amount is not chargeable, no intent is created
+  if (!isStripeChargeableAmount(capture_total, cart.currency)) {
+    return {
+      mode: 'setup',
+      currency: stripeCurrency,
+      paymentMethodTypes: ['card'],
+    };
+  }
+
+  return {
+    mode: 'payment',
+    amount: stripeAmountByCurrency(currency, capture_total + (auth_total || 0)),
+    currency: stripeCurrency,
+    captureMethod: 'manual',
+    setupFutureUsage: 'off_session',
+    paymentMethodTypes: ['card'],
+  };
+}
+
+/**
+ * Elements group options of the iDEAL Payment Element,
+ * matching the intent StripeIDealPayment#_createIntent creates.
+ *
+ * @param {Cart} cart
+ * @returns {import('@stripe/stripe-js').StripeElementsOptionsMode}
+ */
+export function getIDealElementsOptions(cart) {
+  const { capture_total } = cart;
+  const currency = cart.currency || 'EUR';
+
+  return {
+    mode: 'payment',
+    amount: stripeAmountByCurrency(currency, capture_total),
+    currency: currency.toLowerCase(),
+    paymentMethodTypes: ['ideal'],
+  };
+}
+
+/**
+ * Creates an Elements group without an intent and mounts the Payment Element
+ * into `#${params.elementId || 'payment-element'}`.
+ *
+ * @param {Stripe} stripe
+ * @param {import('@stripe/stripe-js').StripeElementsOptionsMode} elementsOptions
+ * @param {object} params
+ * @returns {import('@stripe/stripe-js').StripeElements}
+ */
+export function createPaymentElements(stripe, elementsOptions, params) {
+  const elements = stripe.elements({
+    ...params.config,
+    ...elementsOptions,
+    // lets stripe.createPaymentMethod read the Payment Element
+    paymentMethodCreation: 'manual',
+    ...(params.appearance && { appearance: params.appearance }),
+  });
+
+  createElement('payment', elements, {
+    ...params,
+    options: {
+      layout: 'tabs',
+      fields: { billingDetails: 'never' },
+      // wallets are separate express buttons
+      wallets: { applePay: 'never', googlePay: 'never' },
+      ...params.options,
+    },
+  });
+
+  return elements;
+}
+
+/**
+ * Creates a PaymentMethod from the Payment Element.
+ * Brings the Elements amount up to date with the cart first.
+ *
+ * @param {Stripe} stripe
+ * @param {import('@stripe/stripe-js').StripeElements} elements
+ * @param {import('@stripe/stripe-js').StripeElementsOptionsMode} elementsOptions
+ * @param {Cart} cart
+ * @returns {Promise<import('@stripe/stripe-js').PaymentMethodResult>}
+ */
+export async function createPaymentMethodFromElements(
+  stripe,
+  elements,
+  elementsOptions,
+  cart,
+) {
+  // setup mode stores the card without an intent, there is no amount to update
+  if (elementsOptions.mode === 'payment') {
+    await elements.update(elementsOptions);
+  }
+
+  const { error } = await elements.submit();
+
+  if (error) {
+    return { error };
+  }
+
+  const { address, ...details } = getBillingDetails(cart);
+
+  // fields the Payment Element does not collect must all be passed, null when unknown
+  return stripe.createPaymentMethod({
+    elements,
+    params: {
+      billing_details: {
+        name: null,
+        email: null,
+        phone: null,
+        ...details,
+        address: {
+          line1: null,
+          line2: null,
+          city: null,
+          state: null,
+          postal_code: null,
+          country: null,
+          ...address,
+        },
+      },
+    },
+  });
 }
 
 /**
  * @param {Stripe} stripe
- * @param {import('@stripe/stripe-js').StripeIdealBankElement} element
+ * @param {import('@stripe/stripe-js').StripeElements} elements
+ * @param {Cart} cart
+ */
+export async function createCardPaymentMethodFromElements(
+  stripe,
+  elements,
+  cart,
+) {
+  const { paymentMethod, error } = await createPaymentMethodFromElements(
+    stripe,
+    elements,
+    getCardElementsOptions(cart),
+    cart,
+  );
+
+  return error ? { error } : mapCardPaymentMethod(paymentMethod);
+}
+
+/**
+ * @param {import('@stripe/stripe-js').PaymentMethod} paymentMethod
+ */
+function mapCardPaymentMethod(paymentMethod) {
+  return {
+    gateway: 'stripe',
+    token: paymentMethod.id,
+    last4: paymentMethod.card.last4,
+    exp_month: paymentMethod.card.exp_month,
+    exp_year: paymentMethod.card.exp_year,
+    brand: paymentMethod.card.brand,
+    display_brand: paymentMethod.card.display_brand,
+    address_check: paymentMethod.card.checks.address_line1_check,
+    cvc_check: paymentMethod.card.checks.cvc_check,
+    zip_check: paymentMethod.card.checks.address_postal_code_check,
+  };
+}
+
+/**
+ * @param {Stripe} stripe
+ * @param {import('@stripe/stripe-js').StripeIdealBankElement | {}} element `{}` when there is no idealBank element
  * @param {Cart} cart
  */
 export async function createIDealPaymentMethod(stripe, element, cart) {

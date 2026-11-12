@@ -137,6 +137,7 @@ export default class StripeGooglePayment extends Payment {
   async _onPaymentMethod(event) {
     const {
       payerEmail,
+      payerName,
       paymentMethod: { id: paymentMethod, card, billing_details },
       shippingAddress,
       shippingOption,
@@ -155,6 +156,8 @@ export default class StripeGooglePayment extends Payment {
       }),
       billing: {
         ...this._mapBillingAddress(billing_details),
+        // a wallet may leave the card's address without a name; the payer's, when asked for, fills it
+        name: billing_details?.name || payerName,
         method: 'card',
         card: {
           gateway: 'stripe',

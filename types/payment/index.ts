@@ -27,8 +27,28 @@ export interface InputPaymentElementBase {
   onError?: (error: Error) => void;
 }
 
-export interface InputPaymentElementCard extends InputPaymentElementBase {
-  /** @see {@link https://docs.stripe.com/js/elements_object/create_element?type=card#elements_create-options} */
+/**
+ * Stripe: draw the form with the Payment Element instead of the split elements.
+ * The element mounts into `#payment-element` unless `elementId` is set.
+ */
+export interface InputPaymentStripePaymentElement {
+  paymentElement?: boolean;
+  /**
+   * Payment Element only: Stripe Appearance API object (`theme`, `variables`, `rules`, `labels`).
+   *
+   * @see {@link https://docs.stripe.com/elements/appearance-api}
+   */
+  appearance?: Record<string, unknown>;
+}
+
+export interface InputPaymentElementCard
+  extends InputPaymentElementBase,
+    InputPaymentStripePaymentElement {
+  /**
+   * Split elements: {@link https://docs.stripe.com/js/elements_object/create_element?type=card#elements_create-options}.
+   * Payment Element: {@link https://docs.stripe.com/js/elements_object/create_payment_element#payment_element_create-options},
+   * merged over `{ layout: 'tabs', fields: { billingDetails: 'never' }, wallets: { applePay: 'never', googlePay: 'never' } }`.
+   */
   options?: object;
   separateElements?: boolean;
   cardNumber?: {
@@ -47,9 +67,13 @@ export interface InputPaymentElementCard extends InputPaymentElementBase {
   };
 }
 
-export interface InputPaymentElementIdeal extends InputPaymentElementBase {
+export interface InputPaymentElementIdeal
+  extends InputPaymentElementBase,
+    InputPaymentStripePaymentElement {
+  /** Payment Element: the same options and defaults as the card one */
   options?: {
     style?: unknown;
+    [key: string]: unknown;
   };
 }
 
@@ -125,6 +149,21 @@ export interface InputPaymentElementSezzle extends InputPaymentElementBase {
   classes?: {
     base?: string;
   };
+}
+
+export interface InputPaymentTokenizeCard
+  extends InputPaymentRedirect,
+    Pick<InputPaymentStripePaymentElement, 'paymentElement'> {
+  /** Stripe: `false` stores the card without a payment intent (default `true`) */
+  createIntent?: boolean;
+  /**
+   * Stripe: the `pm_` id of a card the shopper already has (a saved card, a
+   * wallet's payment method), authorized with an intent and 3-D Secure instead
+   * of an element's card
+   */
+  paymentMethod?: string;
+  /** Saferpay: register a new card even when the cart already has one */
+  replace?: boolean;
 }
 
 export interface InputPaymentRedirect {

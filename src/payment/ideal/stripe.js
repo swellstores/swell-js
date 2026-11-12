@@ -2,11 +2,15 @@ import Payment from '../payment';
 import {
   createElement,
   createIDealPaymentMethod,
+  createPaymentElements,
+  createPaymentMethodFromElements,
+  getIDealElementsOptions,
   stripeAmountByCurrency,
 } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
+  UnableAuthenticatePaymentMethodError,
 } from '../../utils/errors';
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
@@ -60,8 +64,29 @@ export default class StripeIDealPayment extends Payment {
     StripeIDealPayment.stripeElement = stripeElement;
   }
 
-  async createElements() {
+  /** @returns {import('@stripe/stripe-js').StripeElements} */
+  get stripeElements() {
+    return StripeIDealPayment.stripeElements;
+  }
+
+  /** @param {import('@stripe/stripe-js').StripeElements} stripeElements */
+  set stripeElements(stripeElements) {
+    StripeIDealPayment.stripeElements = stripeElements;
+  }
+
+  /** @param {import('../../../types').Cart} cart */
+  async createElements(cart) {
     await this.loadScripts(this.scripts);
+
+    if (this.params.paymentElement) {
+      this.stripeElements = createPaymentElements(
+        this.stripe,
+        getIDealElementsOptions(cart),
+        this.params,
+      );
+
+      return;
+    }
 
     const elements = this.stripe.elements(this.params.config);
 
@@ -69,15 +94,28 @@ export default class StripeIDealPayment extends Payment {
   }
 
   async tokenize() {
-    if (!this.stripeElement) {
+    const { paymentElement } = this.params;
+
+    if (paymentElement && !this.stripeElements) {
       throw new Error('Stripe payment element is not defined');
     }
 
     await this.loadScripts(this.scripts);
 
     const cart = await this.getCart();
-    const { paymentMethod, error: paymentMethodError } =
-      await createIDealPaymentMethod(this.stripe, this.stripeElement, cart);
+    const { paymentMethod, error: paymentMethodError } = paymentElement
+      ? await createPaymentMethodFromElements(
+          this.stripe,
+          this.stripeElements,
+          getIDealElementsOptions(cart),
+          cart,
+        )
+      : // without an idealBank element the shopper picks the bank on the iDEAL page
+        await createIDealPaymentMethod(
+          this.stripe,
+          this.stripeElement || {},
+          cart,
+        );
 
     if (paymentMethodError) {
       throw new Error(paymentMethodError.message);
@@ -86,6 +124,38 @@ export default class StripeIDealPayment extends Payment {
     const intent = await this._createIntent(cart, paymentMethod);
 
     await this.stripe.handleCardAction(intent.client_secret);
+  }
+
+  async handleRedirect(queryParams) {
+    const { redirect_status, payment_intent_client_secret } = queryParams;
+
+    if (redirect_status !== 'succeeded') {
+      throw new UnableAuthenticatePaymentMethodError();
+    }
+
+    await this.loadScripts(this.scripts);
+
+    const { paymentIntent, error } = await this.stripe.retrievePaymentIntent(
+      payment_intent_client_secret,
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (
+      !['succeeded', 'requires_capture', 'processing'].includes(
+        paymentIntent.status,
+      )
+    ) {
+      throw new Error(
+        paymentIntent.last_payment_error?.message ||
+          `Unsupported intent status (${paymentIntent.status})`,
+      );
+    }
+
+    // the cart's billing was written in `tokenize`
+    this.onSuccess();
   }
 
   /**
@@ -105,7 +175,8 @@ export default class StripeIDealPayment extends Payment {
         payment_method_types: 'ideal',
         confirmation_method: 'manual',
         confirm: true,
-        return_url: window.location.href,
+        // `gateway` lets `handleRedirect` run on return; Stripe appends the intent and `redirect_status`
+        return_url: getReturnUrl(),
       },
     });
 
@@ -135,4 +206,12 @@ export default class StripeIDealPayment extends Payment {
 
     return intent;
   }
+}
+
+function getReturnUrl() {
+  const url = new URL(window.location.href);
+
+  url.searchParams.set('gateway', 'stripe');
+
+  return url.toString();
 }

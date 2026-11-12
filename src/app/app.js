@@ -1,6 +1,7 @@
 import { AppPaymentComponent } from './component';
 import { isObject, isEmpty } from '../utils';
 
+/** @deprecated Use `@swell/apps-sdk/components` instead. */
 export default class App {
   constructor(app, api, options) {
     this.app = app;

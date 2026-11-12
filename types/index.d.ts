@@ -41,6 +41,7 @@ import type {
   InputPaymentElementApple,
   InputPaymentElementSezzle,
   InputPaymentRedirect,
+  InputPaymentTokenizeCard,
   PaymentCase,
 } from './payment/index.js';
 
@@ -376,23 +377,35 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
     }): Promise<void>;
 
     tokenize(input?: {
-      card?: object;
+      card?: InputPaymentTokenizeCard;
+      /** Without `createElements` iDEAL needs no element: the shopper picks the bank on the iDEAL page */
       ideal?: object;
       klarna?: object;
       bancontact?: object;
       paysafecard?: object;
       amazon?: object;
+      /** Saferpay payment page; has no element, `tokenize` redirects */
+      twint?: InputPaymentRedirect;
     }): Promise<void>;
 
     handleRedirect(input?: {
       card?: InputPaymentRedirect;
+      ideal?: InputPaymentRedirect;
       paysafecard?: InputPaymentRedirect;
       klarna?: InputPaymentRedirect;
       bancontact?: InputPaymentRedirect;
+      amazon?: InputPaymentRedirect;
+      twint?: InputPaymentRedirect;
     }): Promise<void>;
 
     authenticate(id: string): Promise<object | { error: Error }>;
     resetAsyncPayment(id: string): Promise<object>;
+
+    /**
+     * Redirects to the gateway when a submitted order waits for an
+     * asynchronous payment; resolves `true` after starting the redirect
+     */
+    handleAsyncRedirect(order: object): Promise<boolean>;
 
     createIntent(input: { gateway: string; intent: object }): Promise<object>;
 

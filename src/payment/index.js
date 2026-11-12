@@ -11,6 +11,8 @@ import BraintreeApplePayment from './apple/braintree';
 import AuthorizeNetGooglePayment from './google/authorizenet';
 import AuthorizeNetApplePayment from './apple/authorizenet';
 import QuickpayCardPayment from './card/quickpay';
+import SaferpayCardPayment from './card/saferpay';
+import SaferpayTwintPayment from './twint/saferpay';
 import ConvesioCardPayment from './card/convesiopay';
 import ConvesioPayApplePayment from './apple/convesiopay';
 import ConvesioPayGooglePayment from './google/convesiopay';
@@ -44,6 +46,33 @@ export default class PaymentController {
     return this.api.request('get', '/payments', id);
   }
 
+  /**
+   * Sends the shopper to the gateway when a submitted order waits for an
+   * asynchronous payment; resolves `true` after starting the redirect.
+   *
+   * @param {object} order the result of `cart.submitOrder()`
+   * @returns {Promise<boolean>}
+   */
+  async handleAsyncRedirect(order) {
+    const paymentId =
+      order?.authorized_payment_id ?? order?.authorizedPaymentId;
+
+    if (order?.status !== 'payment_pending' || !paymentId) {
+      return false;
+    }
+
+    const payment = await this.get(paymentId);
+    const url = payment?.async_data?.url ?? payment?.asyncData?.url;
+
+    if (!payment || payment.captured || !url) {
+      return false;
+    }
+
+    window.location.replace(url);
+
+    return true;
+  }
+
   async methods() {
     if (this.methodSettings) {
       return this.methodSettings;
@@ -61,7 +90,7 @@ export default class PaymentController {
       throw new Error('Payment element parameters are not provided');
     }
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
     const cart = await this.payment.getCart();
 
     await this._performPaymentAction(
@@ -80,7 +109,7 @@ export default class PaymentController {
       throw new Error('Tokenization parameters are not provided');
     }
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
 
     await this._performPaymentAction(paymentInstances, 'tokenize');
   }
@@ -100,7 +129,7 @@ export default class PaymentController {
 
     removeUrlParams();
 
-    const paymentInstances = await this._createPaymentInstances();
+    const paymentInstances = await this._createPaymentInstances(params);
 
     await this._performPaymentAction(
       paymentInstances,
@@ -193,9 +222,10 @@ export default class PaymentController {
   /**
    * @returns {Promise<Payment[]>}
    */
-  async _createPaymentInstances() {
+  // Takes the caller's params: this.params can change while the methods load (two createElements at once)
+  async _createPaymentInstances(callParams) {
     const paymentMethods = await this._getPaymentMethods();
-    const params = adjustParams(this.params);
+    const params = adjustParams(callParams);
 
     return Object.entries(params).reduce((acc, [method, params]) => {
       const methodSettings = paymentMethods[method];
@@ -293,6 +323,8 @@ export default class PaymentController {
         return this._getAmazonPaymentClass(gateway);
       case 'sezzle':
         return this._getSezzlePaymentClass(gateway);
+      case 'twint':
+        return this._getTwintPaymentClass(gateway);
       default:
         return null;
     }
@@ -306,6 +338,17 @@ export default class PaymentController {
         return QuickpayCardPayment;
       case 'convesiopay':
         return ConvesioCardPayment;
+      case 'saferpay':
+        return SaferpayCardPayment;
+      default:
+        return null;
+    }
+  }
+
+  _getTwintPaymentClass(gateway) {
+    switch (gateway) {
+      case 'saferpay':
+        return SaferpayTwintPayment;
       default:
         return null;
     }
