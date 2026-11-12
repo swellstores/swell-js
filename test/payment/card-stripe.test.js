@@ -65,6 +65,33 @@ describePayment('payment/card/stripe', (_request, options, _paymentMock) => {
         $reset_async_payment: true,
       });
     });
+
+    it('should reset async payment when the intent was already confirmed and cannot be updated', async () => {
+      const StripeCardPayment = (await import('../../src/payment/card/stripe'))
+        .default;
+      const payment = new StripeCardPayment(
+        _request,
+        options,
+        {},
+        { card: { publishable_key: 'pk' } },
+      );
+      payment.updateIntent = jest.fn(async () => ({
+        error: {
+          message:
+            'This PaymentIntent could not be updated because it has a status of requires_capture.',
+        },
+      }));
+      payment.resetAsyncPayment = jest.fn(async () => null);
+
+      await expect(
+        payment.authenticate({
+          id: 'test_payment_id',
+          transaction_id: 'pi_1',
+          card: { token: 'pm_test' },
+        }),
+      ).rejects.toThrow(/requires_capture/);
+      expect(payment.resetAsyncPayment).toHaveBeenCalledWith('test_payment_id');
+    });
   });
 });
 

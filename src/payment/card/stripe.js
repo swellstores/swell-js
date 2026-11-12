@@ -255,21 +255,21 @@ export default class StripeCardPayment extends Payment {
   async authenticate(payment) {
     const { transaction_id: id, card: { token } = {} } = payment;
 
-    const intent = await this.updateIntent({
-      gateway: 'stripe',
-      intent: { id, payment_method: token },
-    });
-
-    if (intent.error) {
-      throw new Error(intent.error.message);
-    }
-
-    await this.loadScripts(this.scripts);
-
+    // The payment is re-queried whatever happens here: an intent the shopper
+    // already confirmed can't be updated, and the payment must still learn it
     try {
-      const result = await this._confirmCardPayment(intent);
+      const intent = await this.updateIntent({
+        gateway: 'stripe',
+        intent: { id, payment_method: token },
+      });
 
-      return result;
+      if (intent.error) {
+        throw new Error(intent.error.message);
+      }
+
+      await this.loadScripts(this.scripts);
+
+      return await this._confirmCardPayment(intent);
     } finally {
       await this.resetAsyncPayment(payment.id);
     }
