@@ -242,6 +242,13 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
 
     logout(): Promise<unknown>;
     recover(input: object): Promise<AccountCase[C] | ErrorResponse>;
+
+    /**
+     * Emails the customer a link to the account portal of the hosted
+     * checkout. Answers `{ success: true }` whether the account exists or not.
+     */
+    sendPortalLink(input: { email: string }): Promise<{ success: boolean }>;
+
     update(input: AccountCase[C]): Promise<AccountCase[C] | ErrorResponse>;
     get(query?: object): Promise<AccountCase[C] | null>;
 
