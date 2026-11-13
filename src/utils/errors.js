@@ -21,6 +21,7 @@ export class UnsupportedPaymentGatewayError extends Error {
   constructor(gateway) {
     const message = `Unsupported payment gateway: ${gateway}`;
     super(message);
+    this.code = 'unsupported_gateway';
   }
 }
 

@@ -41,8 +41,10 @@ import type {
   InputPaymentElementApple,
   InputPaymentElementSezzle,
   InputPaymentRedirect,
+  InputPaymentSetupCard,
   InputPaymentTokenizeCard,
   PaymentCase,
+  PaymentSetupCard,
 } from './payment/index.js';
 
 import type { Settings } from './settings/index.js';
@@ -404,6 +406,17 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
       amazon?: InputPaymentRedirect;
       twint?: InputPaymentRedirect;
     }): Promise<void>;
+
+    /**
+     * Saves a card without a cart. Stripe mounts the Payment Element, and
+     * `confirm()` confirms the SetupIntent from `getSetupIntent` with 3-D Secure
+     * in Stripe's window. Any other card gateway has no fields to mount:
+     * `confirm(fields)` tokenizes the host's fields through `card.createToken`.
+     * Quickpay, Saferpay and ConvesioPay reject with `code: 'unsupported_gateway'`.
+     */
+    setupPaymentMethod(input: { card: InputPaymentSetupCard }): Promise<{
+      confirm(fields?: InputCreateTokenCase[C]): Promise<PaymentSetupCard>;
+    }>;
 
     authenticate(id: string): Promise<object | { error: Error }>;
     resetAsyncPayment(id: string): Promise<object>;

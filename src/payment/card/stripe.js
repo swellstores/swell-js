@@ -6,6 +6,7 @@ import {
   createElement,
   createPaymentElements,
   createPaymentMethod,
+  createPaymentMethodFromElements,
   getCardElementsOptions,
   isStripeChargeableAmount,
   stripeAmountByCurrency,
@@ -35,6 +36,8 @@ const intentAmount = ({ currency, capture_total, auth_total }) =>
   stripeAmountByCurrency(currency, capture_total + auth_total);
 
 const intentCurrency = ({ currency }) => (currency || 'USD').toLowerCase();
+
+const SETUP_ELEMENTS_OPTIONS = { mode: 'setup', paymentMethodTypes: ['card'] };
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -250,6 +253,57 @@ export default class StripeCardPayment extends Payment {
       );
 
     return matches ? intent : null;
+  }
+
+  /**
+   * Saves a card without a cart: mounts the Payment Element in setup mode;
+   * `confirm()` confirms the host's SetupIntent, 3-D Secure in Stripe's window.
+   * The elements stay out of the class fields a checkout's tokenize reads.
+   */
+  async setup() {
+    await this.loadScripts(this.scripts);
+
+    const elements = createPaymentElements(
+      this.stripe,
+      SETUP_ELEMENTS_OPTIONS,
+      this.params,
+    );
+
+    return {
+      confirm: async () => {
+        // no cart: the billing details Stripe needs with the element's `never` stay empty
+        const { paymentMethod, error } = await createPaymentMethodFromElements(
+          this.stripe,
+          elements,
+          SETUP_ELEMENTS_OPTIONS,
+          { billing: {} },
+        );
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        const { client_secret } = await this.params.getSetupIntent();
+        const result = await this.stripe.confirmCardSetup(client_secret, {
+          payment_method: paymentMethod.id,
+        });
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+
+        const { brand, last4, exp_month, exp_year } = paymentMethod.card;
+
+        return {
+          gateway: 'stripe',
+          token: paymentMethod.id,
+          brand,
+          last4,
+          exp_month,
+          exp_year,
+        };
+      },
+    };
   }
 
   async authenticate(payment) {
