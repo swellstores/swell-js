@@ -1,4 +1,4 @@
-import { isLiveMode } from '../../utils';
+import { isFunction, isLiveMode, pick } from '../../utils';
 import { LibraryNotLoadedError } from '../../utils/errors';
 
 import {
@@ -38,6 +38,13 @@ const intentAmount = ({ currency, capture_total, auth_total }) =>
 const intentCurrency = ({ currency }) => (currency || 'USD').toLowerCase();
 
 const SETUP_ELEMENTS_OPTIONS = { mode: 'setup', paymentMethodTypes: ['card'] };
+
+// Keeps what tells a closed 3-D Secure window from a decline
+const stripeError = (error) =>
+  Object.assign(
+    new Error(error.message),
+    pick(error, ['code', 'type', 'decline_code']),
+  );
 
 /** @typedef {import('@stripe/stripe-js').Stripe} Stripe */
 /** @typedef {import('@stripe/stripe-js').StripeCardElement} StripeCardElement */
@@ -261,13 +268,26 @@ export default class StripeCardPayment extends Payment {
    * The elements stay out of the class fields a checkout's tokenize reads.
    */
   async setup() {
+    if (!isFunction(this.params.getSetupIntent)) {
+      throw new Error(
+        'Stripe setup needs card.getSetupIntent() resolving { client_secret }',
+      );
+    }
+
     await this.loadScripts(this.scripts);
 
+    const { store } = await this.getSettings();
+    // Stripe needs the currency for the Payment Element in setup mode too
+    const elementsOptions = {
+      ...SETUP_ELEMENTS_OPTIONS,
+      currency: intentCurrency(store || {}),
+    };
     const elements = createPaymentElements(
       this.stripe,
-      SETUP_ELEMENTS_OPTIONS,
+      elementsOptions,
       this.params,
     );
+    let element = elements.getElement('payment');
 
     return {
       confirm: async () => {
@@ -275,12 +295,12 @@ export default class StripeCardPayment extends Payment {
         const { paymentMethod, error } = await createPaymentMethodFromElements(
           this.stripe,
           elements,
-          SETUP_ELEMENTS_OPTIONS,
+          elementsOptions,
           { billing: {} },
         );
 
         if (error) {
-          throw new Error(error.message);
+          throw stripeError(error);
         }
 
         const { client_secret } = await this.params.getSetupIntent();
@@ -289,7 +309,13 @@ export default class StripeCardPayment extends Payment {
         });
 
         if (result.error) {
-          throw new Error(result.error.message);
+          throw stripeError(result.error);
+        }
+
+        if (result.setupIntent?.status !== 'succeeded') {
+          throw new Error(
+            `Unsupported setup intent status: ${result.setupIntent?.status}`,
+          );
         }
 
         const { brand, last4, exp_month, exp_year } = paymentMethod.card;
@@ -301,7 +327,14 @@ export default class StripeCardPayment extends Payment {
           last4,
           exp_month,
           exp_year,
+          ...(!isLiveMode(this.method.mode) && { test: true }),
         };
+      },
+
+      // the host removes the fields, e.g. when its effect re-runs and mounts them again
+      destroy: () => {
+        element?.destroy();
+        element = null;
       },
     };
   }

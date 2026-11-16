@@ -172,7 +172,7 @@ export interface InputPaymentSetupCard
     Pick<InputPaymentStripePaymentElement, 'appearance'> {
   /** Stripe: Payment Element options, over the same defaults as `createElements` */
   options?: object;
-  /** Stripe: called by `confirm()` once the fields are valid; the host starts the setup for its account */
+  /** Stripe, required: called by `confirm()` once the fields are valid; the host starts the setup for its account */
   getSetupIntent?: () => Promise<{ client_secret: string }>;
 }
 
@@ -184,6 +184,8 @@ export interface PaymentSetupCard {
   last4?: string;
   exp_month?: number;
   exp_year?: number;
+  /** Stripe: the card was saved outside live mode */
+  test?: boolean;
 }
 
 export interface InputPaymentRedirect {

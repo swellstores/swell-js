@@ -249,7 +249,9 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
      * Emails the customer a link to the account portal of the hosted
      * checkout. Answers `{ success: true }` whether the account exists or not.
      */
-    sendPortalLink(input: { email: string }): Promise<{ success: boolean }>;
+    sendPortalLink(input: {
+      email: string;
+    }): Promise<{ success: boolean } | ErrorResponse>;
 
     update(input: AccountCase[C]): Promise<AccountCase[C] | ErrorResponse>;
     get(query?: object): Promise<AccountCase[C] | null>;
@@ -413,9 +415,11 @@ export interface SwellClient<C extends 'snake' | 'camel' = 'snake'> {
      * in Stripe's window. Any other card gateway has no fields to mount:
      * `confirm(fields)` tokenizes the host's fields through `card.createToken`.
      * Quickpay, Saferpay and ConvesioPay reject with `code: 'unsupported_gateway'`.
+     * `destroy()` removes the mounted fields; it does nothing for the host's own fields.
      */
     setupPaymentMethod(input: { card: InputPaymentSetupCard }): Promise<{
       confirm(fields?: InputCreateTokenCase[C]): Promise<PaymentSetupCard>;
+      destroy(): void;
     }>;
 
     authenticate(id: string): Promise<object | { error: Error }>;

@@ -119,10 +119,10 @@ export default class PaymentController {
   /**
    * Saves a card without a cart. Stripe mounts its fields and `confirm()` confirms
    * the host's SetupIntent; any other card gateway takes the host's fields in
-   * `confirm(fields)` through `card.createToken`.
+   * `confirm(fields)` through `card.createToken`. `destroy()` removes the mounted fields.
    *
    * @param {{ card: object }} params
-   * @returns {Promise<{ confirm: (fields?: object) => Promise<object> }>}
+   * @returns {Promise<{ confirm: (fields?: object) => Promise<object>, destroy: () => void }>}
    */
   async setupPaymentMethod({ card } = {}) {
     const paymentMethods = await this._getPaymentMethods();
@@ -150,6 +150,8 @@ export default class PaymentController {
             'exp_year',
           ]);
         },
+        // the host's own fields: nothing mounted to remove
+        destroy() {},
       };
     }
 

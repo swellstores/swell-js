@@ -11,6 +11,10 @@ const mockPayment = {
 
   updateCart: jest.fn(),
 
+  getSettings: jest.fn(() => {
+    return Promise.resolve({ store: { currency: 'EUR' } });
+  }),
+
   createIntent: jest.fn((params) => {
     const { gateway } = params;
 

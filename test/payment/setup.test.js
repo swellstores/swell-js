@@ -20,9 +20,10 @@ const stripePaymentMethod = {
 };
 
 function mockStripe() {
-  const element = { on: jest.fn(), mount: jest.fn() };
+  const element = { on: jest.fn(), mount: jest.fn(), destroy: jest.fn() };
   const elements = {
     create: jest.fn(() => element),
+    getElement: jest.fn(() => element),
     update: jest.fn(),
     submit: jest.fn(async () => ({})),
   };
@@ -74,11 +75,14 @@ describePayment(
 
       it('should mount the Payment Element in setup mode without a cart', async () => {
         const { stripe, elements, element } = mockStripe();
+        const checkoutElements = {};
+        StripeCardPayment.stripeElements = checkoutElements;
 
         await payment.setupPaymentMethod({ card });
 
         expect(stripe.elements).toHaveBeenCalledWith({
           mode: 'setup',
+          currency: 'eur',
           paymentMethodTypes: ['card'],
           paymentMethodCreation: 'manual',
         });
@@ -91,7 +95,35 @@ describePayment(
         expect(getSetupIntent).not.toHaveBeenCalled();
         expect(paymentMock.getCart).not.toHaveBeenCalled();
         // a checkout's tokenize on the same page keeps its own elements
-        expect(StripeCardPayment.stripeElements).toBeNull();
+        expect(StripeCardPayment.stripeElements).toBe(checkoutElements);
+      });
+
+      it('should pass onReady to the Payment Element', async () => {
+        const { element } = mockStripe();
+        const onReady = jest.fn();
+
+        await payment.setupPaymentMethod({ card: { ...card, onReady } });
+
+        expect(element.on).toHaveBeenCalledWith('ready', onReady);
+      });
+
+      it('should reject before mounting without getSetupIntent', async () => {
+        const { stripe } = mockStripe();
+
+        await expect(
+          payment.setupPaymentMethod({ card: { elementId: 'portal-card' } }),
+        ).rejects.toThrow('getSetupIntent');
+        expect(stripe.elements).not.toHaveBeenCalled();
+      });
+
+      it('should remove the Payment Element once on destroy', async () => {
+        const { element } = mockStripe();
+
+        const setup = await payment.setupPaymentMethod({ card });
+        setup.destroy();
+        setup.destroy();
+
+        expect(element.destroy).toHaveBeenCalledTimes(1);
       });
 
       it('should confirm the host SetupIntent with the new payment method', async () => {
@@ -137,27 +169,84 @@ describePayment(
       it('should reject with the field error before asking for a SetupIntent', async () => {
         const { stripe, elements } = mockStripe();
         elements.submit.mockResolvedValueOnce({
-          error: { message: 'Your card number is incomplete.' },
+          error: {
+            message: 'Your card number is incomplete.',
+            type: 'validation_error',
+            code: 'incomplete_number',
+          },
+        });
+
+        const setup = await payment.setupPaymentMethod({ card });
+
+        await expect(setup.confirm()).rejects.toMatchObject({
+          message: 'Your card number is incomplete.',
+          type: 'validation_error',
+          code: 'incomplete_number',
+        });
+        expect(getSetupIntent).not.toHaveBeenCalled();
+        expect(stripe.confirmCardSetup).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        {
+          message: 'We are unable to authenticate your payment method.',
+          type: 'invalid_request_error',
+          code: 'setup_intent_authentication_failure',
+        },
+        {
+          message: 'Your card has insufficient funds.',
+          type: 'card_error',
+          code: 'card_declined',
+          decline_code: 'insufficient_funds',
+        },
+      ])(
+        'should reject with the Stripe error and its codes: $code',
+        async (error) => {
+          const { stripe } = mockStripe();
+          stripe.confirmCardSetup.mockResolvedValueOnce({ error });
+
+          const setup = await payment.setupPaymentMethod({ card });
+
+          await expect(setup.confirm()).rejects.toMatchObject(error);
+        },
+      );
+
+      it('should reject when the SetupIntent has not succeeded', async () => {
+        const { stripe } = mockStripe();
+        stripe.confirmCardSetup.mockResolvedValueOnce({
+          setupIntent: { status: 'processing' },
         });
 
         const setup = await payment.setupPaymentMethod({ card });
 
         await expect(setup.confirm()).rejects.toThrow(
-          'Your card number is incomplete.',
+          'Unsupported setup intent status: processing',
         );
-        expect(getSetupIntent).not.toHaveBeenCalled();
-        expect(stripe.confirmCardSetup).not.toHaveBeenCalled();
       });
 
-      it('should reject with the 3-D Secure error', async () => {
+      it('should pass on the host error from getSetupIntent unchanged', async () => {
         const { stripe } = mockStripe();
-        stripe.confirmCardSetup.mockResolvedValueOnce({
-          error: { message: 'Authentication failed.' },
+        const hostError = Object.assign(new Error('Too many attempts'), {
+          status: 429,
         });
+        getSetupIntent.mockRejectedValueOnce(hostError);
 
         const setup = await payment.setupPaymentMethod({ card });
 
-        await expect(setup.confirm()).rejects.toThrow('Authentication failed.');
+        await expect(setup.confirm()).rejects.toBe(hostError);
+        expect(stripe.confirmCardSetup).not.toHaveBeenCalled();
+      });
+
+      it('should mark a card saved outside live mode as a test card', async () => {
+        withCard({ gateway: 'stripe', publishable_key: 'pk', mode: 'test' });
+        mockStripe();
+
+        const setup = await payment.setupPaymentMethod({ card });
+
+        await expect(setup.confirm()).resolves.toMatchObject({
+          token: 'pm_card',
+          test: true,
+        });
       });
     });
 
@@ -181,6 +270,8 @@ describePayment(
 
         const setup = await payment.setupPaymentMethod({ card: {} });
         const result = await setup.confirm(fields);
+        // the host's own fields: nothing to remove
+        setup.destroy();
 
         expect(createToken).toHaveBeenCalledWith(fields);
         expect(result).toEqual({
