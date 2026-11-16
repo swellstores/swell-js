@@ -44,6 +44,10 @@ function methods(api) {
       return api.request('post', '/account/recover', data);
     },
 
+    sendPortalLink(data) {
+      return api.request('post', '/account/portal-link', data);
+    },
+
     listAddresses(query) {
       return api.request('get', '/account/addresses', query);
     },

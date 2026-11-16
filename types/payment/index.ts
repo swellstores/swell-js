@@ -166,6 +166,28 @@ export interface InputPaymentTokenizeCard
   replace?: boolean;
 }
 
+/** `payment.setupPaymentMethod({ card })`: saves a card without a cart */
+export interface InputPaymentSetupCard
+  extends Omit<InputPaymentElementBase, 'returnUrl' | 'onSuccess' | 'onError'>,
+    Pick<InputPaymentStripePaymentElement, 'appearance'> {
+  /** Stripe: Payment Element options, over the same defaults as `createElements` */
+  options?: object;
+  /** Stripe, required: called by `confirm()` once the fields are valid; the host starts the setup for its account */
+  getSetupIntent?: () => Promise<{ client_secret: string }>;
+}
+
+/** The card `setupPaymentMethod` saved, for the host to store on the account */
+export interface PaymentSetupCard {
+  gateway?: string;
+  token: string;
+  brand?: string;
+  last4?: string;
+  exp_month?: number;
+  exp_year?: number;
+  /** Stripe: the card was saved outside live mode */
+  test?: boolean;
+}
+
 export interface InputPaymentRedirect {
   /** @optional called on card payment success */
   onSuccess?: (event: unknown) => void;

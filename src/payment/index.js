@@ -24,6 +24,7 @@ import SezzleDirectPayment from './sezzle/sezzle';
 import { adjustParams, adjustMethodParams } from './utils';
 import {
   PaymentMethodDisabledError,
+  UnsupportedPaymentGatewayError,
   UnsupportedPaymentMethodError,
 } from '../utils/errors';
 import settingsApi from '../settings';
@@ -33,6 +34,7 @@ import {
   removeUrlParams,
   toSnake,
   toCamel,
+  pick,
 } from '../utils';
 
 export default class PaymentController {
@@ -112,6 +114,60 @@ export default class PaymentController {
     const paymentInstances = await this._createPaymentInstances(params);
 
     await this._performPaymentAction(paymentInstances, 'tokenize');
+  }
+
+  /**
+   * Saves a card without a cart. Stripe mounts its fields and `confirm()` confirms
+   * the host's SetupIntent; any other card gateway takes the host's fields in
+   * `confirm(fields)` through `card.createToken`. `destroy()` removes the mounted fields.
+   *
+   * @param {{ card: object }} params
+   * @returns {Promise<{ confirm: (fields?: object) => Promise<object>, destroy: () => void }>}
+   */
+  async setupPaymentMethod({ card } = {}) {
+    const paymentMethods = await this._getPaymentMethods();
+
+    if (!paymentMethods.card) {
+      throw new PaymentMethodDisabledError('card');
+    }
+
+    // The gateway's own card class, as createElements picks it
+    const { gateway } = paymentMethods.card;
+    const PaymentClass = this._getCardPaymentClass(gateway);
+
+    if (!PaymentClass) {
+      return {
+        confirm: async (fields) => {
+          const token = await this.api.card.createToken(fields);
+
+          // the vault's gateway, when it names one, wins
+          return pick({ gateway, ...token }, [
+            'gateway',
+            'token',
+            'brand',
+            'last4',
+            'exp_month',
+            'exp_year',
+          ]);
+        },
+        // the host's own fields: nothing mounted to remove
+        destroy() {},
+      };
+    }
+
+    // Gateways with a card class tokenize through the cart unless they can set up without one
+    if (!PaymentClass.prototype.setup) {
+      throw new UnsupportedPaymentGatewayError(gateway);
+    }
+
+    const paymentInstance = new PaymentClass(
+      this.api,
+      this.options,
+      adjustMethodParams(card),
+      paymentMethods,
+    );
+
+    return paymentInstance.setup();
   }
 
   async handleRedirect(params = this.params) {

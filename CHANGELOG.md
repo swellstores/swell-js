@@ -4,6 +4,8 @@
 
 ### Added
 
+- `account.sendPortalLink({ email })` emails the customer a link to the account portal of the hosted checkout (`POST /account/portal-link`).
+- `payment.setupPaymentMethod({ card })` saves a card without a cart and resolves `{ gateway, token, brand, last4, exp_month, exp_year }` from `confirm()`; `destroy()` removes the mounted fields. Stripe mounts the Payment Element in setup mode and confirms the host's SetupIntent (`getSetupIntent`) with 3-D Secure; any other card gateway tokenizes the host's fields in `confirm(fields)` through `card.createToken`. Quickpay, Saferpay and ConvesioPay reject with `code: 'unsupported_gateway'`.
 - Saferpay card and TWINT payments through the Saferpay payment page: `tokenize({ card })` / `tokenize({ twint })` redirect, `handleRedirect({ card, twint })` stores the registered card or the TWINT transaction. `tokenize({ card: { replace: true } })` registers a new card when the cart already has one.
 - `handleRedirect({ ideal })`: the iDEAL return URL now carries `gateway=stripe`, and the handler checks the payment intent.
 - Stripe iDEAL without an element: `tokenize({ ideal: {} })` without `createElements` creates the payment method and redirects to the iDEAL page, where the shopper picks the bank. The Payment Element and `idealBank` paths are unchanged.

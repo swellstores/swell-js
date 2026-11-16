@@ -95,6 +95,22 @@ describe('account', () => {
     });
   });
 
+  describe('sendPortalLink', () => {
+    it('should make request to POST /account/portal-link', async () => {
+      await api.account.sendPortalLink({ email: 'customer@example.com' });
+
+      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls[0][0]).toEqual(
+        `https://test.swell.store/api/account/portal-link`,
+      );
+      expect(fetch.mock.calls[0][1]).toHaveProperty('method', 'post');
+      expect(fetch.mock.calls[0][1]).toHaveProperty(
+        'body',
+        JSON.stringify({ email: 'customer@example.com' }),
+      );
+    });
+  });
+
   describe('listAddresses', () => {
     it('should make request to GET /account/addresses', async () => {
       await api.account.listAddresses();
