@@ -1,4 +1,4 @@
-import { getPaymentRequestData } from '../../utils/stripe';
+import { getPaymentRequestData, STRIPE_API_VERSION } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
@@ -32,7 +32,9 @@ export default class StripeApplePayment extends Payment {
   get stripe() {
     if (!StripeApplePayment.stripe) {
       if (window.Stripe) {
-        this.stripe = window.Stripe(this.method.publishable_key);
+        this.stripe = window.Stripe(this.method.publishable_key, {
+          apiVersion: STRIPE_API_VERSION,
+        });
       }
 
       if (!StripeApplePayment.stripe) {

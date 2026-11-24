@@ -7,6 +7,9 @@ import { isEmpty } from './index';
 
 /** @typedef {import('../../types').Cart} Cart */
 
+// Stripe.js otherwise falls back to the account's default API version
+export const STRIPE_API_VERSION = '2025-02-24.acacia';
+
 // https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
 const MINIMUM_CHARGE_AMOUNT = {
   USD: 0.5,

@@ -1,5 +1,8 @@
 import Payment from '../payment';
-import { getBancontactConfirmationDetails } from '../../utils/stripe';
+import {
+  getBancontactConfirmationDetails,
+  STRIPE_API_VERSION,
+} from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
   LibraryNotLoadedError,
@@ -30,7 +33,9 @@ export default class StripeBancontactPayment extends Payment {
   get stripe() {
     if (!StripeBancontactPayment.stripe) {
       if (window.Stripe) {
-        this.stripe = window.Stripe(this.method.publishable_key);
+        this.stripe = window.Stripe(this.method.publishable_key, {
+          apiVersion: STRIPE_API_VERSION,
+        });
       }
 
       if (!StripeBancontactPayment.stripe) {
