@@ -2,6 +2,7 @@ import Payment from '../payment';
 import {
   getKlarnaIntentDetails,
   getKlarnaConfirmationDetails,
+  STRIPE_API_VERSION,
 } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
@@ -33,7 +34,9 @@ export default class StripeKlarnaPayment extends Payment {
   get stripe() {
     if (!StripeKlarnaPayment.stripe) {
       if (window.Stripe) {
-        this.stripe = window.Stripe(this.method.publishable_key);
+        this.stripe = window.Stripe(this.method.publishable_key, {
+          apiVersion: STRIPE_API_VERSION,
+        });
       }
 
       if (!StripeKlarnaPayment.stripe) {

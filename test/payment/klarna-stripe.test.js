@@ -5,6 +5,7 @@ import StripeKlarnaPayment from '../../src/payment/klarna/stripe';
 jest.mock('../../src/utils/stripe', () => ({
   getKlarnaIntentDetails: () => 'Test intent details',
   getKlarnaConfirmationDetails: () => 'Test confirmation details',
+  STRIPE_API_VERSION: 'test_api_version',
 }));
 
 describePayment('payment/klarna/stripe', (request, options, paymentMock) => {
@@ -47,6 +48,7 @@ describePayment('payment/klarna/stripe', (request, options, paymentMock) => {
 
       expect(global.window.Stripe).toHaveBeenCalledWith(
         'test_stripe_publishable_key',
+        { apiVersion: 'test_api_version' },
       );
       expect(paymentMock.createIntent).toHaveBeenCalledWith({
         gateway: 'stripe',

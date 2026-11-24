@@ -1,6 +1,7 @@
 import { describePayment } from './utils';
 
 import PaymentController from '../../src/payment';
+import { STRIPE_API_VERSION } from '../../src/utils/stripe';
 
 describePayment('payment/card/stripe', (_request, options, _paymentMock) => {
   describe('#authenticate', () => {
@@ -204,6 +205,9 @@ describePayment(
 
         await payment.createElements(cart);
 
+        expect(window.Stripe).toHaveBeenCalledWith('pk', {
+          apiVersion: STRIPE_API_VERSION,
+        });
         expect(stripe.elements).toHaveBeenCalledWith({
           mode: 'payment',
           amount: 1050,

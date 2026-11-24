@@ -16,6 +16,10 @@
 - `payment.handleAsyncRedirect(order)`: redirects to the gateway when a submitted order waits for an asynchronous payment.
 - Stripe card and iDEAL: `createElements({ card: { paymentElement: true, appearance } })` / `{ ideal: ... }` render the Stripe Payment Element styled through the Appearance API; `tokenize` with the same flag submits it and runs the existing intent flow. The split elements stay the default.
 
+### Changed
+
+- Stripe.js is created with API version `2025-02-24.acacia` instead of the Stripe account's default version.
+
 ### Deprecated
 
 - `swell.app`: app components are rendered by `@swell/apps-sdk/components`. The module warns once on `load()` and will be removed in the next major version.

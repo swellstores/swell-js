@@ -1,7 +1,10 @@
 import { describePayment } from './utils';
 import { UnableAuthenticatePaymentMethodError } from '../../src/utils/errors';
 import StripeIDealPayment from '../../src/payment/ideal/stripe';
-import { createIDealPaymentMethod } from '../../src/utils/stripe';
+import {
+  createIDealPaymentMethod,
+  STRIPE_API_VERSION,
+} from '../../src/utils/stripe';
 
 const actualStripeUtils = jest.requireActual('../../src/utils/stripe');
 
@@ -74,6 +77,10 @@ describePayment('payment/ideal/stripe', (request, options, paymentMock) => {
       );
 
       await payment.createElements(cart);
+
+      expect(window.Stripe).toHaveBeenCalledWith('pk', {
+        apiVersion: STRIPE_API_VERSION,
+      });
 
       expect(stripe.elements).toHaveBeenCalledWith({
         mode: 'payment',

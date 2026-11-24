@@ -4,6 +4,7 @@ import StripeBancontactPayment from '../../src/payment/bancontact/stripe';
 
 jest.mock('../../src/utils/stripe', () => ({
   getBancontactConfirmationDetails: () => 'Test confirmation details',
+  STRIPE_API_VERSION: 'test_api_version',
 }));
 
 describePayment(
@@ -53,6 +54,7 @@ describePayment(
 
         expect(global.window.Stripe).toHaveBeenCalledWith(
           'test_stripe_publishable_key',
+          { apiVersion: 'test_api_version' },
         );
         expect(paymentMock.createIntent).toHaveBeenCalledWith({
           account_id: 'test_account_id',

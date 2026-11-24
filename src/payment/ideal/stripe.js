@@ -6,6 +6,7 @@ import {
   createPaymentMethodFromElements,
   getIDealElementsOptions,
   stripeAmountByCurrency,
+  STRIPE_API_VERSION,
 } from '../../utils/stripe';
 import {
   PaymentMethodDisabledError,
@@ -38,7 +39,9 @@ export default class StripeIDealPayment extends Payment {
   get stripe() {
     if (!StripeIDealPayment.stripe) {
       if (window.Stripe) {
-        this.stripe = window.Stripe(this.method.publishable_key);
+        this.stripe = window.Stripe(this.method.publishable_key, {
+          apiVersion: STRIPE_API_VERSION,
+        });
       }
 
       if (!StripeIDealPayment.stripe) {

@@ -10,6 +10,7 @@ import {
   getCardElementsOptions,
   isStripeChargeableAmount,
   stripeAmountByCurrency,
+  STRIPE_API_VERSION,
 } from '../../utils/stripe';
 
 import Payment from '../payment';
@@ -63,7 +64,9 @@ export default class StripeCardPayment extends Payment {
   get stripe() {
     if (!StripeCardPayment.stripe) {
       if (window.Stripe) {
-        this.stripe = window.Stripe(this.method.publishable_key);
+        this.stripe = window.Stripe(this.method.publishable_key, {
+          apiVersion: STRIPE_API_VERSION,
+        });
       }
 
       if (!StripeCardPayment.stripe) {
